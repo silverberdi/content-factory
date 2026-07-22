@@ -1,0 +1,10 @@
+---
+description: Angular, PrimeNG, PWA, accessibility, and theming
+globs: ["apps/console/**", "libs/**/ui/**"]
+alwaysApply: false
+---
+
+Use Angular 22 and the officially compatible PrimeNG release pinned in W00. Use PrimeIcons.
+Support Spanish-first i18n-ready UI, responsive mobile-first PWA behavior, centralized semantic
+tokens, accessible contrast, and light/dark/system appearance. Validate UI in light and dark modes.
+Do not add another general-purpose component library without an approved change.
