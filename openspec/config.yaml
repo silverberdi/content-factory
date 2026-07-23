@@ -54,7 +54,7 @@ context: |
   - Angular 22 responsive PWA console.
   - PrimeNG and PrimeIcons are the official UI libraries.
   - Spanish-first and translation-ready user interface.
-  - Light, dark, and system appearance modes from W00.
+  - Light, dark, and system appearance modes from w00.
   - NestJS API using Fastify.
   - Prisma with dedicated PostgreSQL database content_factory.
   - Dedicated MinIO bucket and credentials.

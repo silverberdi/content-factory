@@ -1,4 +1,4 @@
-# W04 Completion Report
+# w04 Completion Report
 
 Status: `INCOMPLETE`
 

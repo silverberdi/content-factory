@@ -6,7 +6,7 @@ Run persistent, resumable, budget-aware jobs with safe retries, dependency pause
 
 ## Prerequisite
 
-W05 completed with provider and research boundaries.
+w05 completed with provider and research boundaries.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,32 +17,32 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W06-S01-persistent-job-orchestration`
-- User Stories: `US-W06-S01-001`, `US-W06-S01-002`, `US-W06-S01-003`
+- Change: `chg-w06-s01-persistent-job-orchestration`
+- User Stories: `us-w06-s01-001`, `us-w06-s01-002`, `us-w06-s01-003`
 - Branch: `slice/w06-s01-persistent-job-orchestration`
 
 ### W06-S02 — Budgets and Cost Control
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W06-S02-budgets-and-cost-control`
-- User Stories: `US-W06-S02-001`, `US-W06-S02-002`, `US-W06-S02-003`, `US-W06-S02-004`
+- Change: `chg-w06-s02-budgets-and-cost-control`
+- User Stories: `us-w06-s02-001`, `us-w06-s02-002`, `us-w06-s02-003`, `us-w06-s02-004`
 - Branch: `slice/w06-s02-budgets-and-cost-control`
 
 ### W06-S03 — Retry and Failure Handling
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W06-S03-retry-and-failure-handling`
-- User Stories: `US-W06-S03-001`, `US-W06-S03-002`, `US-W06-S03-003`
+- Change: `chg-w06-s03-retry-and-failure-handling`
+- User Stories: `us-w06-s03-001`, `us-w06-s03-002`, `us-w06-s03-003`
 - Branch: `slice/w06-s03-retry-and-failure-handling`
 
 ### W06-S04 — Notification Center and Web Push
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W06-S04-notification-center-and-web-push`
-- User Stories: `US-W06-S04-001`, `US-W06-S04-002`, `US-W06-S04-003`
+- Change: `chg-w06-s04-notification-center-and-web-push`
+- User Stories: `us-w06-s04-001`, `us-w06-s04-002`, `us-w06-s04-003`
 - Branch: `slice/w06-s04-notification-center-and-web-push`
 
 
@@ -50,10 +50,10 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W06-S01 | CHG-W06-S01-persistent-job-orchestration | CURSOR | CODEX |
-| W06-S02 | CHG-W06-S02-budgets-and-cost-control | CODEX | CURSOR |
-| W06-S03 | CHG-W06-S03-retry-and-failure-handling | CURSOR | CODEX |
-| W06-S04 | CHG-W06-S04-notification-center-and-web-push | CODEX | CURSOR |
+| w06-s01 | chg-w06-s01-persistent-job-orchestration | CURSOR | CODEX |
+| w06-s02 | chg-w06-s02-budgets-and-cost-control | CODEX | CURSOR |
+| w06-s03 | chg-w06-s03-retry-and-failure-handling | CURSOR | CODEX |
+| w06-s04 | chg-w06-s04-notification-center-and-web-push | CODEX | CURSOR |
 
 ## Exclusions
 

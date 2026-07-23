@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "activeWaveId": "W00",
+  "activeWaveId": "w00",
   "activeWaveDirectory": "docs/waves/w00-project-foundation",
   "packPath": "docs/context/generated/current-context-pack.md",
-  "packSha256": "0b8e4e705a2191e49b6ead4fa4ca64a3f6078c8283e579105051788f11262827",
+  "packSha256": "0e2fca8c35875d6056a1a50acdd5cec0f4be81ed1744e2ad3a24d80ef8bb219c",
   "sources": [
     {
       "path": "docs/context/project-context.md",
@@ -11,7 +11,7 @@
     },
     {
       "path": "docs/context/current-state.md",
-      "sha256": "bdf55b44c2a2896a501fd9a736450d8012b474d338559ca0d77453642becbf9e"
+      "sha256": "8f6b330beed2ca23dba83ea2d03ecf0c6d81e2401ff4d7636d5cf9adc68d9009"
     },
     {
       "path": "docs/context/openspec-context-index.md",
@@ -27,11 +27,11 @@
     },
     {
       "path": "docs/methodology/delivery-methodology.md",
-      "sha256": "a8a2e2aae364e682fefe91c59f7b00d761760586a45f52765f7f0fff22c49bd3"
+      "sha256": "3d17c7d036f146f68aeadc6d751c1d19f57f18ca13b20126186fb82f92d51e49"
     },
     {
       "path": "docs/methodology/deviation-policy.md",
-      "sha256": "133f158f18df64ee16e30025e16c45b29d8f4b89228da003ac4166ab7f0062c0"
+      "sha256": "2c2753646fbc9e15bcf17f21e43a095e7e2f04c8c0396383245086d795c538fc"
     },
     {
       "path": "docs/methodology/evidence-standard.md",
@@ -39,19 +39,19 @@
     },
     {
       "path": "docs/roadmap/roadmap.md",
-      "sha256": "59050cad2fbdc90c14eec796413cdd1527a29aba035bcc77d8c84e302a41e5c1"
+      "sha256": "373091f67d94803f6dd582a32ad61a495cf7170aafe5bf52f2fe522e4b0cdf16"
     },
     {
       "path": "docs/backlog/backlog.md",
-      "sha256": "f63be90ff8c27b6e047306c0d618edd723e359c2202417a913434772be2e7689"
+      "sha256": "61173090a3ce85df82efcc636aa581244484d16f310324b73bc3fc942bd49565"
     },
     {
       "path": "docs/decisions/decision-register.md",
-      "sha256": "bd7fb2a6332875535e1e182147e94ae95c42df3d0f76cdcf590c3d2930fd85d7"
+      "sha256": "d86df4060dcb40934f69f733e6e4c1270268b14ed4365b4d3a937e08a0d20fa2"
     },
     {
       "path": "docs/governance/github-governance.md",
-      "sha256": "17311b44909d7d494824d5c0feeda76103f1a8f1c7f1943998d89fdac036d467"
+      "sha256": "cf40ab52ce155675725a9ebda2901a535bd5a154d6c8a12065331c503ed689f6"
     },
     {
       "path": "AGENTS.md",
@@ -67,15 +67,15 @@
     },
     {
       "path": "docs/waves/w00-project-foundation/contract.md",
-      "sha256": "9c467f38a17d4709380da62ac50152353a2a8b4fe98e20867abc156ae3f496f5"
+      "sha256": "4b7c68c8fa5a2cea133c04a2f703b0e0e99c66c1b12cadc85567a9f681407613"
     },
     {
       "path": "docs/waves/w00-project-foundation/execution-plan.md",
-      "sha256": "fed5dbe97eaa4b5fdce70cdda7344087a8f77620851f4e0998279cf3c0d61aa9"
+      "sha256": "b7fb077785fff2070f8067d93142c18c877aa764dbf422cad3bc9e97adbcfad4"
     },
     {
       "path": "docs/backlog/user-stories/w00-user-stories.md",
-      "sha256": "9208fab7672faa9dc423d37b36a7786352cfe713685ce94224a9ff0f8201b47a"
+      "sha256": "16aea6179d0c0d41ed247574ca69d44bf02665067a4c6dfc9986bca8bd252d1a"
     }
   ]
 }

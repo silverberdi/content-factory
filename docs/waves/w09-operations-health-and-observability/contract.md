@@ -6,7 +6,7 @@ Provide dependency health, selective pause/resume, safe logs, durable operationa
 
 ## Prerequisite
 
-W08 completed with real external integrations exercised.
+w08 completed with real external integrations exercised.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,32 +17,32 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W09-S01-dependency-health-console`
-- User Stories: `US-W09-S01-001`, `US-W09-S01-002`, `US-W09-S01-003`
+- Change: `chg-w09-s01-dependency-health-console`
+- User Stories: `us-w09-s01-001`, `us-w09-s01-002`, `us-w09-s01-003`
 - Branch: `slice/w09-s01-dependency-health-console`
 
 ### W09-S02 — Selective Pause and Recovery
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W09-S02-selective-pause-and-recovery`
-- User Stories: `US-W09-S02-001`, `US-W09-S02-002`, `US-W09-S02-003`
+- Change: `chg-w09-s02-selective-pause-and-recovery`
+- User Stories: `us-w09-s02-001`, `us-w09-s02-002`, `us-w09-s02-003`
 - Branch: `slice/w09-s02-selective-pause-and-recovery`
 
 ### W09-S03 — Logging and Operational Events
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W09-S03-logging-and-operational-events`
-- User Stories: `US-W09-S03-001`, `US-W09-S03-002`, `US-W09-S03-003`, `US-W09-S03-004`
+- Change: `chg-w09-s03-logging-and-operational-events`
+- User Stories: `us-w09-s03-001`, `us-w09-s03-002`, `us-w09-s03-003`, `us-w09-s03-004`
 - Branch: `slice/w09-s03-logging-and-operational-events`
 
 ### W09-S04 — Basic Operational Analytics
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W09-S04-basic-operational-analytics`
-- User Stories: `US-W09-S04-001`, `US-W09-S04-002`, `US-W09-S04-003`, `US-W09-S04-004`
+- Change: `chg-w09-s04-basic-operational-analytics`
+- User Stories: `us-w09-s04-001`, `us-w09-s04-002`, `us-w09-s04-003`, `us-w09-s04-004`
 - Branch: `slice/w09-s04-basic-operational-analytics`
 
 
@@ -50,10 +50,10 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W09-S01 | CHG-W09-S01-dependency-health-console | CURSOR | CODEX |
-| W09-S02 | CHG-W09-S02-selective-pause-and-recovery | CODEX | CURSOR |
-| W09-S03 | CHG-W09-S03-logging-and-operational-events | CURSOR | CODEX |
-| W09-S04 | CHG-W09-S04-basic-operational-analytics | CODEX | CURSOR |
+| w09-s01 | chg-w09-s01-dependency-health-console | CURSOR | CODEX |
+| w09-s02 | chg-w09-s02-selective-pause-and-recovery | CODEX | CURSOR |
+| w09-s03 | chg-w09-s03-logging-and-operational-events | CURSOR | CODEX |
+| w09-s04 | chg-w09-s04-basic-operational-analytics | CODEX | CURSOR |
 
 ## Exclusions
 

@@ -2,9 +2,22 @@
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { buildPack, collectContextSources } from './generate-context-pack.mjs';
+import { validateMachineIds } from './validate-machine-ids.mjs';
 
 function sha256(content) {
   return createHash('sha256').update(content).digest('hex');
+}
+
+const machineIds = await validateMachineIds({ fail: false });
+if (!machineIds.ok) {
+  console.error('Context integrity blocked: machine IDs must be lowercase kebab-case.');
+  for (const finding of machineIds.findings.slice(0, 20)) {
+    console.error(`- ${finding.file}: ${finding.kind} ${finding.value}`);
+  }
+  if (machineIds.findings.length > 20) {
+    console.error(`- ... and ${machineIds.findings.length - 20} more`);
+  }
+  process.exit(1);
 }
 
 const manifestPath = 'docs/context/generated/context-manifest.json';

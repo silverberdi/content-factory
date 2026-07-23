@@ -1,4 +1,4 @@
-# W02 Completion Report
+# w02 Completion Report
 
 Status: `INCOMPLETE`
 

@@ -38,9 +38,12 @@ function parseField(markdown, label) {
 }
 
 function waveIdToSlug(waveId) {
-  const match = /^W(\d{2})$/i.exec(waveId);
+  // Canonical machine wave IDs are lowercase kebab-case: w00, w01, …
+  const match = /^w(\d{2})$/.exec(waveId);
   if (!match) {
-    throw new Error(`Unsupported active wave ID: ${waveId}`);
+    throw new Error(
+      `Active wave ID must be lowercase kebab-case (wNN). Rejected: ${waveId}`,
+    );
   }
   return match[1];
 }

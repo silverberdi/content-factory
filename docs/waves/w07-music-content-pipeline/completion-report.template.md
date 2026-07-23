@@ -1,4 +1,4 @@
-# W07 Completion Report
+# w07 Completion Report
 
 Status: `INCOMPLETE`
 

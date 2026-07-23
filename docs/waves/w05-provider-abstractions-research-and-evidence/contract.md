@@ -6,7 +6,7 @@ Integrate interchangeable providers and evidence-aware research without pretendi
 
 ## Prerequisite
 
-W04 completed and asset storage operational.
+w04 completed and asset storage operational.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,24 +17,24 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W05-S01-provider-capability-registry`
-- User Stories: `US-W05-S01-001`, `US-W05-S01-002`, `US-W05-S01-003`, `US-W05-S01-004`
+- Change: `chg-w05-s01-provider-capability-registry`
+- User Stories: `us-w05-s01-001`, `us-w05-s01-002`, `us-w05-s01-003`, `us-w05-s01-004`
 - Branch: `slice/w05-s01-provider-capability-registry`
 
 ### W05-S02 — Research Modes and Source Evidence
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W05-S02-research-modes-and-source-evidence`
-- User Stories: `US-W05-S02-001`, `US-W05-S02-002`, `US-W05-S02-003`, `US-W05-S02-004`
+- Change: `chg-w05-s02-research-modes-and-source-evidence`
+- User Stories: `us-w05-s02-001`, `us-w05-s02-002`, `us-w05-s02-003`, `us-w05-s02-004`
 - Branch: `slice/w05-s02-research-modes-and-source-evidence`
 
 ### W05-S03 — Research Retention
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W05-S03-research-retention`
-- User Stories: `US-W05-S03-001`, `US-W05-S03-002`, `US-W05-S03-003`
+- Change: `chg-w05-s03-research-retention`
+- User Stories: `us-w05-s03-001`, `us-w05-s03-002`, `us-w05-s03-003`
 - Branch: `slice/w05-s03-research-retention`
 
 
@@ -42,9 +42,9 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W05-S01 | CHG-W05-S01-provider-capability-registry | CURSOR | CODEX |
-| W05-S02 | CHG-W05-S02-research-modes-and-source-evidence | CODEX | CURSOR |
-| W05-S03 | CHG-W05-S03-research-retention | CURSOR | CODEX |
+| w05-s01 | chg-w05-s01-provider-capability-registry | CURSOR | CODEX |
+| w05-s02 | chg-w05-s02-research-modes-and-source-evidence | CODEX | CURSOR |
+| w05-s03 | chg-w05-s03-research-retention | CURSOR | CODEX |
 
 ## Exclusions
 

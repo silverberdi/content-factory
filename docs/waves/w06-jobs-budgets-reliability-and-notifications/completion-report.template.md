@@ -1,4 +1,4 @@
-# W06 Completion Report
+# w06 Completion Report
 
 Status: `INCOMPLETE`
 

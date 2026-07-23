@@ -1,4 +1,4 @@
-# W03 Completion Report
+# w03 Completion Report
 
 Status: `INCOMPLETE`
 

@@ -6,14 +6,17 @@ Delivery hierarchy: `Roadmap → Wave → Slice → User Stories → OpenSpec ta
 
 ## Current status
 
-- First formal wave: `W00 — Project Foundation` (`READY`)
-- First formal slice: `W00-S01 — Repository Governance and OpenSpec Foundation` (`READY`)
+- First formal wave: `W00 — Project Foundation` (`IN_PROGRESS`)
+- First formal slice: `W00-S01 — Repository Governance and OpenSpec Foundation` (`IN_PROGRESS`)
+- Branches: `wave/w00-project-foundation`, `slice/w00-s01-repository-governance-and-openspec-foundation`
 - OpenSpec: `1.6.0` installed with Cursor and Codex integrations generated
 - No User Story or slice is completed until OpenSpec Verify is exactly `PASS` and the full
   slice contract is satisfied
+- GitHub basic protection for `main` requires Silverio confirmation (see
+  `docs/waves/w00-project-foundation/evidence/w00-s01-github-protection.md`)
 
 Bootstrap artifacts already in the repository are pre-existing candidate implementation for
-`CHG-W00-S01-repository-governance-and-openspec-foundation`. They must be adopted, reviewed,
+`chg-w00-s01-repository-governance-and-openspec-foundation`. They must be adopted, reviewed,
 corrected, verified, synchronized, and archived through that change.
 
 ## Start here
@@ -35,6 +38,18 @@ Generated output:
 
 - `docs/context/generated/current-context-pack.md`
 - `docs/context/generated/context-manifest.json`
+
+Regenerate and validate at every completed slice and every completed wave. Do not hand-edit the
+generated pack; correct canonical sources and regenerate.
+
+## w00-s01 automated checks
+
+```bash
+node scripts/governance/run-w00-s01-checks.mjs
+```
+
+Includes machine-ID validation, doc/agent/OpenSpec workflow contracts, context-pack tests, and
+integrity check.
 
 ## Preserved OpenSpec-generated surfaces
 

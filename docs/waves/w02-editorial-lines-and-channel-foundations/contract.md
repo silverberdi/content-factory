@@ -6,7 +6,7 @@ Enable administrators to create editorial lines and exclusive external-account c
 
 ## Prerequisite
 
-W01 completed and role enforcement verified.
+w01 completed and role enforcement verified.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,32 +17,32 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W02-S01-editorial-line-management`
-- User Stories: `US-W02-S01-001`, `US-W02-S01-002`, `US-W02-S01-003`
+- Change: `chg-w02-s01-editorial-line-management`
+- User Stories: `us-w02-s01-001`, `us-w02-s01-002`, `us-w02-s01-003`
 - Branch: `slice/w02-s01-editorial-line-management`
 
 ### W02-S02 — Channel Domain and Lifecycle
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W02-S02-channel-domain-and-lifecycle`
-- User Stories: `US-W02-S02-001`, `US-W02-S02-002`, `US-W02-S02-003`, `US-W02-S02-004`
+- Change: `chg-w02-s02-channel-domain-and-lifecycle`
+- User Stories: `us-w02-s02-001`, `us-w02-s02-002`, `us-w02-s02-003`, `us-w02-s02-004`
 - Branch: `slice/w02-s02-channel-domain-and-lifecycle`
 
 ### W02-S03 — Channel Brand Identity
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W02-S03-channel-brand-identity`
-- User Stories: `US-W02-S03-001`, `US-W02-S03-002`, `US-W02-S03-003`
+- Change: `chg-w02-s03-channel-brand-identity`
+- User Stories: `us-w02-s03-001`, `us-w02-s03-002`, `us-w02-s03-003`
 - Branch: `slice/w02-s03-channel-brand-identity`
 
 ### W02-S04 — Multilingual Editorial Families
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W02-S04-multilingual-editorial-families`
-- User Stories: `US-W02-S04-001`, `US-W02-S04-002`, `US-W02-S04-003`
+- Change: `chg-w02-s04-multilingual-editorial-families`
+- User Stories: `us-w02-s04-001`, `us-w02-s04-002`, `us-w02-s04-003`
 - Branch: `slice/w02-s04-multilingual-editorial-families`
 
 
@@ -50,10 +50,10 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W02-S01 | CHG-W02-S01-editorial-line-management | CODEX | CURSOR |
-| W02-S02 | CHG-W02-S02-channel-domain-and-lifecycle | CURSOR | CODEX |
-| W02-S03 | CHG-W02-S03-channel-brand-identity | CODEX | CURSOR |
-| W02-S04 | CHG-W02-S04-multilingual-editorial-families | CURSOR | CODEX |
+| w02-s01 | chg-w02-s01-editorial-line-management | CODEX | CURSOR |
+| w02-s02 | chg-w02-s02-channel-domain-and-lifecycle | CURSOR | CODEX |
+| w02-s03 | chg-w02-s03-channel-brand-identity | CODEX | CURSOR |
+| w02-s04 | chg-w02-s04-multilingual-editorial-families | CURSOR | CODEX |
 
 ## Exclusions
 

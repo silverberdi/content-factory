@@ -1,6 +1,6 @@
 # Deviation Policy
 
-On an unplanned requirement, dependency, or decision:
+On an unplanned requirement, dependency, decision, or blocker:
 
 1. Stop affected execution.
 2. Analyze impact.
@@ -10,4 +10,7 @@ On an unplanned requirement, dependency, or decision:
 6. Validate consistency.
 7. Resume with the same operator.
 
-Do not hide a deviation as a note or debt to force closure.
+Do not hide a deviation as a note or informal debt to force closure.
+
+OpenSpec Verify must be exactly `PASS`. Results such as `PASS WITH NOTES` are not closure and
+must not be used to mark a User Story or slice completed.

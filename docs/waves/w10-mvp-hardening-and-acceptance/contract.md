@@ -6,7 +6,7 @@ Prove all agreed MVP exit criteria through real end-to-end operation, security, 
 
 ## Prerequisite
 
-W09 completed and all production dependencies configured.
+w09 completed and all production dependencies configured.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,32 +17,32 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W10-S01-security-and-governance-hardening`
-- User Stories: `US-W10-S01-001`, `US-W10-S01-002`, `US-W10-S01-003`
+- Change: `chg-w10-s01-security-and-governance-hardening`
+- User Stories: `us-w10-s01-001`, `us-w10-s01-002`, `us-w10-s01-003`
 - Branch: `slice/w10-s01-security-and-governance-hardening`
 
 ### W10-S02 — End-to-End Music Acceptance
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W10-S02-end-to-end-music-acceptance`
-- User Stories: `US-W10-S02-001`, `US-W10-S02-002`, `US-W10-S02-003`
+- Change: `chg-w10-s02-end-to-end-music-acceptance`
+- User Stories: `us-w10-s02-001`, `us-w10-s02-002`, `us-w10-s02-003`
 - Branch: `slice/w10-s02-end-to-end-music-acceptance`
 
 ### W10-S03 — End-to-End Business Acceptance
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W10-S03-end-to-end-business-acceptance`
-- User Stories: `US-W10-S03-001`, `US-W10-S03-002`, `US-W10-S03-003`
+- Change: `chg-w10-s03-end-to-end-business-acceptance`
+- User Stories: `us-w10-s03-001`, `us-w10-s03-002`, `us-w10-s03-003`
 - Branch: `slice/w10-s03-end-to-end-business-acceptance`
 
 ### W10-S04 — MVP Completion and Handoff
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W10-S04-mvp-completion-and-handoff`
-- User Stories: `US-W10-S04-001`, `US-W10-S04-002`, `US-W10-S04-003`
+- Change: `chg-w10-s04-mvp-completion-and-handoff`
+- User Stories: `us-w10-s04-001`, `us-w10-s04-002`, `us-w10-s04-003`
 - Branch: `slice/w10-s04-mvp-completion-and-handoff`
 
 
@@ -50,10 +50,10 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W10-S01 | CHG-W10-S01-security-and-governance-hardening | CURSOR | CODEX |
-| W10-S02 | CHG-W10-S02-end-to-end-music-acceptance | CODEX | CURSOR |
-| W10-S03 | CHG-W10-S03-end-to-end-business-acceptance | CURSOR | CODEX |
-| W10-S04 | CHG-W10-S04-mvp-completion-and-handoff | CODEX | CURSOR |
+| w10-s01 | chg-w10-s01-security-and-governance-hardening | CURSOR | CODEX |
+| w10-s02 | chg-w10-s02-end-to-end-music-acceptance | CODEX | CURSOR |
+| w10-s03 | chg-w10-s03-end-to-end-business-acceptance | CURSOR | CODEX |
+| w10-s04 | chg-w10-s04-mvp-completion-and-handoff | CODEX | CURSOR |
 
 ## Exclusions
 

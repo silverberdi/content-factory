@@ -1,4 +1,4 @@
-# W08 Completion Report
+# w08 Completion Report
 
 Status: `INCOMPLETE`
 

@@ -6,7 +6,7 @@ Introduce explicitly deferred production-maturity capabilities without contamina
 
 ## Prerequisite
 
-W10 completed and MVP accepted.
+w10 completed and MVP accepted.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,32 +17,32 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W11-S01-multi-environment-delivery`
-- User Stories: `US-W11-S01-001`, `US-W11-S01-002`
+- Change: `chg-w11-s01-multi-environment-delivery`
+- User Stories: `us-w11-s01-001`, `us-w11-s01-002`
 - Branch: `slice/w11-s01-multi-environment-delivery`
 
 ### W11-S02 — Backup and Recovery
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W11-S02-backup-and-recovery`
-- User Stories: `US-W11-S02-001`, `US-W11-S02-002`
+- Change: `chg-w11-s02-backup-and-recovery`
+- User Stories: `us-w11-s02-001`, `us-w11-s02-002`
 - Branch: `slice/w11-s02-backup-and-recovery`
 
 ### W11-S03 — Advanced Testing and Observability
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W11-S03-advanced-testing-and-observability`
-- User Stories: `US-W11-S03-001`, `US-W11-S03-002`, `US-W11-S03-003`
+- Change: `chg-w11-s03-advanced-testing-and-observability`
+- User Stories: `us-w11-s03-001`, `us-w11-s03-002`, `us-w11-s03-003`
 - Branch: `slice/w11-s03-advanced-testing-and-observability`
 
 ### W11-S04 — Lifecycle and Analytics Evolution
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W11-S04-lifecycle-and-analytics-evolution`
-- User Stories: `US-W11-S04-001`, `US-W11-S04-002`, `US-W11-S04-003`
+- Change: `chg-w11-s04-lifecycle-and-analytics-evolution`
+- User Stories: `us-w11-s04-001`, `us-w11-s04-002`, `us-w11-s04-003`
 - Branch: `slice/w11-s04-lifecycle-and-analytics-evolution`
 
 
@@ -50,10 +50,10 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W11-S01 | CHG-W11-S01-multi-environment-delivery | CURSOR | CODEX |
-| W11-S02 | CHG-W11-S02-backup-and-recovery | CODEX | CURSOR |
-| W11-S03 | CHG-W11-S03-advanced-testing-and-observability | CURSOR | CODEX |
-| W11-S04 | CHG-W11-S04-lifecycle-and-analytics-evolution | CODEX | CURSOR |
+| w11-s01 | chg-w11-s01-multi-environment-delivery | CURSOR | CODEX |
+| w11-s02 | chg-w11-s02-backup-and-recovery | CODEX | CURSOR |
+| w11-s03 | chg-w11-s03-advanced-testing-and-observability | CURSOR | CODEX |
+| w11-s04 | chg-w11-s04-lifecycle-and-analytics-evolution | CODEX | CURSOR |
 
 ## Exclusions
 

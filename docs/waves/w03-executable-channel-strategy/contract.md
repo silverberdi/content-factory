@@ -6,7 +6,7 @@ Create structured AI-assisted channel strategies that become executable only aft
 
 ## Prerequisite
 
-W02 completed with configured editorial lines and channels.
+w02 completed with configured editorial lines and channels.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,24 +17,24 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W03-S01-strategy-authoring`
-- User Stories: `US-W03-S01-001`, `US-W03-S01-002`, `US-W03-S01-003`
+- Change: `chg-w03-s01-strategy-authoring`
+- User Stories: `us-w03-s01-001`, `us-w03-s01-002`, `us-w03-s01-003`
 - Branch: `slice/w03-s01-strategy-authoring`
 
 ### W03-S02 — Strategy Governance
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W03-S02-strategy-governance`
-- User Stories: `US-W03-S02-001`, `US-W03-S02-002`, `US-W03-S02-003`
+- Change: `chg-w03-s02-strategy-governance`
+- User Stories: `us-w03-s02-001`, `us-w03-s02-002`, `us-w03-s02-003`
 - Branch: `slice/w03-s02-strategy-governance`
 
 ### W03-S03 — Calendar, Seasons, and Special Dates
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W03-S03-calendar-seasons-and-special-dates`
-- User Stories: `US-W03-S03-001`, `US-W03-S03-002`, `US-W03-S03-003`
+- Change: `chg-w03-s03-calendar-seasons-and-special-dates`
+- User Stories: `us-w03-s03-001`, `us-w03-s03-002`, `us-w03-s03-003`
 - Branch: `slice/w03-s03-calendar-seasons-and-special-dates`
 
 
@@ -42,9 +42,9 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W03-S01 | CHG-W03-S01-strategy-authoring | CURSOR | CODEX |
-| W03-S02 | CHG-W03-S02-strategy-governance | CODEX | CURSOR |
-| W03-S03 | CHG-W03-S03-calendar-seasons-and-special-dates | CURSOR | CODEX |
+| w03-s01 | chg-w03-s01-strategy-authoring | CURSOR | CODEX |
+| w03-s02 | chg-w03-s02-strategy-governance | CODEX | CURSOR |
+| w03-s03 | chg-w03-s03-calendar-seasons-and-special-dates | CURSOR | CODEX |
 
 ## Exclusions
 

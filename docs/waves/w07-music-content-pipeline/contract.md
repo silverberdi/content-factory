@@ -6,7 +6,7 @@ Deliver a real AI music cycle from idea through a roughly four-minute song, visu
 
 ## Prerequisite
 
-W06 completed and providers, jobs, budgets, notifications, and assets operational.
+w06 completed and providers, jobs, budgets, notifications, and assets operational.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,32 +17,32 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W07-S01-song-planning-and-generation`
-- User Stories: `US-W07-S01-001`, `US-W07-S01-002`, `US-W07-S01-003`
+- Change: `chg-w07-s01-song-planning-and-generation`
+- User Stories: `us-w07-s01-001`, `us-w07-s01-002`, `us-w07-s01-003`
 - Branch: `slice/w07-s01-song-planning-and-generation`
 
 ### W07-S02 — Music Video Assembly
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W07-S02-music-video-assembly`
-- User Stories: `US-W07-S02-001`, `US-W07-S02-002`, `US-W07-S02-003`
+- Change: `chg-w07-s02-music-video-assembly`
+- User Stories: `us-w07-s02-001`, `us-w07-s02-002`, `us-w07-s02-003`
 - Branch: `slice/w07-s02-music-video-assembly`
 
 ### W07-S03 — Music Review and Scheduling
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W07-S03-music-review-and-scheduling`
-- User Stories: `US-W07-S03-001`, `US-W07-S03-002`, `US-W07-S03-003`
+- Change: `chg-w07-s03-music-review-and-scheduling`
+- User Stories: `us-w07-s03-001`, `us-w07-s03-002`, `us-w07-s03-003`
 - Branch: `slice/w07-s03-music-review-and-scheduling`
 
 ### W07-S04 — YouTube and Distribution Package
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W07-S04-youtube-and-distribution-package`
-- User Stories: `US-W07-S04-001`, `US-W07-S04-002`, `US-W07-S04-003`, `US-W07-S04-004`
+- Change: `chg-w07-s04-youtube-and-distribution-package`
+- User Stories: `us-w07-s04-001`, `us-w07-s04-002`, `us-w07-s04-003`, `us-w07-s04-004`
 - Branch: `slice/w07-s04-youtube-and-distribution-package`
 
 
@@ -50,10 +50,10 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W07-S01 | CHG-W07-S01-song-planning-and-generation | CURSOR | CODEX |
-| W07-S02 | CHG-W07-S02-music-video-assembly | CODEX | CURSOR |
-| W07-S03 | CHG-W07-S03-music-review-and-scheduling | CURSOR | CODEX |
-| W07-S04 | CHG-W07-S04-youtube-and-distribution-package | CODEX | CURSOR |
+| w07-s01 | chg-w07-s01-song-planning-and-generation | CURSOR | CODEX |
+| w07-s02 | chg-w07-s02-music-video-assembly | CODEX | CURSOR |
+| w07-s03 | chg-w07-s03-music-review-and-scheduling | CURSOR | CODEX |
+| w07-s04 | chg-w07-s04-youtube-and-distribution-package | CODEX | CURSOR |
 
 ## Exclusions
 

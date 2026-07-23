@@ -6,7 +6,7 @@ Allow only approved Google identities to access the console with role-aware capa
 
 ## Prerequisite
 
-W00 completed and foundations operational.
+w00 completed and foundations operational.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,24 +17,24 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W01-S01-google-oidc-and-allowlist`
-- User Stories: `US-W01-S01-001`, `US-W01-S01-002`, `US-W01-S01-003`
+- Change: `chg-w01-s01-google-oidc-and-allowlist`
+- User Stories: `us-w01-s01-001`, `us-w01-s01-002`, `us-w01-s01-003`
 - Branch: `slice/w01-s01-google-oidc-and-allowlist`
 
 ### W01-S02 — Secure Session Lifecycle
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W01-S02-secure-session-lifecycle`
-- User Stories: `US-W01-S02-001`, `US-W01-S02-002`, `US-W01-S02-003`
+- Change: `chg-w01-s02-secure-session-lifecycle`
+- User Stories: `us-w01-s02-001`, `us-w01-s02-002`, `us-w01-s02-003`
 - Branch: `slice/w01-s02-secure-session-lifecycle`
 
 ### W01-S03 — Session Administration and Authorization
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W01-S03-session-administration-and-authorization`
-- User Stories: `US-W01-S03-001`, `US-W01-S03-002`, `US-W01-S03-003`
+- Change: `chg-w01-s03-session-administration-and-authorization`
+- User Stories: `us-w01-s03-001`, `us-w01-s03-002`, `us-w01-s03-003`
 - Branch: `slice/w01-s03-session-administration-and-authorization`
 
 
@@ -42,9 +42,9 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W01-S01 | CHG-W01-S01-google-oidc-and-allowlist | CURSOR | CODEX |
-| W01-S02 | CHG-W01-S02-secure-session-lifecycle | CODEX | CURSOR |
-| W01-S03 | CHG-W01-S03-session-administration-and-authorization | CURSOR | CODEX |
+| w01-s01 | chg-w01-s01-google-oidc-and-allowlist | CURSOR | CODEX |
+| w01-s02 | chg-w01-s02-secure-session-lifecycle | CODEX | CURSOR |
+| w01-s03 | chg-w01-s03-session-administration-and-authorization | CURSOR | CODEX |
 
 ## Exclusions
 

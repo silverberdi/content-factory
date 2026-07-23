@@ -6,7 +6,7 @@ Deliver evidence-aware, platform-adapted vertical business content from topic to
 
 ## Prerequisite
 
-W07 completed and the first real pipeline proven.
+w07 completed and the first real pipeline proven.
 
 The wave refuses to start when the prerequisite is not proven.
 
@@ -17,32 +17,32 @@ The wave refuses to start when the prerequisite is not proven.
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W08-S01-topic-research-and-script`
-- User Stories: `US-W08-S01-001`, `US-W08-S01-002`, `US-W08-S01-003`, `US-W08-S01-004`
+- Change: `chg-w08-s01-topic-research-and-script`
+- User Stories: `us-w08-s01-001`, `us-w08-s01-002`, `us-w08-s01-003`, `us-w08-s01-004`
 - Branch: `slice/w08-s01-topic-research-and-script`
 
 ### W08-S02 — Voice, Visuals, and Assembly
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W08-S02-voice-visuals-and-assembly`
-- User Stories: `US-W08-S02-001`, `US-W08-S02-002`, `US-W08-S02-003`
+- Change: `chg-w08-s02-voice-visuals-and-assembly`
+- User Stories: `us-w08-s02-001`, `us-w08-s02-002`, `us-w08-s02-003`
 - Branch: `slice/w08-s02-voice-visuals-and-assembly`
 
 ### W08-S03 — Platform Adaptation
 
 - Implementer: `CODEX`
 - Reviewer: `CURSOR`
-- Change: `CHG-W08-S03-platform-adaptation`
-- User Stories: `US-W08-S03-001`, `US-W08-S03-002`, `US-W08-S03-003`
+- Change: `chg-w08-s03-platform-adaptation`
+- User Stories: `us-w08-s03-001`, `us-w08-s03-002`, `us-w08-s03-003`
 - Branch: `slice/w08-s03-platform-adaptation`
 
 ### W08-S04 — Real Multi-platform Publication
 
 - Implementer: `CURSOR`
 - Reviewer: `CODEX`
-- Change: `CHG-W08-S04-real-multi-platform-publication`
-- User Stories: `US-W08-S04-001`, `US-W08-S04-002`, `US-W08-S04-003`, `US-W08-S04-004`
+- Change: `chg-w08-s04-real-multi-platform-publication`
+- User Stories: `us-w08-s04-001`, `us-w08-s04-002`, `us-w08-s04-003`, `us-w08-s04-004`
 - Branch: `slice/w08-s04-real-multi-platform-publication`
 
 
@@ -50,10 +50,10 @@ The wave refuses to start when the prerequisite is not proven.
 
 | Slice | OpenSpec Change | Implementer | Reviewer |
 |---|---|---|---|
-| W08-S01 | CHG-W08-S01-topic-research-and-script | CODEX | CURSOR |
-| W08-S02 | CHG-W08-S02-voice-visuals-and-assembly | CURSOR | CODEX |
-| W08-S03 | CHG-W08-S03-platform-adaptation | CODEX | CURSOR |
-| W08-S04 | CHG-W08-S04-real-multi-platform-publication | CURSOR | CODEX |
+| w08-s01 | chg-w08-s01-topic-research-and-script | CODEX | CURSOR |
+| w08-s02 | chg-w08-s02-voice-visuals-and-assembly | CURSOR | CODEX |
+| w08-s03 | chg-w08-s03-platform-adaptation | CODEX | CURSOR |
+| w08-s04 | chg-w08-s04-real-multi-platform-publication | CURSOR | CODEX |
 
 ## Exclusions
 
