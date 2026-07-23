@@ -9,10 +9,10 @@
 
 - [x] 2.1 Adopt and correct delivery hierarchy docs (`docs/methodology/delivery-methodology.md`, roadmap, backlog, w00 contract/execution plan) for wave → slice → US → OpenSpec tasks
 - [x] 2.2 Adopt and correct branch/PR model docs in methodology, `AGENTS.md`, and `docs/governance/github-governance.md` for `main` / `wave/*` / `slice/*`, including Silverio manual wave→`main` merge
-- [ ] 2.3 Configure or verify basic GitHub protection for `main`: reject direct pushes; reject force pushes and deletion; require pull requests
+- [x] 2.3 Configure or verify basic GitHub protection for `main`: reject direct pushes; reject force pushes and deletion; require pull requests
 - [x] 2.4 Configure or verify that `wave/*` follows the slice-to-wave PR model, slice PRs target `wave/*`, and wave PRs target `main`
-- [ ] 2.5 If GitHub settings require Silverio authorization, prepare exact CLI/UI verification steps, obtain Silverio confirmation, and record it; do not claim protection without evidence
-- [ ] 2.6 Record acceptance evidence for all basic GitHub protections and PR-target rules above (settings export, CLI output, screenshots, or Silverio confirmation)
+- [x] 2.5 If GitHub settings require Silverio authorization, prepare exact CLI/UI verification steps, obtain Silverio confirmation, and record it; do not claim protection without evidence
+- [x] 2.6 Record acceptance evidence for all basic GitHub protections and PR-target rules above (settings export, CLI output, screenshots, or Silverio confirmation)
 - [x] 2.7 Adopt and correct complete-slice ownership and mandatory cross-review wording in wave contract and current-state
 - [x] 2.8 Add or update automated/doc contract checks that fail on future-wave scope markers or missing change-ID binding for w00-s01 User Stories
 - [x] 2.9 Explicitly exclude GitHub Actions checks, Nx validation, CI-driven merge gates, and fully automated slice auto-merge from this slice (owned by w00-s04)
@@ -43,14 +43,14 @@
 ## 6. Synchronization, verification, and closure gates
 
 - [x] 6.1 Synchronize roadmap, backlog, w00 User Stories, w00 wave contract/execution plan, current-state, and decision register as affected by adoption/corrections
-- [ ] 6.2 Optionally open a draft slice PR targeting `wave/w00-project-foundation` for review visibility; keep it non-merge-eligible
+- [x] 6.2 Optionally open a draft slice PR targeting `wave/w00-project-foundation` for review visibility; keep it non-merge-eligible
 - [x] 6.3 Run automated checks applicable to this slice (context scripts/tests, machine-ID validation, and any doc contract checks) to `PASS`
-- [ ] 6.4 Run OpenSpec Verify for this change and obtain result exactly `PASS` (not `PASS WITH NOTES`)
-- [ ] 6.5 Complete any required Silverio human validation (GitHub protection confirmation and any other contract-required `GO`) with recorded evidence
-- [ ] 6.6 Synchronize delta specs into main specs as applicable for this change
-- [ ] 6.7 Archive `chg-w00-s01-repository-governance-and-openspec-foundation` after sync, with no hidden deferred acceptance criteria
-- [ ] 6.8 Regenerate the context pack and confirm `node scripts/context/check-context-pack.mjs` passes
-- [ ] 6.9 Prepare final slice evidence pack (wave/slice/US IDs, implementer/reviewer, change ID, Verify `PASS`, GitHub protection evidence, check outputs, doc/context hashes, zero hidden scope)
+- [x] 6.4 Run OpenSpec Verify for this change and obtain result exactly `PASS` (not `PASS WITH NOTES`)
+- [x] 6.5 Complete any required Silverio human validation (GitHub protection confirmation and any other contract-required `GO`) with recorded evidence
+- [x] 6.6 Synchronize delta specs into main specs as applicable for this change
+- [x] 6.7 Archive `chg-w00-s01-repository-governance-and-openspec-foundation` after sync, with no hidden deferred acceptance criteria
+- [x] 6.8 Regenerate the context pack and confirm `node scripts/context/check-context-pack.mjs` passes
+- [x] 6.9 Prepare final slice evidence pack (wave/slice/US IDs, implementer/reviewer, change ID, Verify `PASS`, GitHub protection evidence, check outputs, doc/context hashes, zero hidden scope)
 - [ ] 6.10 Request final mandatory CODEX cross-review and resolve all `CHANGES_REQUIRED` findings until verdict is `READY_TO_MERGE`
 - [ ] 6.11 Only after 6.3–6.10 succeed, mark the slice PR merge-eligible for `wave/w00-project-foundation` (never push directly to protected wave/`main`)
 - [ ] 6.12 Update current-state only when us-w00-s01-001–004 and the slice are truly complete

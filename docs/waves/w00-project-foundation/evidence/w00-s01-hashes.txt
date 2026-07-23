@@ -1,0 +1,4 @@
+0e2fca8c35875d6056a1a50acdd5cec0f4be81ed1744e2ad3a24d80ef8bb219c  docs/context/generated/current-context-pack.md
+5e2a425f0ccc3ae31daa17ef882a89be6368a7c6683bee4ad366bea9b20bc878  docs/context/generated/context-manifest.json
+315d4bb06134a890774da8aefe20870339077eef2b48f255c8444330b36d2b3b  AGENTS.md
+4b7c68c8fa5a2cea133c04a2f703b0e0e99c66c1b12cadc85567a9f681407613  docs/waves/w00-project-foundation/contract.md

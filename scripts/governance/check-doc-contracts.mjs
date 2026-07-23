@@ -5,7 +5,8 @@
  * - Change proposal binds wave/slice/US/operators and excludes S02–S04 / future waves
  * - Governance docs assign CI automation to w00-s04
  */
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir, access } from 'node:fs/promises';
+import { constants } from 'node:fs';
 import path from 'node:path';
 
 const ROOT = process.cwd();
@@ -71,12 +72,28 @@ async function checkUserStoryBindings() {
   }
 }
 
+async function resolveChangeRel() {
+  const active = `openspec/changes/${CHANGE_ID}`;
+  try {
+    await access(path.join(ROOT, active, 'proposal.md'), constants.R_OK);
+    return active;
+  } catch {
+    // fall through
+  }
+  const archiveRoot = path.join(ROOT, 'openspec/changes/archive');
+  const entries = await readdir(archiveRoot);
+  const match = entries.find((name) => name.endsWith(CHANGE_ID));
+  if (!match) {
+    throw new Error(`change not found active or archived: ${CHANGE_ID}`);
+  }
+  return `openspec/changes/archive/${match}`;
+}
+
 async function checkChangeScope() {
-  const proposal = await read(
-    `openspec/changes/${CHANGE_ID}/proposal.md`,
-  );
-  const tasks = await read(`openspec/changes/${CHANGE_ID}/tasks.md`);
-  const design = await read(`openspec/changes/${CHANGE_ID}/design.md`);
+  const changeRel = await resolveChangeRel();
+  const proposal = await read(`${changeRel}/proposal.md`);
+  const tasks = await read(`${changeRel}/tasks.md`);
+  const design = await read(`${changeRel}/design.md`);
 
   for (const usId of ACTIVE_US) {
     if (!proposal.includes(usId)) {

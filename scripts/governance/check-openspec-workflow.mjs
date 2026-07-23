@@ -10,7 +10,6 @@ import { execFileSync } from 'node:child_process';
 
 const ROOT = process.cwd();
 const CHANGE = 'chg-w00-s01-repository-governance-and-openspec-foundation';
-const CHANGE_DIR = path.join(ROOT, 'openspec/changes', CHANGE);
 
 const REQUIRED_ARTIFACTS = ['proposal.md', 'design.md', 'tasks.md'];
 const REQUIRED_SPEC_CAPS = [
@@ -50,6 +49,22 @@ async function exists(rel) {
   }
 }
 
+async function resolveChangeDir() {
+  const active = path.join(ROOT, 'openspec/changes', CHANGE);
+  if (await exists(path.relative(ROOT, active))) {
+    return active;
+  }
+  const archiveRoot = path.join(ROOT, 'openspec/changes/archive');
+  try {
+    const entries = await readdir(archiveRoot);
+    const match = entries.find((name) => name.endsWith(CHANGE));
+    if (match) return path.join(archiveRoot, match);
+  } catch {
+    // no archive dir
+  }
+  return null;
+}
+
 let version = '';
 try {
   version = execFileSync('openspec', ['--version'], { encoding: 'utf8' }).trim();
@@ -60,22 +75,32 @@ if (version !== '1.6.0') {
   fail(`expected OpenSpec 1.6.0, found ${version || '(empty)'}`);
 }
 
+const changeDir = await resolveChangeDir();
+if (!changeDir) {
+  fail(`change not found active or archived: ${CHANGE}`);
+}
+
 for (const artifact of REQUIRED_ARTIFACTS) {
-  if (!(await exists(path.join('openspec/changes', CHANGE, artifact)))) {
+  const abs = path.join(changeDir, artifact);
+  try {
+    await access(abs, constants.R_OK);
+  } catch {
     fail(`missing apply-required artifact: ${artifact}`);
   }
 }
 
+// After sync/archive, capability specs must exist in main specs.
 for (const cap of REQUIRED_SPEC_CAPS) {
-  const specPath = path.join('openspec/changes', CHANGE, 'specs', cap, 'spec.md');
-  if (!(await exists(specPath))) {
-    fail(`missing capability spec: ${cap}`);
+  const mainSpec = path.join('openspec/specs', cap, 'spec.md');
+  const deltaSpec = path.join(changeDir, 'specs', cap, 'spec.md');
+  if (!(await exists(mainSpec)) && !(await exists(path.relative(ROOT, deltaSpec)))) {
+    fail(`missing capability spec (main or delta): ${cap}`);
   }
 }
 
-const proposal = await readFile(path.join(CHANGE_DIR, 'proposal.md'), 'utf8');
-const design = await readFile(path.join(CHANGE_DIR, 'design.md'), 'utf8');
-const tasks = await readFile(path.join(CHANGE_DIR, 'tasks.md'), 'utf8');
+const proposal = await readFile(path.join(changeDir, 'proposal.md'), 'utf8');
+const design = await readFile(path.join(changeDir, 'design.md'), 'utf8');
+const tasks = await readFile(path.join(changeDir, 'tasks.md'), 'utf8');
 const methodology = await readFile(
   path.join(ROOT, 'docs/methodology/delivery-methodology.md'),
   'utf8',
@@ -104,12 +129,9 @@ if (!methodology.includes('Verify exactly `PASS`') && !methodology.includes('exa
 if (!deviation.includes('exactly `PASS`')) {
   fail('deviation policy must require Verify exactly PASS');
 }
-if (/PASS WITH NOTES/i.test(methodology + deviation) === false) {
-  // Must explicitly reject PASS WITH NOTES somewhere in operating contract
-  const agents = await readFile(path.join(ROOT, 'AGENTS.md'), 'utf8');
-  if (!/PASS WITH NOTES/.test(agents + methodology + deviation)) {
-    fail('operating docs must forbid PASS WITH NOTES as closure');
-  }
+const agents = await readFile(path.join(ROOT, 'AGENTS.md'), 'utf8');
+if (!/PASS WITH NOTES/.test(agents + methodology + deviation)) {
+  fail('operating docs must forbid PASS WITH NOTES as closure');
 }
 
 for (const cmd of REQUIRED_COMMANDS) {
@@ -127,7 +149,6 @@ for (const skill of REQUIRED_SKILLS) {
   }
 }
 
-// Binding checks
 for (const id of ['w00', 'w00-s01', 'us-w00-s01-001', 'CURSOR', 'CODEX']) {
   if (!proposal.includes(id)) {
     fail(`proposal missing binding reference: ${id}`);
@@ -140,5 +161,10 @@ if (!entries.some((name) => name.startsWith('opsx-'))) {
 }
 
 if (!process.exitCode) {
-  console.log('OpenSpec workflow contract PASS (propose→apply→verify-PASS→sync→archive).');
+  const location = changeDir.includes(`${path.sep}archive${path.sep}`)
+    ? 'archived'
+    : 'active';
+  console.log(
+    `OpenSpec workflow contract PASS (propose→apply→verify-PASS→sync→archive; change ${location}).`,
+  );
 }
