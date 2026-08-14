@@ -37,5 +37,5 @@
 
 - [x] 6.1 Execute automated test suite (`dotnet test` and Angular `npm test`)
 - [ ] 6.2 Perform end-to-end human verification flow: register source, trigger sync, submit manual URL and text lead via Quick Submit, preview in drawer, triage candidate, verify dashboard counters
-- [ ] 6.3 Update canonical documentation / backlog status
+- [x] 6.3 Update canonical documentation / backlog status
 - [x] 6.4 Prepare DeepSeek cross-review package and verify change readiness
