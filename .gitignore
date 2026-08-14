@@ -1,34 +1,40 @@
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
-
-# Environment variables
+# secrets
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
+!env/*.example
+**/secrets.*
+**/*.key
+**/*.pem
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# OS Files
-.DS_Store
-Thumbs.db
-
-# IDE & Editors
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Build outputs
+# frontend
+node_modules/
+.angular/
 dist/
-build/
-out/
-.next/
 coverage/
+playwright-report/
+test-results/
+
+# backend
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/*.log
+
+# local runtime
+.runtime/
+.tmp/
+backups-local/
+*.dump
+*.sql.gz
+
+# OpenSpec worksets/local state
+.openspec-workset/
+*.pem
+*.key

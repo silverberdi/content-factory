@@ -1,0 +1,31 @@
+# Canonical Decision Register
+
+- Private product, not SaaS.
+- Two roles: TECHNICAL and EDITORIAL; users may hold both.
+- Owner: silverio.bernal@gmail.com, protected SYSTEM_OWNER.
+- Production auth: Google; invitation-only.
+- Development auth: local GOD mode; impossible in production.
+- Mac is development workstation.
+- Ubuntu is production host.
+- Existing Ubuntu MySQL is used.
+- DBs: content_factory_dev and content_factory_prod.
+- MySQL is not publicly exposed.
+- Cloudflare Tunnel exposes frontend/backend.
+- Default hosts: factory.silverman.pro and factory-core.silverman.pro.
+- n8n has only production workflows; no dev/prod workflow split.
+- MinIO is runtime object storage.
+- Google Drive backup/archive is an automated feature.
+- DeepSeek is default reasoning brain; Gemini configurable alternate.
+- AI routing supports defaults and overrides.
+- Dashboard exists from the first slice and grows incrementally.
+- Desktop full-page scroll only when necessary.
+- Light/dark from first slice.
+- Tailwind + PrimeNG used deeply and consistently.
+- Tablet near-desktop operation; mobile supports urgent/frequent actions.
+- OpenSpec may group multiple specs into a value-oriented change.
+- Every change includes its own human-test data.
+- DeepSeek cross-review is mandatory for change closure.
+- Published lineage is immutable/versioned.
+- Multiple sources per ContentItem supported.
+- Human direct editing is allowed and versioned.
+- Expected first-year concurrency <10 users.

@@ -1,0 +1,101 @@
+schema: spec-driven
+
+context: |
+  Product: Content Factory.
+  Authority: docs/canonical/00_CANONICAL_AUTHORITY.md and .agents/CONTEXT.md.
+  This context is normative. Never silently override canonical project decisions.
+
+  Business:
+  - Private multi-user, multi-channel editorial operating system; not SaaS.
+  - Goal is repeatable original short-form content, measurable channel learning and eventual small recurring income.
+  - Initial channel: IA Simple ES; first publication target YouTube Shorts.
+  - Build useful capability in weeks, not months.
+
+  Users/Security:
+  - SYSTEM_OWNER: silverio.bernal@gmail.com.
+  - Roles: TECHNICAL and EDITORIAL, independently assignable.
+  - EDITORIAL approves videos, publishes and can view costs.
+  - TECHNICAL performs technical/admin capabilities and manages other users/roles.
+  - Owner cannot be deleted, disabled or have protected access removed.
+  - Production authentication is invitation-only Google OAuth/OIDC.
+  - Development on Mac uses explicit development-only GOD bypass.
+  - Production MUST refuse to start with development bypass.
+  - No public MySQL, MinIO or n8n.
+  - Secrets never committed.
+
+  Architecture:
+  - Frontend: Angular 21 stable, standalone, PrimeNG 21 stable, Tailwind CSS 4, PWA.
+  - Backend: ASP.NET Core .NET 10 LTS, REST/OpenAPI, modular monolith.
+  - Database: existing Ubuntu MySQL; content_factory_dev and content_factory_prod.
+  - Development Mac reaches dev DB through SSH tunnel.
+  - Assets: MinIO.
+  - Off-site backup/archive: automated Google Drive feature.
+  - n8n: one production workflow set only; no dev/prod workflow duplication.
+  - Public through Cloudflare Tunnel.
+  - Default hosts: factory.silverman.pro and factory-core.silverman.pro.
+  - Expected first-year concurrency below 10 users.
+
+  AI:
+  - Capability is domain; provider is configuration.
+  - DeepSeek is initial global default reasoning provider.
+  - Gemini is configurable alternate/multimodal provider.
+  - Routing precedence: channel override > capability override > global default.
+  - Store structured rationale/evidence, never private chain-of-thought.
+
+  Domain:
+  - ContentItem is operational aggregate.
+  - Multiple Sources may support one TruthSource.
+  - TruthSource -> ContentIdea -> Script -> production.
+  - Human edits are versioned.
+  - Published lineage is immutable.
+  - Long work is modeled as Job.
+  - Backend is authoritative; use optimistic concurrency.
+
+  UX:
+  - Dashboard is control center from first slice and grows with relevant slices.
+  - It must rapidly show factory health, what needs attention and where to act.
+  - It is not an inbox.
+  - Desktop uses full useful width; page-level vertical scroll only when necessary.
+  - High information density with clear hierarchy; no giant cards/headings/hero sections.
+  - Light/dark from first slice.
+  - Tablet supports near-desktop operation.
+  - Mobile supports urgent/frequent actions including review/approval.
+  - Use PrimeNG/Tailwind consistently and deeply.
+
+  Delivery:
+  - OpenSpec must not become a bottleneck.
+  - A change may contain several specs if together they produce one coherent human-testable increment.
+  - Every change includes seed/test data required for human validation.
+  - DeepSeek cross-review is mandatory before merge.
+  - Global Definition of Done is docs/canonical/16_DEFINITION_OF_DONE.md.
+
+rules:
+  proposal:
+    - State the observable human/business outcome first.
+    - List explicit non-goals and avoid infrastructure-only changes when a vertical value slice is possible.
+    - Identify affected canonical decisions and dashboard impact.
+  specs:
+    - Use objective Given/When/Then scenarios.
+    - Include authorization and negative permission scenarios when applicable.
+    - Include state transitions, audit/versioning, async behavior, error/loading/empty states and responsive UX when applicable.
+    - Every frontend capability must state dashboard impact: add, extend, action, or none.
+  design:
+    - Explain domain boundaries, API/data changes, migrations, security boundaries, frontend composition, observability and test approach.
+    - Do not introduce microservices, Redis, Kubernetes, event buses or speculative infrastructure without a current requirement.
+    - State how development avoids accidental production n8n invocation when orchestration is involved.
+  tasks:
+    - Integrate tests with implementation; do not defer all tests to the end.
+    - Include seed data and a human verification script.
+    - Include canonical documentation synchronization.
+    - Include DeepSeek cross-review and OpenSpec verify before completion.
+
+operations:
+  apply:
+    guidance:
+      - Read .agents/CONTEXT.md and the active change before implementation.
+      - Surface conflicts rather than silently deviating from canonical context.
+      - Execute automated checks after each coherent task group.
+  archive:
+    guidance:
+      - Do not archive until OpenSpec verify, global Definition of Done, human test and DeepSeek cross-review are complete.
+      - Confirm canonical documentation is synchronized.
