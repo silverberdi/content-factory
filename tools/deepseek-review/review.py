@@ -51,6 +51,15 @@ IMPLEMENTATION DIFF:
 
 api_key = os.environ.get("DEEPSEEK_API_KEY")
 if not api_key:
+    env_file = root / ".env"
+    if env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("DEEPSEEK_API_KEY="):
+                api_key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                break
+
+if not api_key:
     print("DEEPSEEK_API_KEY is not configured.", file=sys.stderr)
     sys.exit(3)
 

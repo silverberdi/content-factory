@@ -1,5 +1,6 @@
 using ContentFactory.Api.Modules.Channels;
 using ContentFactory.Api.Modules.Dashboard;
+using ContentFactory.Api.Modules.Discovery;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContentFactory.Api.Infrastructure;
@@ -25,7 +26,6 @@ public class DashboardService(AppDbContext dbContext, IWebHostEnvironment enviro
         var activeCount = channels.Count(c => c.Status == ChannelStatus.Active);
         var pilotCount = channels.Count(c => c.Status == ChannelStatus.Pilot);
 
-        // Real runtime signals available in CF-001 slice
         var dbStatus = dbContext.Database.IsInMemory() 
             ? "InMemory (Test/Fallback)" 
             : "Connected (MySQL/content_factory_dev)";
@@ -42,39 +42,77 @@ public class DashboardService(AppDbContext dbContext, IWebHostEnvironment enviro
             Environment: environment.EnvironmentName
         );
 
+        // Discovery summary & attention items
+        var pendingCandidates = await dbContext.DiscoveryCandidates
+            .CountAsync(c => c.Status == DiscoveryCandidateStatus.PendingReview, cancellationToken);
+        var promotedCandidates = await dbContext.DiscoveryCandidates
+            .CountAsync(c => c.Status == DiscoveryCandidateStatus.Promoted, cancellationToken);
+        var dismissedCandidates = await dbContext.DiscoveryCandidates
+            .CountAsync(c => c.Status == DiscoveryCandidateStatus.Dismissed, cancellationToken);
+
+        var activeSources = await dbContext.DiscoverySources
+            .CountAsync(s => s.Status == DiscoverySourceStatus.Active, cancellationToken);
+        var pausedSources = await dbContext.DiscoverySources
+            .CountAsync(s => s.Status == DiscoverySourceStatus.Paused, cancellationToken);
+        var errorSources = await dbContext.DiscoverySources
+            .CountAsync(s => s.Status == DiscoverySourceStatus.Error, cancellationToken);
+
+        var discoverySummary = new DiscoverySummaryDto(
+            PendingCandidatesCount: pendingCandidates,
+            PromotedCandidatesCount: promotedCandidates,
+            DismissedCandidatesCount: dismissedCandidates,
+            ActiveSourcesCount: activeSources,
+            PausedSourcesCount: pausedSources,
+            ErrorSourcesCount: errorSources
+        );
+
         var attentionItems = new List<AttentionItemDto>();
 
-        // In Development, provide representative attention items to verify the Attention widget
-        if (environment.IsDevelopment())
+        if (pendingCandidates > 0)
         {
-            if (channels.Any(c => c.Status == ChannelStatus.Pilot))
-            {
-                attentionItems.Add(new AttentionItemDto(
-                    Id: Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    Severity: "info",
-                    Title: "Pilot Channel Initialized",
-                    Description: "Pilot channel 'IA Simple ES' is registered and awaiting editorial idea discovery.",
-                    ActionPath: "/channels",
-                    IsRepresentativeDemo: true,
-                    TimestampUtc: DateTime.UtcNow.AddMinutes(-15)
-                ));
+            attentionItems.Add(new AttentionItemDto(
+                Id: Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                Severity: "info",
+                Title: "Candidates Awaiting Triage",
+                Description: $"{pendingCandidates} discovery lead{(pendingCandidates > 1 ? "s" : "")} awaiting editorial review.",
+                ActionPath: "/discovery/triage",
+                IsRepresentativeDemo: false,
+                TimestampUtc: DateTime.UtcNow
+            ));
+        }
 
-                attentionItems.Add(new AttentionItemDto(
-                    Id: Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    Severity: "warning",
-                    Title: "Channel Configuration Check",
-                    Description: "Verify target audience profile and language parameters for Spanish AI niche.",
-                    ActionPath: "/channels",
-                    IsRepresentativeDemo: true,
-                    TimestampUtc: DateTime.UtcNow.AddHours(-1)
-                ));
-            }
+        if (errorSources > 0)
+        {
+            attentionItems.Add(new AttentionItemDto(
+                Id: Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                Severity: "warning",
+                Title: "Discovery Source Error",
+                Description: $"{errorSources} discovery source{(errorSources > 1 ? "s" : "")} encountered feed/sync failures.",
+                ActionPath: "/discovery/sources",
+                IsRepresentativeDemo: false,
+                TimestampUtc: DateTime.UtcNow
+            ));
+        }
+
+        // In Development, provide representative attention items if needed
+        if (environment.IsDevelopment() && channels.Any(c => c.Status == ChannelStatus.Pilot) && attentionItems.Count == 0)
+        {
+            attentionItems.Add(new AttentionItemDto(
+                Id: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Severity: "info",
+                Title: "Pilot Channel Active",
+                Description: "Pilot channel 'IA Simple ES' is active and receiving discovery feeds.",
+                ActionPath: "/channels",
+                IsRepresentativeDemo: true,
+                TimestampUtc: DateTime.UtcNow.AddMinutes(-15)
+            ));
         }
 
         return new DashboardSummaryDto(
             factoryHealth,
             channels,
-            attentionItems
+            attentionItems,
+            discoverySummary
         );
     }
 }

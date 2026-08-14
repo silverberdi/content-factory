@@ -14,6 +14,12 @@ namespace ContentFactory.Api.Tests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    static CustomWebApplicationFactory()
+    {
+        Environment.SetEnvironmentVariable("USE_IN_MEMORY_DB", "true");
+        Environment.SetEnvironmentVariable("AUTH_MODE", "development-bypass");
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
@@ -22,7 +28,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["AUTH_MODE"] = "development-bypass",
-                ["ConnectionStrings:DefaultConnection"] = null // Use in-memory fallback
+                ["USE_IN_MEMORY_DB"] = "true",
+                ["ConnectionStrings:DefaultConnection"] = "Filename=:memory:",
+                ["DATABASE_URL"] = null,
+                ["MYSQL_HOST"] = null,
+                ["MYSQL_DATABASE"] = null,
+                ["MYSQL_USER"] = null
             });
         });
     }

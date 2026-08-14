@@ -1,4 +1,5 @@
 using ContentFactory.Api.Modules.Channels;
+using ContentFactory.Api.Modules.Discovery;
 
 namespace ContentFactory.Api.Modules.Dashboard;
 
@@ -25,7 +26,8 @@ public record AttentionItemDto(
 public record DashboardSummaryDto(
     FactoryHealthDto FactoryHealth,
     List<ChannelDto> Channels,
-    List<AttentionItemDto> AttentionItems
+    List<AttentionItemDto> AttentionItems,
+    DiscoverySummaryDto? Discovery = null
 );
 
 public interface IDashboardService

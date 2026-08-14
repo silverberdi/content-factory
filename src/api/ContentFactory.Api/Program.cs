@@ -3,11 +3,16 @@ using ContentFactory.Api.Infrastructure;
 using ContentFactory.Api.Modules.Audit;
 using ContentFactory.Api.Modules.Channels;
 using ContentFactory.Api.Modules.Dashboard;
+using ContentFactory.Api.Modules.Discovery;
+using ContentFactory.Api.Modules.Discovery.Adapters;
 using ContentFactory.Api.Modules.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 0. Load root .env or .env.development if present
+LoadEnvFile();
 
 // 1. Environment & Auth Mode Configuration
 var authMode = builder.Configuration["AUTH_MODE"] 
@@ -20,23 +25,60 @@ if (builder.Environment.IsProduction() && string.Equals(authMode, "development-b
 }
 
 // 2. Database Persistence Configuration
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? builder.Configuration["DATABASE_URL"];
+var useInMemory = string.Equals(Environment.GetEnvironmentVariable("USE_IN_MEMORY_DB"), "true", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(builder.Configuration["USE_IN_MEMORY_DB"], "true", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(builder.Configuration["DATABASE_PROVIDER"], "in-memory", StringComparison.OrdinalIgnoreCase)
+    || builder.Configuration.GetConnectionString("DefaultConnection")?.StartsWith("Filename=", StringComparison.OrdinalIgnoreCase) == true;
 
-if (!string.IsNullOrWhiteSpace(connectionString) && !connectionString.StartsWith("Filename=", StringComparison.OrdinalIgnoreCase))
+if (useInMemory)
 {
-    builder.Services.AddDbContext<AppDbContext>(options =>
-    {
-        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-    });
-}
-else
-{
-    // Fallback for isolated unit tests / in-memory local testing
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
         options.UseInMemoryDatabase("ContentFactoryDb");
     });
+}
+else
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+        ?? builder.Configuration["DATABASE_URL"];
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        var host = builder.Configuration["MYSQL_HOST"];
+        var port = builder.Configuration["MYSQL_PORT"] ?? "3306";
+        var db = builder.Configuration["MYSQL_DATABASE"];
+        var user = builder.Configuration["MYSQL_USER"];
+        var pass = builder.Configuration["MYSQL_PASSWORD"];
+        if (!string.IsNullOrWhiteSpace(host) && !string.IsNullOrWhiteSpace(db) && !string.IsNullOrWhiteSpace(user))
+        {
+            connectionString = $"Server={host};Port={port};Database={db};User={user};Password={pass};";
+        }
+    }
+
+    if (!string.IsNullOrWhiteSpace(connectionString))
+    {
+        builder.Services.AddDbContext<AppDbContext>(options =>
+        {
+            try
+            {
+                options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 36)), mySqlOptions =>
+                {
+                    mySqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null);
+                });
+            }
+            catch
+            {
+                options.UseInMemoryDatabase("ContentFactoryDb");
+            }
+        });
+    }
+    else
+    {
+        builder.Services.AddDbContext<AppDbContext>(options =>
+        {
+            options.UseInMemoryDatabase("ContentFactoryDb");
+        });
+    }
 }
 
 // 3. Authentication Configuration
@@ -90,13 +132,22 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("RequireUsersRolesManage", policy =>
         policy.RequireAssertion(ctx =>
             ctx.User.IsInRole(Roles.Technical) ||
-            ctx.User.HasClaim("capability", Capabilities.UsersRolesManage)));
+            ctx.User.HasClaim("capability", Capabilities.UsersRolesManage)))
+    .AddPolicy("RequireDiscoveryManage", policy =>
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole(Roles.Technical) ||
+            ctx.User.IsInRole(Roles.Editorial) ||
+            ctx.User.HasClaim("capability", Capabilities.ChannelManage)));
 
 // 5. Domain & Infrastructure Services
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IChannelService, ChannelService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ISourceSyncAdapter, FeedSyncAdapter>();
+builder.Services.AddScoped<IDiscoveryService, DiscoveryService>();
+builder.Services.AddHostedService<DiscoveryBackgroundSyncService>();
 
 // 6. Controllers & OpenAPI
 builder.Services.AddControllers();
@@ -145,4 +196,54 @@ catch (Exception ex)
 app.Run();
 
 // Make the implicit Program class public so test projects can access it
-public partial class Program { }
+public partial class Program 
+{
+    public static void LoadEnvFile()
+    {
+        var currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (currentDir != null)
+        {
+            var envFile = Path.Combine(currentDir.FullName, ".env");
+            if (File.Exists(envFile))
+            {
+                ParseAndApplyEnv(envFile);
+                break;
+            }
+            var envDevFile = Path.Combine(currentDir.FullName, ".env.development");
+            if (File.Exists(envDevFile))
+            {
+                ParseAndApplyEnv(envDevFile);
+                break;
+            }
+            currentDir = currentDir.Parent;
+        }
+    }
+
+    private static void ParseAndApplyEnv(string path)
+    {
+        foreach (var line in File.ReadAllLines(path))
+        {
+            var trimmed = line.Trim();
+            if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith('#'))
+                continue;
+
+            var separatorIndex = trimmed.IndexOf('=');
+            if (separatorIndex <= 0)
+                continue;
+
+            var key = trimmed[..separatorIndex].Trim();
+            var value = trimmed[(separatorIndex + 1)..].Trim();
+
+            if ((value.StartsWith('"') && value.EndsWith('"')) || (value.StartsWith('\'') && value.EndsWith('\'')))
+            {
+                value = value[1..^1];
+            }
+
+            if (Environment.GetEnvironmentVariable(key) == null)
+            {
+                Environment.SetEnvironmentVariable(key, value);
+            }
+        }
+    }
+}
+

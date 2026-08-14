@@ -5,7 +5,9 @@ import { ApiService, DashboardSummaryDto, ChannelDto } from '../../core/api.serv
 import { FactoryHealthWidgetComponent } from './factory-health-widget.component';
 import { ChannelSummaryWidgetComponent } from './channel-summary-widget.component';
 import { AttentionWidgetComponent } from './attention-widget.component';
+import { DiscoverySummaryWidgetComponent } from './discovery-summary-widget.component';
 import { ChannelDrawerComponent } from '../channels/channel-drawer.component';
+import { QuickSubmitModalComponent } from '../discovery/quick-submit-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,7 +17,9 @@ import { ChannelDrawerComponent } from '../channels/channel-drawer.component';
     FactoryHealthWidgetComponent,
     ChannelSummaryWidgetComponent,
     AttentionWidgetComponent,
-    ChannelDrawerComponent
+    DiscoverySummaryWidgetComponent,
+    ChannelDrawerComponent,
+    QuickSubmitModalComponent
   ],
   template: `
     <div class="space-y-4 max-w-full">
@@ -32,6 +36,10 @@ import { ChannelDrawerComponent } from '../channels/channel-drawer.component';
             <i class="pi pi-refresh" [ngClass]="{ 'animate-spin': isLoading() }"></i> 
             <span>Refresh</span>
           </button>
+          <button (click)="isQuickSubmitOpen = true" 
+                  class="px-3.5 py-1.5 rounded-lg bg-[var(--app-card-bg)] border border-[var(--app-card-border)] hover:bg-[var(--app-surface-hover)] text-[var(--app-text)] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs">
+            <i class="pi pi-bolt text-amber-500 text-[10px]"></i> <span>Quick Submit</span>
+          </button>
           <button (click)="openCreateChannel()" 
                   class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer">
             <i class="pi pi-plus text-[10px]"></i> <span>New Channel</span>
@@ -46,8 +54,8 @@ import { ChannelDrawerComponent } from '../channels/channel-drawer.component';
           <app-factory-health-widget [health]="summary()?.factoryHealth || null"></app-factory-health-widget>
         </div>
 
-        <!-- Channel Summary: 7 cols on Desktop -->
-        <div class="lg:col-span-7">
+        <!-- Channel Summary: 6 cols on Desktop -->
+        <div class="lg:col-span-6">
           <app-channel-summary-widget 
             [channels]="summary()?.channels || []"
             (onCreateChannel)="openCreateChannel()"
@@ -56,8 +64,16 @@ import { ChannelDrawerComponent } from '../channels/channel-drawer.component';
           </app-channel-summary-widget>
         </div>
 
-        <!-- Attention & Actions: 5 cols on Desktop -->
-        <div class="lg:col-span-5">
+        <!-- Discovery Summary Widget: 6 cols on Desktop -->
+        <div class="lg:col-span-6">
+          <app-discovery-summary-widget 
+            [summary]="summary()?.discovery || null"
+            (onQuickSubmit)="isQuickSubmitOpen = true">
+          </app-discovery-summary-widget>
+        </div>
+
+        <!-- Attention & Actions: 12 cols on Desktop -->
+        <div class="lg:col-span-12">
           <app-attention-widget [items]="summary()?.attentionItems || []"></app-attention-widget>
         </div>
       </div>
@@ -69,6 +85,14 @@ import { ChannelDrawerComponent } from '../channels/channel-drawer.component';
         (onClose)="isDrawerVisible = false"
         (onSaved)="handleChannelSaved($event)">
       </app-channel-drawer>
+
+      <!-- Quick Submit Modal -->
+      <app-quick-submit-modal
+        [isOpen]="isQuickSubmitOpen"
+        [channels]="summary()?.channels || []"
+        (onClose)="isQuickSubmitOpen = false"
+        (onSubmitted)="onQuickSubmitted()">
+      </app-quick-submit-modal>
     </div>
   `
 })
@@ -80,6 +104,7 @@ export class DashboardComponent implements OnInit {
   readonly isLoading = signal<boolean>(false);
 
   isDrawerVisible: boolean = false;
+  isQuickSubmitOpen: boolean = false;
   selectedChannel: ChannelDto | null = null;
 
   ngOnInit(): void {
@@ -112,6 +137,10 @@ export class DashboardComponent implements OnInit {
 
   goToChannels(): void {
     this.router.navigate(['/channels']);
+  }
+
+  onQuickSubmitted(): void {
+    this.refresh();
   }
 
   handleChannelSaved(channel: ChannelDto): void {

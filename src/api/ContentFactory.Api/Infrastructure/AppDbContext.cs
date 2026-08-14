@@ -1,5 +1,6 @@
 using ContentFactory.Api.Modules.Audit;
 using ContentFactory.Api.Modules.Channels;
+using ContentFactory.Api.Modules.Discovery;
 using ContentFactory.Api.Modules.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UserInvitation> UserInvitations => Set<UserInvitation>();
     public DbSet<Channel> Channels => Set<Channel>();
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<DiscoverySource> DiscoverySources => Set<DiscoverySource>();
+    public DbSet<DiscoveryCandidate> DiscoveryCandidates => Set<DiscoveryCandidate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -80,5 +83,46 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(a => a.TimestampUtc).IsRequired();
             entity.HasIndex(a => a.TimestampUtc);
         });
+
+        modelBuilder.Entity<DiscoverySource>(entity =>
+        {
+            entity.ToTable("discovery_sources");
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.ChannelId).IsRequired();
+            entity.Property(s => s.Name).IsRequired().HasMaxLength(256);
+            entity.Property(s => s.OriginUrl).IsRequired().HasMaxLength(1024);
+            entity.Property(s => s.SourceType).IsRequired().HasMaxLength(32);
+            entity.Property(s => s.Language).IsRequired().HasMaxLength(16);
+            entity.Property(s => s.Status).IsRequired().HasMaxLength(32);
+            entity.Property(s => s.LastErrorMessage).HasMaxLength(2048);
+            entity.Property(s => s.CreatedAtUtc).IsRequired();
+            entity.Property(s => s.UpdatedAtUtc).IsRequired();
+            entity.HasIndex(s => new { s.ChannelId, s.OriginUrl }).IsUnique();
+            entity.HasIndex(s => s.Status);
+        });
+
+        modelBuilder.Entity<DiscoveryCandidate>(entity =>
+        {
+            entity.ToTable("discovery_candidates");
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.ChannelId).IsRequired();
+            entity.Property(c => c.ExternalUrl).HasMaxLength(1024);
+            entity.Property(c => c.NormalizedUrl).HasMaxLength(1024);
+            entity.Property(c => c.Title).IsRequired().HasMaxLength(512);
+            entity.Property(c => c.Language).IsRequired().HasMaxLength(16);
+            entity.Property(c => c.Author).HasMaxLength(256);
+            entity.Property(c => c.Status).IsRequired().HasMaxLength(32);
+            entity.Property(c => c.OriginType).IsRequired().HasMaxLength(32);
+            entity.Property(c => c.SubmitterEmail).HasMaxLength(256);
+            entity.Property(c => c.DismissalReason).HasMaxLength(512);
+            entity.Property(c => c.EditorialNotes).HasMaxLength(2048);
+            entity.Property(c => c.PromotedByEmail).HasMaxLength(256);
+            entity.Property(c => c.DiscoveredAtUtc).IsRequired();
+            entity.Property(c => c.CreatedAtUtc).IsRequired();
+            entity.HasIndex(c => new { c.ChannelId, c.NormalizedUrl });
+            entity.HasIndex(c => new { c.Status, c.DiscoveredAtUtc });
+            entity.HasIndex(c => c.DiscoverySourceId);
+        });
     }
 }
+

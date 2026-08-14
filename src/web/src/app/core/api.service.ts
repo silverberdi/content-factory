@@ -34,10 +34,20 @@ export interface ChannelDto {
   updatedAtUtc: string;
 }
 
+export interface DiscoverySummaryDto {
+  pendingCandidatesCount: number;
+  promotedCandidatesCount: number;
+  dismissedCandidatesCount: number;
+  activeSourcesCount: number;
+  pausedSourcesCount: number;
+  errorSourcesCount: number;
+}
+
 export interface DashboardSummaryDto {
   factoryHealth: FactoryHealthDto;
   channels: ChannelDto[];
   attentionItems: AttentionItemDto[];
+  discovery?: DiscoverySummaryDto;
 }
 
 export interface CreateChannelRequest {
@@ -79,6 +89,80 @@ export interface AuditEventDto {
   detailsJson: string | null;
   correlationId: string | null;
   timestampUtc: string;
+}
+
+export interface DiscoverySourceDto {
+  id: string;
+  channelId: string;
+  channelName?: string;
+  name: string;
+  originUrl: string;
+  sourceType: string;
+  language: string;
+  pollingIntervalMinutes: number;
+  status: 'Active' | 'Paused' | 'Error';
+  lastSyncAtUtc: string | null;
+  nextSyncAtUtc: string | null;
+  failureCount: number;
+  lastErrorMessage: string | null;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+}
+
+export interface CreateDiscoverySourceRequest {
+  channelId: string;
+  name: string;
+  originUrl: string;
+  sourceType?: string;
+  language?: string;
+  pollingIntervalMinutes?: number;
+}
+
+export interface UpdateDiscoverySourceRequest {
+  name: string;
+  originUrl: string;
+  sourceType?: string;
+  language?: string;
+  pollingIntervalMinutes?: number;
+  status?: string;
+}
+
+export interface DiscoveryCandidateDto {
+  id: string;
+  channelId: string;
+  channelName?: string;
+  discoverySourceId: string | null;
+  sourceName: string | null;
+  externalUrl: string | null;
+  normalizedUrl: string | null;
+  title: string;
+  summary: string | null;
+  rawContent: string | null;
+  language: string;
+  author: string | null;
+  discoveredAtUtc: string;
+  status: 'PendingReview' | 'Promoted' | 'Dismissed';
+  originType: 'Automated' | 'Manual';
+  submitterEmail: string | null;
+  dismissalReason: string | null;
+  editorialNotes: string | null;
+  promotedAtUtc: string | null;
+  promotedByEmail: string | null;
+  createdAtUtc: string;
+}
+
+export interface QuickSubmitCandidateRequest {
+  channelId: string;
+  externalUrl?: string | null;
+  title?: string;
+  summary?: string | null;
+  language?: string;
+}
+
+export interface TriageCandidateRequest {
+  status: 'PendingReview' | 'Promoted' | 'Dismissed';
+  dismissalReason?: string | null;
+  editorialNotes?: string | null;
 }
 
 @Injectable({
@@ -138,5 +222,67 @@ export class ApiService {
 
   getRecentAuditEvents(limit: number = 50): Observable<AuditEventDto[]> {
     return this.http.get<AuditEventDto[]>(`${this.baseUrl}/audit/recent?limit=${limit}`);
+  }
+
+  // --- Discovery Endpoints ---
+
+  getDiscoverySources(channelId?: string, status?: string): Observable<DiscoverySourceDto[]> {
+    let params: string[] = [];
+    if (channelId) params.push(`channelId=${encodeURIComponent(channelId)}`);
+    if (status) params.push(`status=${encodeURIComponent(status)}`);
+    const query = params.length > 0 ? `?${params.join('&')}` : '';
+    return this.http.get<DiscoverySourceDto[]>(`${this.baseUrl}/discovery/sources${query}`);
+  }
+
+  getDiscoverySourceById(id: string): Observable<DiscoverySourceDto> {
+    return this.http.get<DiscoverySourceDto>(`${this.baseUrl}/discovery/sources/${id}`);
+  }
+
+  createDiscoverySource(request: CreateDiscoverySourceRequest): Observable<DiscoverySourceDto> {
+    return this.http.post<DiscoverySourceDto>(`${this.baseUrl}/discovery/sources`, request);
+  }
+
+  updateDiscoverySource(id: string, request: UpdateDiscoverySourceRequest): Observable<DiscoverySourceDto> {
+    return this.http.put<DiscoverySourceDto>(`${this.baseUrl}/discovery/sources/${id}`, request);
+  }
+
+  deleteDiscoverySource(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/discovery/sources/${id}`);
+  }
+
+  syncDiscoverySource(id: string): Observable<{ synced: boolean; newItemsCount: number }> {
+    return this.http.post<{ synced: boolean; newItemsCount: number }>(`${this.baseUrl}/discovery/sources/${id}/sync`, {});
+  }
+
+  getDiscoveryCandidates(
+    channelId?: string,
+    status?: string,
+    sourceId?: string,
+    search?: string,
+    limit: number = 100
+  ): Observable<DiscoveryCandidateDto[]> {
+    let params: string[] = [`limit=${limit}`];
+    if (channelId) params.push(`channelId=${encodeURIComponent(channelId)}`);
+    if (status) params.push(`status=${encodeURIComponent(status)}`);
+    if (sourceId) params.push(`sourceId=${encodeURIComponent(sourceId)}`);
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
+    return this.http.get<DiscoveryCandidateDto[]>(`${this.baseUrl}/discovery/candidates?${params.join('&')}`);
+  }
+
+  getDiscoveryCandidateById(id: string): Observable<DiscoveryCandidateDto> {
+    return this.http.get<DiscoveryCandidateDto>(`${this.baseUrl}/discovery/candidates/${id}`);
+  }
+
+  quickSubmitCandidate(request: QuickSubmitCandidateRequest): Observable<DiscoveryCandidateDto> {
+    return this.http.post<DiscoveryCandidateDto>(`${this.baseUrl}/discovery/candidates/manual`, request);
+  }
+
+  triageCandidate(id: string, request: TriageCandidateRequest): Observable<DiscoveryCandidateDto> {
+    return this.http.post<DiscoveryCandidateDto>(`${this.baseUrl}/discovery/candidates/${id}/triage`, request);
+  }
+
+  getDiscoverySummary(channelId?: string): Observable<DiscoverySummaryDto> {
+    const query = channelId ? `?channelId=${encodeURIComponent(channelId)}` : '';
+    return this.http.get<DiscoverySummaryDto>(`${this.baseUrl}/discovery/summary${query}`);
   }
 }

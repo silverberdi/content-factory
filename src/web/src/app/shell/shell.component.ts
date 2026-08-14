@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeService } from '../core/theme.service';
 import { AuthService } from '../core/auth.service';
+import { ApiService } from '../core/api.service';
 
 @Component({
   selector: 'app-shell',
@@ -27,17 +28,38 @@ import { AuthService } from '../core/auth.service';
         </div>
 
         <!-- Center: Primary Navigation Links -->
-        <nav class="flex items-center gap-1.5 p-1 rounded-xl bg-[var(--app-bg)] border border-[var(--app-card-border)]">
+        <nav class="flex items-center gap-1.5 p-1 rounded-xl bg-[var(--app-bg)] border border-[var(--app-card-border)] overflow-x-auto">
+          <!-- Overview -->
           <a routerLink="/dashboard" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-3.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-2">
+             class="px-3 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
             <i class="pi pi-th-large text-xs"></i> <span>Overview</span>
           </a>
+
+          <!-- Discovery Triage with Pending Badge -->
+          <a routerLink="/discovery/triage" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
+             class="px-3 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
+            <i class="pi pi-filter text-xs"></i> <span>Discovery Triage</span>
+            <span *ngIf="pendingCandidatesCount() > 0" 
+                  class="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-900 font-extrabold text-[10px] font-mono leading-none">
+              {{ pendingCandidatesCount() }}
+            </span>
+          </a>
+
+          <!-- Discovery Sources -->
+          <a routerLink="/discovery/sources" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
+             class="px-3 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
+            <i class="pi pi-compass text-xs"></i> <span>Sources</span>
+          </a>
+
+          <!-- Channels -->
           <a routerLink="/channels" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-3.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-2">
+             class="px-3 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
             <i class="pi pi-video text-xs"></i> <span>Channels</span>
           </a>
+
+          <!-- System -->
           <a routerLink="/system" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-3.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-2">
+             class="px-3 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
             <i class="pi pi-shield text-xs"></i> <span>System</span>
           </a>
         </nav>
@@ -87,7 +109,21 @@ import { AuthService } from '../core/auth.service';
     </div>
   `
 })
-export class ShellComponent {
+export class ShellComponent implements OnInit {
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
+  private readonly api = inject(ApiService);
+
+  pendingCandidatesCount = signal<number>(0);
+
+  ngOnInit() {
+    this.refreshSummary();
+  }
+
+  refreshSummary() {
+    this.api.getDiscoverySummary().subscribe({
+      next: (summary) => this.pendingCandidatesCount.set(summary.pendingCandidatesCount),
+      error: () => {}
+    });
+  }
 }

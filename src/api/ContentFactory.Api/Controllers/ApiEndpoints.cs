@@ -2,6 +2,7 @@ using System.Security.Claims;
 using ContentFactory.Api.Modules.Audit;
 using ContentFactory.Api.Modules.Channels;
 using ContentFactory.Api.Modules.Dashboard;
+using ContentFactory.Api.Modules.Discovery;
 using ContentFactory.Api.Modules.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -245,3 +246,186 @@ public class AuditController(IAuditService auditService) : ControllerBase
         return Ok(events);
     }
 }
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class DiscoveryController(IDiscoveryService discoveryService) : ControllerBase
+{
+    [HttpGet("sources")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<List<DiscoverySourceDto>>> GetSources([FromQuery] Guid? channelId, [FromQuery] string? status, CancellationToken cancellationToken)
+    {
+        var sources = await discoveryService.GetSourcesAsync(channelId, status, cancellationToken);
+        return Ok(sources);
+    }
+
+    [HttpGet("sources/{id:guid}")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<DiscoverySourceDto>> GetSourceById(Guid id, CancellationToken cancellationToken)
+    {
+        var source = await discoveryService.GetSourceByIdAsync(id, cancellationToken);
+        if (source == null) return NotFound();
+        return Ok(source);
+    }
+
+    [HttpPost("sources")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<DiscoverySourceDto>> CreateSource([FromBody] CreateDiscoverySourceRequest request, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var email = GetCurrentUserEmail();
+
+        try
+        {
+            var source = await discoveryService.CreateSourceAsync(request, userId, email, cancellationToken);
+            return CreatedAtAction(nameof(GetSourceById), new { id = source.Id }, source);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("sources/{id:guid}")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<DiscoverySourceDto>> UpdateSource(Guid id, [FromBody] UpdateDiscoverySourceRequest request, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var email = GetCurrentUserEmail();
+
+        try
+        {
+            var source = await discoveryService.UpdateSourceAsync(id, request, userId, email, cancellationToken);
+            return Ok(source);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    [HttpDelete("sources/{id:guid}")]
+    [Authorize(Policy = "RequireTechnical")]
+    public async Task<IActionResult> DeleteSource(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var email = GetCurrentUserEmail();
+
+        try
+        {
+            await discoveryService.DeleteSourceAsync(id, userId, email, cancellationToken);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("sources/{id:guid}/sync")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<object>> SyncSource(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var email = GetCurrentUserEmail();
+
+        try
+        {
+            var newItemsCount = await discoveryService.SyncSourceAsync(id, userId, email, cancellationToken);
+            return Ok(new { synced = true, newItemsCount });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("candidates")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<List<DiscoveryCandidateDto>>> GetCandidates(
+        [FromQuery] Guid? channelId,
+        [FromQuery] string? status,
+        [FromQuery] Guid? sourceId,
+        [FromQuery] string? search,
+        [FromQuery] int limit = 100,
+        CancellationToken cancellationToken = default)
+    {
+        var candidates = await discoveryService.GetCandidatesAsync(channelId, status, sourceId, search, limit, cancellationToken);
+        return Ok(candidates);
+    }
+
+    [HttpGet("candidates/{id:guid}")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<DiscoveryCandidateDto>> GetCandidateById(Guid id, CancellationToken cancellationToken)
+    {
+        var candidate = await discoveryService.GetCandidateByIdAsync(id, cancellationToken);
+        if (candidate == null) return NotFound();
+        return Ok(candidate);
+    }
+
+    [HttpPost("candidates/manual")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<DiscoveryCandidateDto>> QuickSubmitCandidate([FromBody] QuickSubmitCandidateRequest request, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var email = GetCurrentUserEmail();
+
+        try
+        {
+            var candidate = await discoveryService.QuickSubmitCandidateAsync(request, userId, email, cancellationToken);
+            return CreatedAtAction(nameof(GetCandidateById), new { id = candidate.Id }, candidate);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("candidates/{id:guid}/triage")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<DiscoveryCandidateDto>> TriageCandidate(Guid id, [FromBody] TriageCandidateRequest request, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var email = GetCurrentUserEmail();
+
+        try
+        {
+            var candidate = await discoveryService.TriageCandidateAsync(id, request, userId, email, cancellationToken);
+            return Ok(candidate);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("summary")]
+    [Authorize(Policy = "RequireDiscoveryManage")]
+    public async Task<ActionResult<DiscoverySummaryDto>> GetSummary([FromQuery] Guid? channelId, CancellationToken cancellationToken)
+    {
+        var summary = await discoveryService.GetSummaryAsync(channelId, cancellationToken);
+        return Ok(summary);
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(idClaim, out var id) ? id : Guid.Empty;
+    }
+
+    private string GetCurrentUserEmail() => User.FindFirstValue(ClaimTypes.Email) ?? "anonymous";
+}
+
