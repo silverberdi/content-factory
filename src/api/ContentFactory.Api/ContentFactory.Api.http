@@ -1,0 +1,6 @@
+@ContentFactory.Api_HostAddress = http://localhost:5027
+
+GET {{ContentFactory.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

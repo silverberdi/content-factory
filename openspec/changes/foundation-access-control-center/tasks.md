@@ -1,29 +1,29 @@
 # Tasks — Foundation Access Control Center
 
-- [ ] Read canonical context and produce Antigravity Plan Gate artifact.
-- [ ] Scaffold .NET 10 API and Angular 21 PWA with strict TypeScript.
-- [ ] Configure PrimeNG 21 stable, Tailwind 4 and light/dark theme foundation.
-- [ ] Establish modular backend boundaries and OpenAPI.
-- [ ] Configure MySQL environment settings and migrations.
-- [ ] Implement DevelopmentBypassAuthenticationProvider and production fail-fast guard.
-- [ ] Implement GoogleAuthenticationProvider boundary/configuration without committing secrets.
-- [ ] Implement SYSTEM_OWNER, roles, capabilities and authorization policies.
-- [ ] Implement invitations/activation/role administration baseline.
-- [ ] Implement owner protection and negative authorization tests.
-- [ ] Implement Audit foundation.
-- [ ] Implement Channel domain/API with audit and authorization.
-- [ ] Implement development seed/reset and production-safe bootstrap.
-- [ ] Implement responsive application shell.
-- [ ] Implement dashboard composable widgets: factory health, channel summary, attention summary.
-- [ ] Implement responsive Channel management with efficient dialog/drawer behavior.
-- [ ] Add loading/empty/error/permission UX states.
-- [ ] Add backend unit/integration/security tests.
-- [ ] Add frontend/component/e2e tests.
-- [ ] Run browser verification at 390x844, 768x1024, 1440x900 and 1920x1080 in light/dark.
-- [ ] Verify no avoidable full-page desktop scroll on primary dashboard.
-- [ ] Generate human-test walkthrough.
-- [ ] Run `openspec validate foundation-access-control-center`.
-- [ ] Run `/opsx:verify foundation-access-control-center` and resolve all CRITICAL findings.
-- [ ] Run DeepSeek cross-review and reconcile CHANGES_REQUIRED findings.
-- [ ] Synchronize canonical documentation if implementation required an explicitly authorized detail update.
-- [ ] Produce final READY_TO_HUMAN_TEST evidence.
+- [x] Read canonical context and produce Antigravity Plan Gate artifact.
+- [x] Scaffold .NET 10 API and Angular 21 PWA with strict TypeScript.
+- [x] Configure PrimeNG 21 stable, Tailwind 4 and light/dark theme foundation.
+- [x] Establish modular backend boundaries and OpenAPI.
+- [x] Configure MySQL environment settings and migrations.
+- [x] Implement DevelopmentBypassAuthenticationProvider and production fail-fast guard.
+- [x] Implement GoogleAuthenticationProvider boundary/configuration without committing secrets.
+- [x] Implement SYSTEM_OWNER, roles, capabilities and authorization policies.
+- [x] Implement invitations/activation/role administration baseline.
+- [x] Implement owner protection and negative authorization tests.
+- [x] Implement Audit foundation.
+- [x] Implement Channel domain/API with audit and authorization.
+- [x] Implement development seed/reset and production-safe bootstrap.
+- [x] Implement responsive application shell.
+- [x] Implement dashboard composable widgets: factory health, channel summary, attention summary.
+- [x] Implement responsive Channel management with efficient dialog/drawer behavior.
+- [x] Add loading/empty/error/permission UX states.
+- [x] Add backend unit/integration/security tests.
+- [x] Add frontend/component/e2e tests.
+- [x] Run browser verification at 390x844, 768x1024, 1440x900 and 1920x1080 in light/dark.
+- [x] Verify no avoidable full-page desktop scroll on primary dashboard.
+- [x] Generate human-test walkthrough.
+- [x] Run `openspec validate foundation-access-control-center`.
+- [x] Run `/opsx:verify foundation-access-control-center` and resolve all CRITICAL findings.
+- [x] Run DeepSeek cross-review and reconcile CHANGES_REQUIRED findings.
+- [x] Synchronize canonical documentation if implementation required an explicitly authorized detail update.
+- [x] Produce final READY_TO_HUMAN_TEST evidence.
