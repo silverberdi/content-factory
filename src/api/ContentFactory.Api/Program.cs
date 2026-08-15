@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using ContentFactory.Api.Infrastructure;
+using ContentFactory.Api.Modules.Ai;
 using ContentFactory.Api.Modules.Audit;
 using ContentFactory.Api.Modules.Channels;
+using ContentFactory.Api.Modules.Content;
 using ContentFactory.Api.Modules.Dashboard;
 using ContentFactory.Api.Modules.Discovery;
 using ContentFactory.Api.Modules.Discovery.Adapters;
@@ -148,6 +150,11 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISourceSyncAdapter, FeedSyncAdapter>();
 builder.Services.AddScoped<IDiscoveryService, DiscoveryService>();
 builder.Services.AddHostedService<DiscoveryBackgroundSyncService>();
+builder.Services.AddScoped<IAiProviderRouter, AiProviderRouter>();
+builder.Services.AddScoped<IEvidenceCaptureService, EvidenceCaptureService>();
+builder.Services.AddScoped<IContentService, ContentService>();
+builder.Services.AddScoped<ITruthSourceService, TruthSourceService>();
+builder.Services.AddScoped<IEditorialTaskService, EditorialTaskService>();
 
 // 6. Controllers & OpenAPI
 builder.Services.AddControllers();

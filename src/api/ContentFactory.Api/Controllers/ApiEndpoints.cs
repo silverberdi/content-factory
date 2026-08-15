@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using ContentFactory.Api.Modules.Audit;
 using ContentFactory.Api.Modules.Channels;
+using ContentFactory.Api.Modules.Content;
 using ContentFactory.Api.Modules.Dashboard;
 using ContentFactory.Api.Modules.Discovery;
 using ContentFactory.Api.Modules.Identity;
@@ -250,7 +251,9 @@ public class AuditController(IAuditService auditService) : ControllerBase
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class DiscoveryController(IDiscoveryService discoveryService) : ControllerBase
+public class DiscoveryController(
+    IDiscoveryService discoveryService,
+    IContentService contentService) : ControllerBase
 {
     [HttpGet("sources")]
     [Authorize(Policy = "RequireDiscoveryManage")]
@@ -412,6 +415,44 @@ public class DiscoveryController(IDiscoveryService discoveryService) : Controlle
         }
     }
 
+    [HttpPost("candidates/{id:guid}/initiate-content")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ContentItemDto>> InitiateContentFromCandidate(
+        Guid id,
+        [FromBody] InitiateContentFromCandidateRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var item = await contentService.InitiateContentFromCandidateAsync(id, request, email, cancellationToken);
+            return Ok(item);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("candidates/{id:guid}/attach-to-content")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ContentItemEvidenceDto>> AttachCandidateToContent(
+        Guid id,
+        [FromBody] AttachCandidateToContentRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var evidence = await contentService.AttachCandidateToContentAsync(id, request, email, cancellationToken);
+            return Ok(evidence);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpGet("summary")]
     [Authorize(Policy = "RequireDiscoveryManage")]
     public async Task<ActionResult<DiscoverySummaryDto>> GetSummary([FromQuery] Guid? channelId, CancellationToken cancellationToken)
@@ -428,4 +469,5 @@ public class DiscoveryController(IDiscoveryService discoveryService) : Controlle
 
     private string GetCurrentUserEmail() => User.FindFirstValue(ClaimTypes.Email) ?? "anonymous";
 }
+
 

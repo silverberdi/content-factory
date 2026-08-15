@@ -1,4 +1,5 @@
 using ContentFactory.Api.Modules.Channels;
+using ContentFactory.Api.Modules.Content;
 using ContentFactory.Api.Modules.Dashboard;
 using ContentFactory.Api.Modules.Discovery;
 using Microsoft.EntityFrameworkCore;
@@ -66,7 +67,39 @@ public class DashboardService(AppDbContext dbContext, IWebHostEnvironment enviro
             ErrorSourcesCount: errorSources
         );
 
+        // Content Pipeline summary & attention items
+        var totalContentItems = await dbContext.ContentItems.CountAsync(cancellationToken);
+        var draftingEvidenceCount = await dbContext.ContentItems
+            .CountAsync(c => c.Stage == ContentItemStage.DraftingEvidence, cancellationToken);
+        var truthSourceApprovedCount = await dbContext.ContentItems
+            .CountAsync(c => c.Stage == ContentItemStage.TruthSourceApproved, cancellationToken);
+        var underReviewTruthSources = await dbContext.TruthSources
+            .CountAsync(t => t.Status == TruthSourceStatus.UnderReview, cancellationToken);
+        var pendingEditorialTasks = await dbContext.EditorialTasks
+            .CountAsync(t => t.Status == EditorialTaskStatus.Pending, cancellationToken);
+
+        var contentPipelineSummary = new ContentPipelineSummaryDto(
+            TotalContentItemsCount: totalContentItems,
+            DraftingEvidenceCount: draftingEvidenceCount,
+            TruthSourceApprovedCount: truthSourceApprovedCount,
+            UnderReviewTruthSourcesCount: underReviewTruthSources,
+            PendingEditorialTasksCount: pendingEditorialTasks
+        );
+
         var attentionItems = new List<AttentionItemDto>();
+
+        if (underReviewTruthSources > 0)
+        {
+            attentionItems.Add(new AttentionItemDto(
+                Id: Guid.Parse("55555555-5555-5555-5555-555555555555"),
+                Severity: "warning",
+                Title: "TruthSources Awaiting Review",
+                Description: $"{underReviewTruthSources} truth source{(underReviewTruthSources > 1 ? "s" : "")} awaiting editorial review and verification.",
+                ActionPath: "/content/items",
+                IsRepresentativeDemo: false,
+                TimestampUtc: DateTime.UtcNow
+            ));
+        }
 
         if (pendingCandidates > 0)
         {
@@ -112,7 +145,8 @@ public class DashboardService(AppDbContext dbContext, IWebHostEnvironment enviro
             factoryHealth,
             channels,
             attentionItems,
-            discoverySummary
+            discoverySummary,
+            contentPipelineSummary
         );
     }
 }

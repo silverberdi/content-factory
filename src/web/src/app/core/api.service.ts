@@ -43,11 +43,20 @@ export interface DiscoverySummaryDto {
   errorSourcesCount: number;
 }
 
+export interface ContentPipelineSummaryDto {
+  totalContentItemsCount: number;
+  draftingEvidenceCount: number;
+  truthSourceApprovedCount: number;
+  underReviewTruthSourcesCount: number;
+  pendingEditorialTasksCount: number;
+}
+
 export interface DashboardSummaryDto {
   factoryHealth: FactoryHealthDto;
   channels: ChannelDto[];
   attentionItems: AttentionItemDto[];
   discovery?: DiscoverySummaryDto;
+  contentPipeline?: ContentPipelineSummaryDto;
 }
 
 export interface CreateChannelRequest {
@@ -154,7 +163,7 @@ export interface DiscoveryCandidateDto {
 export interface QuickSubmitCandidateRequest {
   channelId: string;
   externalUrl?: string | null;
-  title?: string;
+  title: string;
   summary?: string | null;
   language?: string;
 }
@@ -163,6 +172,195 @@ export interface TriageCandidateRequest {
   status: 'PendingReview' | 'Promoted' | 'Dismissed';
   dismissalReason?: string | null;
   editorialNotes?: string | null;
+}
+
+// --- CF-003 Content & TruthSource Models ---
+
+export type ContentItemStage =
+  | 'DraftingEvidence'
+  | 'TruthSourceApproved'
+  | 'IdeaDrafting'
+  | 'IdeaApproved'
+  | 'ScriptDrafting'
+  | 'ScriptApproved'
+  | 'AudioGenerated'
+  | 'VideoRendered'
+  | 'Published';
+
+export type ContentItemStatus = 'Active' | 'Archived' | 'Suspended';
+export type EvidenceRole = 'PrimaryLead' | 'SupportingEvidence' | 'Counterpoint' | 'StyleReference';
+export type EvidenceStatus = 'Captured' | 'CaptureFailed' | 'Excluded';
+export type TruthSourceStatus = 'Draft' | 'UnderReview' | 'Approved' | 'Rejected';
+export type EditorialTaskType = 'ReviewTruthSource' | 'ReviewIdea' | 'ReviewScript' | 'ReviewRender';
+export type EditorialTaskPriority = 'Low' | 'Normal' | 'High' | 'Urgent';
+export type EditorialTaskStatus = 'Pending' | 'InProgress' | 'Completed' | 'Dismissed';
+
+export interface VerifiableClaimDto {
+  claim: string;
+  sourceCitation: string;
+  evidenceId: string;
+}
+
+export interface ContentItemEvidenceDto {
+  id: string;
+  contentItemId: string;
+  discoveryCandidateId: string | null;
+  originUrl: string | null;
+  title: string;
+  role: EvidenceRole | string;
+  status: EvidenceStatus | string;
+  rawContent: string | null;
+  objectStorageKey: string | null;
+  extractedText: string | null;
+  contentHash: string | null;
+  errorMessage: string | null;
+  notes: string | null;
+  author: string | null;
+  capturedAtUtc: string | null;
+  createdAtUtc: string;
+  createdByEmail: string;
+}
+
+export interface TruthSourceDto {
+  id: string;
+  contentItemId: string;
+  status: TruthSourceStatus | string;
+  summary: string;
+  keyIdeas: string[];
+  verifiableClaims: VerifiableClaimDto[];
+  evidenceReferences: string[];
+  riskNotes: string;
+  doNotSayConstraints: string[];
+  possibleAngles: string[];
+  localizationNotes: string;
+  rejectionReason: string | null;
+  rejectedAtUtc: string | null;
+  rejectedByEmail: string | null;
+  approvedAtUtc: string | null;
+  approvedByEmail: string | null;
+  version: number;
+  createdAtUtc: string;
+  createdByEmail: string;
+  updatedAtUtc: string;
+  updatedByEmail: string;
+}
+
+export interface TruthSourceVersionDto {
+  id: string;
+  truthSourceId: string;
+  contentItemId: string;
+  versionNumber: number;
+  snapshotJson: string;
+  supportingEvidenceIds: string[];
+  changeSummary: string;
+  createdAtUtc: string;
+  createdByEmail: string;
+}
+
+export interface ContentItemDto {
+  id: string;
+  channelId: string;
+  channelName?: string;
+  title: string;
+  slug: string;
+  stage: ContentItemStage | string;
+  status: ContentItemStatus | string;
+  version: number;
+  evidenceCount: number;
+  truthSourceStatus?: string | null;
+  truthSourceVersion?: number | null;
+  createdAtUtc: string;
+  createdByEmail: string;
+  updatedAtUtc: string;
+  updatedByEmail: string;
+}
+
+export interface ContentItemDetailDto {
+  id: string;
+  channelId: string;
+  channelName?: string;
+  title: string;
+  slug: string;
+  stage: ContentItemStage | string;
+  status: ContentItemStatus | string;
+  version: number;
+  createdAtUtc: string;
+  createdByEmail: string;
+  updatedAtUtc: string;
+  updatedByEmail: string;
+  evidences: ContentItemEvidenceDto[];
+  truthSource?: TruthSourceDto | null;
+}
+
+export interface EditorialTaskDto {
+  id: string;
+  channelId: string;
+  channelName?: string;
+  contentItemId: string;
+  contentTitle?: string;
+  taskType: EditorialTaskType | string;
+  priority: EditorialTaskPriority | string;
+  status: EditorialTaskStatus | string;
+  assignedUserEmail: string | null;
+  dueDateUtc: string | null;
+  completedAtUtc: string | null;
+  completedByEmail: string | null;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  createdByEmail: string;
+}
+
+export interface CreateContentItemRequest {
+  channelId: string;
+  title: string;
+}
+
+export interface UpdateContentItemRequest {
+  title?: string;
+  status?: string;
+  expectedVersion: number;
+}
+
+export interface AttachEvidenceRequest {
+  discoveryCandidateId?: string | null;
+  originUrl?: string | null;
+  title: string;
+  contentText?: string | null;
+  role?: string;
+  notes?: string | null;
+}
+
+export interface SaveTruthSourceRequest {
+  summary: string;
+  keyIdeas: string[];
+  verifiableClaims: VerifiableClaimDto[];
+  evidenceReferences: string[];
+  riskNotes: string;
+  doNotSayConstraints: string[];
+  possibleAngles: string[];
+  localizationNotes: string;
+  expectedVersion: number;
+  changeSummary?: string | null;
+}
+
+export interface RejectTruthSourceRequest {
+  reason: string;
+}
+
+export interface AssignEditorialTaskRequest {
+  assignedUserEmail?: string | null;
+  priority?: string;
+  dueDateUtc?: string | null;
+}
+
+export interface InitiateContentFromCandidateRequest {
+  titleOverride?: string | null;
+}
+
+export interface AttachCandidateToContentRequest {
+  contentItemId: string;
+  role?: string;
+  notes?: string | null;
 }
 
 @Injectable({
@@ -227,7 +425,7 @@ export class ApiService {
   // --- Discovery Endpoints ---
 
   getDiscoverySources(channelId?: string, status?: string): Observable<DiscoverySourceDto[]> {
-    let params: string[] = [];
+    const params: string[] = [];
     if (channelId) params.push(`channelId=${encodeURIComponent(channelId)}`);
     if (status) params.push(`status=${encodeURIComponent(status)}`);
     const query = params.length > 0 ? `?${params.join('&')}` : '';
@@ -261,7 +459,7 @@ export class ApiService {
     search?: string,
     limit: number = 100
   ): Observable<DiscoveryCandidateDto[]> {
-    let params: string[] = [`limit=${limit}`];
+    const params: string[] = [`limit=${limit}`];
     if (channelId) params.push(`channelId=${encodeURIComponent(channelId)}`);
     if (status) params.push(`status=${encodeURIComponent(status)}`);
     if (sourceId) params.push(`sourceId=${encodeURIComponent(sourceId)}`);
@@ -284,5 +482,101 @@ export class ApiService {
   getDiscoverySummary(channelId?: string): Observable<DiscoverySummaryDto> {
     const query = channelId ? `?channelId=${encodeURIComponent(channelId)}` : '';
     return this.http.get<DiscoverySummaryDto>(`${this.baseUrl}/discovery/summary${query}`);
+  }
+
+  initiateContentFromCandidate(candidateId: string, request: InitiateContentFromCandidateRequest): Observable<ContentItemDto> {
+    return this.http.post<ContentItemDto>(`${this.baseUrl}/discovery/candidates/${candidateId}/initiate-content`, request);
+  }
+
+  attachCandidateToContent(candidateId: string, request: AttachCandidateToContentRequest): Observable<ContentItemEvidenceDto> {
+    return this.http.post<ContentItemEvidenceDto>(`${this.baseUrl}/discovery/candidates/${candidateId}/attach-to-content`, request);
+  }
+
+  // --- CF-003 Content Items & Evidence Endpoints ---
+
+  getContentItems(channelId?: string, stage?: string, status?: string, search?: string): Observable<ContentItemDto[]> {
+    const params: string[] = [];
+    if (channelId) params.push(`channelId=${encodeURIComponent(channelId)}`);
+    if (stage) params.push(`stage=${encodeURIComponent(stage)}`);
+    if (status) params.push(`status=${encodeURIComponent(status)}`);
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
+    const query = params.length > 0 ? `?${params.join('&')}` : '';
+    return this.http.get<ContentItemDto[]>(`${this.baseUrl}/content-items${query}`);
+  }
+
+  getContentItemDetail(id: string): Observable<ContentItemDetailDto> {
+    return this.http.get<ContentItemDetailDto>(`${this.baseUrl}/content-items/${id}`);
+  }
+
+  createContentItem(request: CreateContentItemRequest): Observable<ContentItemDto> {
+    return this.http.post<ContentItemDto>(`${this.baseUrl}/content-items`, request);
+  }
+
+  updateContentItem(id: string, request: UpdateContentItemRequest): Observable<ContentItemDto> {
+    return this.http.put<ContentItemDto>(`${this.baseUrl}/content-items/${id}`, request);
+  }
+
+  attachEvidence(contentItemId: string, request: AttachEvidenceRequest): Observable<ContentItemEvidenceDto> {
+    return this.http.post<ContentItemEvidenceDto>(`${this.baseUrl}/content-items/${contentItemId}/evidence`, request);
+  }
+
+  detachEvidence(contentItemId: string, evidenceId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/content-items/${contentItemId}/evidence/${evidenceId}`);
+  }
+
+  retryEvidenceCapture(contentItemId: string, evidenceId: string): Observable<ContentItemEvidenceDto> {
+    return this.http.post<ContentItemEvidenceDto>(`${this.baseUrl}/content-items/${contentItemId}/evidence/${evidenceId}/retry`, {});
+  }
+
+  // --- CF-003 TruthSource Review Studio Endpoints ---
+
+  getTruthSource(contentItemId: string): Observable<TruthSourceDto> {
+    return this.http.get<TruthSourceDto>(`${this.baseUrl}/content-items/${contentItemId}/truth-source`);
+  }
+
+  generateAiDraft(contentItemId: string): Observable<TruthSourceDto> {
+    return this.http.post<TruthSourceDto>(`${this.baseUrl}/content-items/${contentItemId}/truth-source/generate-ai-draft`, {});
+  }
+
+  saveTruthSource(contentItemId: string, request: SaveTruthSourceRequest): Observable<TruthSourceDto> {
+    return this.http.put<TruthSourceDto>(`${this.baseUrl}/content-items/${contentItemId}/truth-source`, request);
+  }
+
+  submitTruthSourceReview(contentItemId: string): Observable<TruthSourceDto> {
+    return this.http.post<TruthSourceDto>(`${this.baseUrl}/content-items/${contentItemId}/truth-source/submit-review`, {});
+  }
+
+  approveTruthSource(contentItemId: string): Observable<TruthSourceDto> {
+    return this.http.post<TruthSourceDto>(`${this.baseUrl}/content-items/${contentItemId}/truth-source/approve`, {});
+  }
+
+  rejectTruthSource(contentItemId: string, request: RejectTruthSourceRequest): Observable<TruthSourceDto> {
+    return this.http.post<TruthSourceDto>(`${this.baseUrl}/content-items/${contentItemId}/truth-source/reject`, request);
+  }
+
+  getTruthSourceVersions(contentItemId: string): Observable<TruthSourceVersionDto[]> {
+    return this.http.get<TruthSourceVersionDto[]>(`${this.baseUrl}/content-items/${contentItemId}/truth-source/versions`);
+  }
+
+  // --- CF-003 Editorial Tasks Endpoints ---
+
+  getEditorialTasks(channelId?: string, status?: string, priority?: string, assignedEmail?: string): Observable<EditorialTaskDto[]> {
+    const params: string[] = [];
+    if (channelId) params.push(`channelId=${encodeURIComponent(channelId)}`);
+    if (status) params.push(`status=${encodeURIComponent(status)}`);
+    if (priority) params.push(`priority=${encodeURIComponent(priority)}`);
+    if (assignedEmail) params.push(`assignedEmail=${encodeURIComponent(assignedEmail)}`);
+    const query = params.length > 0 ? `?${params.join('&')}` : '';
+    return this.http.get<EditorialTaskDto[]>(`${this.baseUrl}/editorial-tasks${query}`);
+  }
+
+  assignEditorialTask(taskId: string, request: AssignEditorialTaskRequest): Observable<EditorialTaskDto> {
+    return this.http.put<EditorialTaskDto>(`${this.baseUrl}/editorial-tasks/${taskId}/assign`, request);
+  }
+
+  updateEditorialTaskStatus(taskId: string, status: string): Observable<EditorialTaskDto> {
+    return this.http.put<EditorialTaskDto>(`${this.baseUrl}/editorial-tasks/${taskId}/status`, JSON.stringify(status), {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

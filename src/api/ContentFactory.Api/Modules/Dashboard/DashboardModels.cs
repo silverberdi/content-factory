@@ -23,11 +23,20 @@ public record AttentionItemDto(
     DateTime TimestampUtc
 );
 
+public record ContentPipelineSummaryDto(
+    int TotalContentItemsCount,
+    int DraftingEvidenceCount,
+    int TruthSourceApprovedCount,
+    int UnderReviewTruthSourcesCount,
+    int PendingEditorialTasksCount
+);
+
 public record DashboardSummaryDto(
     FactoryHealthDto FactoryHealth,
     List<ChannelDto> Channels,
     List<AttentionItemDto> AttentionItems,
-    DiscoverySummaryDto? Discovery = null
+    DiscoverySummaryDto? Discovery = null,
+    ContentPipelineSummaryDto? ContentPipeline = null
 );
 
 public interface IDashboardService
