@@ -8,7 +8,7 @@ Provides the operational identity `ContentItem` and central workspace for editor
 
 ### Requirement: ContentItem operational identity with channel scoping
 
-Every production thread SHALL be identified by a `ContentItem` entity assigned to a specific channel (`ChannelId` required), with a unique identifier, title, slug/identifier, current lifecycle stage (`DraftingEvidence`, `TruthSourceApproved`), operational status (`Active`, `Paused`, `Completed`, `Cancelled`), `Version` (`long`) concurrency token, and created/updated attribution. `ContentItem` SHALL maintain clear module boundaries and reference `ContentItemId` rather than loading or locking downstream pipeline entities.
+Every production thread SHALL be identified by a `ContentItem` entity assigned to a specific channel (`ChannelId` required), with a unique identifier, title, slug/identifier, current lifecycle stage (`DraftingEvidence`, `TruthSourceApproved`, `IdeaSelected`), operational status (`Active`, `Paused`, `Completed`, `Cancelled`), `Version` (`long`) concurrency token, and created/updated attribution. `ContentItem` SHALL maintain clear module boundaries and reference `ContentItemId` rather than loading or locking downstream pipeline entities.
 
 #### Scenario: Create new ContentItem for a channel
 - **WHEN** an operator creates a new ContentItem with a title and channel assignment
@@ -71,3 +71,17 @@ The content workspace UI SHALL provide high-density scanning, filtering (by chan
 #### Scenario: ContentItem detail drill-down
 - **WHEN** an operator opens a ContentItem detail view
 - **THEN** the view displays the operational header, the multi-evidence provenance panel (with SHA-256 hashes, capture status, retry button for failed captures, and source links), the TruthSource panel, and actions to generate draft or review evidence.
+
+### Requirement: ContentItem ideas management and drill-down
+
+The Content Workspace and Content Detail view SHALL provide direct management and visualization of `ContentIdea` entities linked to the active `ContentItem`, displaying current idea count, the sole active selected idea (if any), and direct action triggers.
+
+#### Scenario: View linked ideas in ContentItem detail
+- **WHEN** an operator views a ContentItem with generated or manual ideas
+- **THEN** an "Ideas" tab or section displays the list of ideas with status badges, angles, and hook strategies
+- **AND** if an idea is selected, it is highlighted as the sole active creative lead for the piece.
+
+#### Scenario: Lifecycle stage advancement to IdeaSelected on idea promotion
+- **WHEN** a ContentIdea is marked as "Selected" for a ContentItem currently in "TruthSourceApproved"
+- **THEN** the parent ContentItem lifecycle stage automatically transitions to "IdeaSelected"
+- **AND** the workspace reflects the updated stage immediately.
