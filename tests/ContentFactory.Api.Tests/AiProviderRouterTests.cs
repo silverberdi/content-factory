@@ -84,4 +84,64 @@ public class AiProviderRouterTests
         Assert.False(string.IsNullOrWhiteSpace(recommendationInDb.StructuredOutputJson));
         Assert.False(string.IsNullOrWhiteSpace(recommendationInDb.Rationale));
     }
+
+    [Fact]
+    public async Task GenerateIdeas_WithMockProvider_ReturnsStructuredProposalsAndLogsRecommendation()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var config = new ConfigurationBuilder().Build();
+        var router = new AiProviderRouter(
+            dbContext,
+            new TestHttpClientFactory(),
+            config,
+            NullLogger<AiProviderRouter>.Instance);
+
+        var channelId = Guid.NewGuid();
+        var contentItemId = Guid.NewGuid();
+        var truthSourceId = Guid.NewGuid();
+        var truthSourceVersionId = Guid.NewGuid();
+
+        var request = new GenerateIdeasRequest(
+            ChannelId: channelId,
+            ChannelName: "IA Simple ES",
+            ChannelLanguage: "es",
+            ChannelNiche: "AI and future of work",
+            TruthSourceId: truthSourceId,
+            TruthSourceVersionId: truthSourceVersionId,
+            Summary: "Síntesis factual sobre cómo el criterio analítico y la capacidad de auditar respuestas diferencian a los profesionales.",
+            KeyIdeas: ["El criterio analítico supera a la memorización de prompts", "Las empresas buscan perfiles híbridos"],
+            VerifiableClaims: [new VerifiableClaimDto("68% de las empresas priorizan criterio sobre velocidad", "El País", null)],
+            DoNotSayConstraints: ["No usar sensacionalismo", "No prometer fórmulas mágicas"],
+            PossibleAngles: ["3 habilidades que la IA no reemplaza", "Cómo auditar respuestas"],
+            Count: 3
+        );
+
+        var context = new AiRoutingContext(channelId, contentItemId, PreferredProvider: AiProviders.Mock);
+
+        var result = await router.GenerateIdeasAsync(request, context);
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(3, result.Data.Ideas.Count);
+        Assert.All(result.Data.Ideas, idea =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(idea.Title));
+            Assert.False(string.IsNullOrWhiteSpace(idea.Angle));
+            Assert.False(string.IsNullOrWhiteSpace(idea.HookStrategy));
+            Assert.False(string.IsNullOrWhiteSpace(idea.AudienceValue));
+            Assert.Equal("YouTube Short 30-60s", idea.Format);
+            Assert.False(string.IsNullOrWhiteSpace(idea.IntendedOutcome));
+        });
+
+        // Verify recommendation persisted with TruthSourceVersionId
+        Assert.NotNull(result.Recommendation);
+        var recommendationInDb = await dbContext.AiRecommendations.FirstOrDefaultAsync(r => r.Id == result.Recommendation.Id);
+        Assert.NotNull(recommendationInDb);
+        Assert.Equal(AiCapabilities.GenerateIdeas, recommendationInDb.Capability);
+        Assert.Equal(AiProviders.Mock, recommendationInDb.Provider);
+        Assert.Equal(truthSourceVersionId, recommendationInDb.TruthSourceVersionId);
+        Assert.Equal(contentItemId, recommendationInDb.ContentItemId);
+        Assert.False(string.IsNullOrWhiteSpace(recommendationInDb.StructuredOutputJson));
+        Assert.False(string.IsNullOrWhiteSpace(recommendationInDb.Rationale));
+    }
 }

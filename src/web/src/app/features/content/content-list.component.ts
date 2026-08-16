@@ -58,6 +58,7 @@ import { ApiService, ChannelDto, ContentItemDto, CreateContentItemRequest } from
             <option value="DraftingEvidence">Drafting Evidence</option>
             <option value="TruthSourceApproved">TruthSource Aprobado</option>
             <option value="IdeaDrafting">Idea Drafting</option>
+            <option value="IdeaSelected">Idea Seleccionada</option>
             <option value="Published">Publicado</option>
           </select>
         </div>
@@ -123,8 +124,9 @@ import { ApiService, ChannelDto, ContentItemDto, CreateContentItemRequest } from
                   <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border font-mono"
                         [ngClass]="{
                           'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30': item.stage === 'DraftingEvidence',
-                          'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': item.stage === 'TruthSourceApproved',
+                          'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30': item.stage === 'TruthSourceApproved',
                           'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30': item.stage === 'IdeaDrafting',
+                          'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': item.stage === 'IdeaSelected',
                           'bg-slate-500/15 text-slate-500 border-slate-500/30': item.stage === 'Published'
                         }">
                     {{ item.stage }}
@@ -167,13 +169,18 @@ import { ApiService, ChannelDto, ContentItemDto, CreateContentItemRequest } from
                 <!-- Actions -->
                 <td class="py-3 px-4 text-right">
                   <div class="flex items-center justify-end gap-1.5">
+                    <a [routerLink]="['/content/items', item.id, 'ideas']" 
+                       class="px-2 py-1 rounded-md bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-semibold text-[11px] transition-colors"
+                       title="Abrir Matriz de Ideas">
+                      <i class="pi pi-lightbulb mr-1 text-[10px]"></i> Ideas
+                    </a>
                     <a [routerLink]="['/content/items', item.id]" 
-                       class="px-2.5 py-1 rounded-md border border-[var(--app-card-border)] hover:bg-[var(--app-surface-hover)] text-[var(--app-text)] font-medium text-[11px] transition-colors"
+                       class="px-2 py-1 rounded-md border border-[var(--app-card-border)] hover:bg-[var(--app-surface-hover)] text-[var(--app-text)] font-medium text-[11px] transition-colors"
                        title="Ver Detalles y Evidencias">
                       <i class="pi pi-eye mr-1 text-[10px]"></i> Detalle
                     </a>
                     <a [routerLink]="['/content/items', item.id, 'truth-source']" 
-                       class="px-2.5 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] transition-colors shadow-2xs"
+                       class="px-2 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] transition-colors shadow-2xs"
                        title="Abrir TruthSource Review Studio">
                       <i class="pi pi-check-square mr-1 text-[10px]"></i> Studio
                     </a>

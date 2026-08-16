@@ -30,37 +30,45 @@ import { ContentPipelineSummaryDto } from '../../core/api.service';
       </div>
 
       <!-- Metrics Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
         
         <!-- Total Items -->
-        <div class="p-3 rounded-lg bg-[var(--app-bg)] border border-[var(--app-card-border)] space-y-1">
-          <span class="text-[10px] font-bold text-[var(--app-muted)] uppercase tracking-wider block">Total Piezas</span>
-          <span class="text-lg sm:text-xl font-extrabold text-[var(--app-text)] font-mono">
+        <div class="p-2.5 rounded-lg bg-[var(--app-bg)] border border-[var(--app-card-border)] space-y-1">
+          <span class="text-[10px] font-bold text-[var(--app-muted)] uppercase tracking-wider block truncate">Total</span>
+          <span class="text-base sm:text-lg font-extrabold text-[var(--app-text)] font-mono">
             {{ pipeline?.totalContentItemsCount || 0 }}
           </span>
         </div>
 
         <!-- Drafting Evidence -->
-        <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 space-y-1">
-          <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">Drafting</span>
-          <span class="text-lg sm:text-xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
+        <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 space-y-1">
+          <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block truncate">Drafting</span>
+          <span class="text-base sm:text-lg font-extrabold text-amber-600 dark:text-amber-400 font-mono">
             {{ pipeline?.draftingEvidenceCount || 0 }}
           </span>
         </div>
 
-        <!-- TruthSources Under Review -->
-        <div class="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 space-y-1">
-          <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block">En Revisión</span>
-          <span class="text-lg sm:text-xl font-extrabold text-indigo-600 dark:text-indigo-400 font-mono">
-            {{ pipeline?.underReviewTruthSourcesCount || 0 }}
+        <!-- TruthSources Approved -->
+        <div class="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 space-y-1">
+          <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block truncate">Truth Aprobado</span>
+          <span class="text-base sm:text-lg font-extrabold text-indigo-600 dark:text-indigo-400 font-mono">
+            {{ pipeline?.truthSourceApprovedCount || 0 }}
           </span>
         </div>
 
-        <!-- TruthSources Approved -->
-        <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 space-y-1">
-          <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Truth Aprobado</span>
-          <span class="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
-            {{ pipeline?.truthSourceApprovedCount || 0 }}
+        <!-- Ideas Selected -->
+        <div class="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 space-y-1">
+          <span class="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider block truncate">Idea Seleccionada</span>
+          <span class="text-base sm:text-lg font-extrabold text-purple-600 dark:text-purple-400 font-mono">
+            {{ pipeline?.ideaSelectedCount || 0 }}
+          </span>
+        </div>
+
+        <!-- TruthSources Under Review -->
+        <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 space-y-1">
+          <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block truncate">En Revisión</span>
+          <span class="text-base sm:text-lg font-extrabold text-amber-600 dark:text-amber-400 font-mono">
+            {{ pipeline?.underReviewTruthSourcesCount || 0 }}
           </span>
         </div>
 

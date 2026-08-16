@@ -47,6 +47,7 @@ export interface ContentPipelineSummaryDto {
   totalContentItemsCount: number;
   draftingEvidenceCount: number;
   truthSourceApprovedCount: number;
+  ideaSelectedCount?: number;
   underReviewTruthSourcesCount: number;
   pendingEditorialTasksCount: number;
 }
@@ -179,13 +180,11 @@ export interface TriageCandidateRequest {
 export type ContentItemStage =
   | 'DraftingEvidence'
   | 'TruthSourceApproved'
-  | 'IdeaDrafting'
-  | 'IdeaApproved'
-  | 'ScriptDrafting'
+  | 'IdeaSelected'
   | 'ScriptApproved'
-  | 'AudioGenerated'
-  | 'VideoRendered'
-  | 'Published';
+  | 'InProduction'
+  | 'Published'
+  | 'Archived';
 
 export type ContentItemStatus = 'Active' | 'Archived' | 'Suspended';
 export type EvidenceRole = 'PrimaryLead' | 'SupportingEvidence' | 'Counterpoint' | 'StyleReference';
@@ -255,6 +254,105 @@ export interface TruthSourceVersionDto {
   changeSummary: string;
   createdAtUtc: string;
   createdByEmail: string;
+}
+
+// --- CF-004 Content Idea Models ---
+
+export type ContentIdeaStatus = 'Proposed' | 'Selected' | 'Dismissed';
+export type IdeaFreshnessClass = 'Evergreen' | 'Timely' | 'Breaking';
+export type IdeaPriority = 'Low' | 'Normal' | 'High' | 'Urgent';
+
+export interface ContentIdeaDto {
+  id: string;
+  contentItemId: string;
+  truthSourceId: string;
+  truthSourceVersionId: string;
+  title: string;
+  angle: string;
+  hookStrategy: string;
+  audienceValue: string;
+  format: string;
+  intendedOutcome: string;
+  freshnessClass: string;
+  priority: string;
+  rationale: string;
+  status: ContentIdeaStatus | string;
+  dismissalNotes?: string | null;
+  selectedAtUtc?: string | null;
+  selectedByEmail?: string | null;
+  version: number;
+  createdAtUtc: string;
+  createdByEmail: string;
+  updatedAtUtc: string;
+  updatedByEmail: string;
+}
+
+export interface ContentIdeaVersionDto {
+  id: string;
+  contentIdeaId: string;
+  contentItemId: string;
+  truthSourceId: string;
+  truthSourceVersionId: string;
+  versionNumber: number;
+  title: string;
+  angle: string;
+  hookStrategy: string;
+  audienceValue: string;
+  format: string;
+  intendedOutcome: string;
+  freshnessClass: string;
+  priority: string;
+  rationale: string;
+  status: ContentIdeaStatus | string;
+  dismissalNotes?: string | null;
+  editedByEmail: string;
+  editedAtUtc: string;
+  changeSummary: string;
+}
+
+export interface GenerateIdeasOptions {
+  count?: number;
+  focusAngleStyle?: string | null;
+  targetAudience?: string | null;
+}
+
+export interface CreateIdeaRequest {
+  title: string;
+  angle: string;
+  hookStrategy: string;
+  audienceValue: string;
+  format?: string | null;
+  intendedOutcome?: string | null;
+  freshnessClass?: string | null;
+  priority?: string | null;
+  rationale?: string | null;
+}
+
+export interface UpdateIdeaRequest {
+  title: string;
+  angle: string;
+  hookStrategy: string;
+  audienceValue: string;
+  format?: string | null;
+  intendedOutcome?: string | null;
+  freshnessClass?: string | null;
+  priority?: string | null;
+  rationale?: string | null;
+  changeSummary?: string | null;
+  expectedVersion: number;
+}
+
+export interface SelectIdeaRequest {
+  expectedVersion: number;
+}
+
+export interface DismissIdeaRequest {
+  notes?: string | null;
+  expectedVersion: number;
+}
+
+export interface ReopenIdeaRequest {
+  expectedVersion: number;
 }
 
 export interface ContentItemDto {
@@ -578,5 +676,43 @@ export class ApiService {
     return this.http.put<EditorialTaskDto>(`${this.baseUrl}/editorial-tasks/${taskId}/status`, JSON.stringify(status), {
       headers: { 'Content-Type': 'application/json' }
     });
+  }
+
+  // --- CF-004 Content Idea Endpoints ---
+
+  getContentIdeas(contentItemId: string): Observable<ContentIdeaDto[]> {
+    return this.http.get<ContentIdeaDto[]>(`${this.baseUrl}/content-items/${contentItemId}/ideas`);
+  }
+
+  getIdeaById(contentItemId: string, ideaId: string): Observable<ContentIdeaDto> {
+    return this.http.get<ContentIdeaDto>(`${this.baseUrl}/content-items/${contentItemId}/ideas/${ideaId}`);
+  }
+
+  generateAiIdeas(contentItemId: string, options: GenerateIdeasOptions = {}): Observable<ContentIdeaDto[]> {
+    return this.http.post<ContentIdeaDto[]>(`${this.baseUrl}/content-items/${contentItemId}/ideas/generate`, options);
+  }
+
+  createManualIdea(contentItemId: string, request: CreateIdeaRequest): Observable<ContentIdeaDto> {
+    return this.http.post<ContentIdeaDto>(`${this.baseUrl}/content-items/${contentItemId}/ideas`, request);
+  }
+
+  updateIdea(contentItemId: string, ideaId: string, request: UpdateIdeaRequest): Observable<ContentIdeaDto> {
+    return this.http.put<ContentIdeaDto>(`${this.baseUrl}/content-items/${contentItemId}/ideas/${ideaId}`, request);
+  }
+
+  selectIdea(contentItemId: string, ideaId: string, request: SelectIdeaRequest): Observable<ContentIdeaDto> {
+    return this.http.post<ContentIdeaDto>(`${this.baseUrl}/content-items/${contentItemId}/ideas/${ideaId}/select`, request);
+  }
+
+  dismissIdea(contentItemId: string, ideaId: string, request: DismissIdeaRequest): Observable<ContentIdeaDto> {
+    return this.http.post<ContentIdeaDto>(`${this.baseUrl}/content-items/${contentItemId}/ideas/${ideaId}/dismiss`, request);
+  }
+
+  reopenIdea(contentItemId: string, ideaId: string, request: ReopenIdeaRequest): Observable<ContentIdeaDto> {
+    return this.http.post<ContentIdeaDto>(`${this.baseUrl}/content-items/${contentItemId}/ideas/${ideaId}/reopen`, request);
+  }
+
+  getIdeaVersions(contentItemId: string, ideaId: string): Observable<ContentIdeaVersionDto[]> {
+    return this.http.get<ContentIdeaVersionDto[]>(`${this.baseUrl}/content-items/${contentItemId}/ideas/${ideaId}/versions`);
   }
 }

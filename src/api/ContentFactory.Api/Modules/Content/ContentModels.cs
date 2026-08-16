@@ -4,7 +4,7 @@ public static class ContentItemStage
 {
     public const string DraftingEvidence = "DraftingEvidence";
     public const string TruthSourceApproved = "TruthSourceApproved";
-    public const string IdeasGenerated = "IdeasGenerated";
+    public const string IdeaSelected = "IdeaSelected";
     public const string ScriptApproved = "ScriptApproved";
     public const string InProduction = "InProduction";
     public const string Published = "Published";
@@ -14,7 +14,7 @@ public static class ContentItemStage
     [
         DraftingEvidence,
         TruthSourceApproved,
-        IdeasGenerated,
+        IdeaSelected,
         ScriptApproved,
         InProduction,
         Published,
@@ -188,6 +188,7 @@ public class AiRecommendation
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid ChannelId { get; set; }
     public Guid? ContentItemId { get; set; }
+    public Guid? TruthSourceVersionId { get; set; }
     public string Capability { get; set; } = string.Empty;
     public string Provider { get; set; } = string.Empty;
     public string Model { get; set; } = string.Empty;
@@ -370,4 +371,187 @@ public record AttachCandidateToContentRequest(
     Guid ContentItemId,
     string? Role,
     string? Notes
+);
+
+public static class ContentIdeaStatus
+{
+    public const string Proposed = "Proposed";
+    public const string Selected = "Selected";
+    public const string Dismissed = "Dismissed";
+
+    public static readonly string[] All = [Proposed, Selected, Dismissed];
+}
+
+public static class IdeaFreshnessClass
+{
+    public const string Breaking = "Breaking";
+    public const string Timely = "Timely";
+    public const string Evergreen = "Evergreen";
+
+    public static readonly string[] All = [Breaking, Timely, Evergreen];
+}
+
+public static class IdeaPriority
+{
+    public const string Low = "Low";
+    public const string Normal = "Normal";
+    public const string High = "High";
+    public const string Urgent = "Urgent";
+
+    public static readonly string[] All = [Low, Normal, High, Urgent];
+}
+
+public class ContentIdea
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid ContentItemId { get; set; }
+    public Guid TruthSourceId { get; set; }
+    public Guid TruthSourceVersionId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Angle { get; set; } = string.Empty;
+    public string HookStrategy { get; set; } = string.Empty;
+    public string AudienceValue { get; set; } = string.Empty;
+    public string Format { get; set; } = "YouTube Short 30-60s";
+    public string IntendedOutcome { get; set; } = "Educational";
+    public string FreshnessClass { get; set; } = IdeaFreshnessClass.Timely;
+    public string Priority { get; set; } = IdeaPriority.Normal;
+    public string Rationale { get; set; } = string.Empty;
+    public string Status { get; set; } = ContentIdeaStatus.Proposed;
+    public string? DismissalNotes { get; set; }
+    public DateTime? SelectedAtUtc { get; set; }
+    public string? SelectedByEmail { get; set; }
+    public long Version { get; set; } = 1;
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public string CreatedByEmail { get; set; } = string.Empty;
+    public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
+    public string? UpdatedByEmail { get; set; }
+}
+
+public class ContentIdeaVersion
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid ContentIdeaId { get; set; }
+    public Guid ContentItemId { get; set; }
+    public Guid TruthSourceId { get; set; }
+    public Guid TruthSourceVersionId { get; set; }
+    public long VersionNumber { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Angle { get; set; } = string.Empty;
+    public string HookStrategy { get; set; } = string.Empty;
+    public string AudienceValue { get; set; } = string.Empty;
+    public string Format { get; set; } = string.Empty;
+    public string IntendedOutcome { get; set; } = string.Empty;
+    public string FreshnessClass { get; set; } = string.Empty;
+    public string Priority { get; set; } = string.Empty;
+    public string Rationale { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public string? DismissalNotes { get; set; }
+    public string EditedByEmail { get; set; } = string.Empty;
+    public DateTime EditedAtUtc { get; set; } = DateTime.UtcNow;
+    public string? ChangeSummary { get; set; }
+}
+
+public record ContentIdeaDto(
+    Guid Id,
+    Guid ContentItemId,
+    Guid TruthSourceId,
+    Guid TruthSourceVersionId,
+    string Title,
+    string Angle,
+    string HookStrategy,
+    string AudienceValue,
+    string Format,
+    string IntendedOutcome,
+    string FreshnessClass,
+    string Priority,
+    string Rationale,
+    string Status,
+    string? DismissalNotes,
+    DateTime? SelectedAtUtc,
+    string? SelectedByEmail,
+    long Version,
+    DateTime CreatedAtUtc,
+    string CreatedByEmail,
+    DateTime UpdatedAtUtc,
+    string? UpdatedByEmail
+);
+
+public record ContentIdeaVersionDto(
+    Guid Id,
+    Guid ContentIdeaId,
+    Guid ContentItemId,
+    Guid TruthSourceId,
+    Guid TruthSourceVersionId,
+    long VersionNumber,
+    string Title,
+    string Angle,
+    string HookStrategy,
+    string AudienceValue,
+    string Format,
+    string IntendedOutcome,
+    string FreshnessClass,
+    string Priority,
+    string Rationale,
+    string Status,
+    string? DismissalNotes,
+    string EditedByEmail,
+    DateTime EditedAtUtc,
+    string? ChangeSummary
+);
+
+public record CreateIdeaRequest(
+    string Title,
+    string Angle,
+    string HookStrategy,
+    string? AudienceValue,
+    string? Format,
+    string? IntendedOutcome,
+    string? FreshnessClass,
+    string? Priority,
+    string? Rationale
+);
+
+public record UpdateIdeaRequest(
+    string Title,
+    string Angle,
+    string HookStrategy,
+    string? AudienceValue,
+    string? Format,
+    string? IntendedOutcome,
+    string? FreshnessClass,
+    string? Priority,
+    string? Rationale,
+    string? ChangeSummary,
+    long ExpectedVersion
+);
+
+public record SelectIdeaRequest(
+    long ExpectedVersion
+);
+
+public record DismissIdeaRequest(
+    string? Notes,
+    long ExpectedVersion
+);
+
+public record ReopenIdeaRequest(
+    long ExpectedVersion
+);
+
+public record GenerateIdeasOptions(
+    int Count = 3,
+    string? TargetAudience = null,
+    string? FocusAngleStyle = null
+);
+
+public record GeneratedIdeaItem(
+    string Title,
+    string Angle,
+    string HookStrategy,
+    string AudienceValue,
+    string Format,
+    string IntendedOutcome,
+    string FreshnessClass,
+    string Priority,
+    string Rationale
 );

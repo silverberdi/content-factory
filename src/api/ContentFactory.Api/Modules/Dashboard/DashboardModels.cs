@@ -27,6 +27,7 @@ public record ContentPipelineSummaryDto(
     int TotalContentItemsCount,
     int DraftingEvidenceCount,
     int TruthSourceApprovedCount,
+    int IdeaSelectedCount,
     int UnderReviewTruthSourcesCount,
     int PendingEditorialTasksCount
 );

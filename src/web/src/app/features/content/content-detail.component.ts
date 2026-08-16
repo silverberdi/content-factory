@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { ApiService, ContentItemDetailDto, ContentItemEvidenceDto, TruthSourceDto } from '../../core/api.service';
+import { ApiService, ContentIdeaDto, ContentItemDetailDto, ContentItemEvidenceDto, TruthSourceDto } from '../../core/api.service';
 import { AttachEvidenceModalComponent } from './attach-evidence-modal.component';
 
 @Component({
@@ -68,19 +68,25 @@ import { AttachEvidenceModalComponent } from './attach-evidence-modal.component'
             </p>
           </div>
 
-          <!-- Studio Quick Navigation Button -->
-          <div class="flex items-center gap-2 shrink-0">
+          <!-- Studio Quick Navigation Buttons -->
+          <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            <a [routerLink]="['/content/items', item()?.id, 'ideas']"
+               class="px-3.5 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
+              <i class="pi pi-lightbulb"></i>
+              <span>Matriz de Ideas & Ángulos</span>
+            </a>
+
             <a [routerLink]="['/content/items', item()?.id, 'truth-source']"
-               class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
+               class="px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
               <i class="pi pi-check-square"></i>
-              <span>Abrir TruthSource Review Studio</span>
+              <span>TruthSource Studio</span>
             </a>
           </div>
 
         </div>
       </div>
 
-      <!-- Main Layout: Evidences (Left / 2 cols) & TruthSource Summary (Right / 1 col) -->
+      <!-- Main Layout: Evidences (Left / 2 cols) & TruthSource/Ideas Summary (Right / 1 col) -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 text-xs">
         
         <!-- Left: Evidence Bundle Provenance Panel (2 cols) -->
@@ -282,6 +288,61 @@ import { AttachEvidenceModalComponent } from './attach-evidence-modal.component'
             </div>
 
           </div>
+
+          <!-- Ideas & Creative Matrix Card (Right Col) -->
+          <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-[var(--app-card-border)] pb-3">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-lightbulb text-purple-600 dark:text-purple-400"></i>
+                <h2 class="text-sm font-bold text-[var(--app-text)]">Ideas & Ángulos</h2>
+                <span class="px-1.5 py-0.5 rounded bg-[var(--app-bg)] border border-[var(--app-card-border)] font-mono text-[10px] font-bold">
+                  {{ ideas().length }}
+                </span>
+              </div>
+
+              <a [routerLink]="['/content/items', item()?.id, 'ideas']" 
+                 class="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1">
+                <span>Ver Matriz</span>
+                <i class="pi pi-arrow-right text-[10px]"></i>
+              </a>
+            </div>
+
+            <!-- Active Selected Idea Preview -->
+            <div *ngIf="activeSelectedIdea()" class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-1.5">
+              <div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-extrabold text-[10px] uppercase tracking-wider">
+                <i class="pi pi-check-circle"></i>
+                <span>Idea Activa Seleccionada</span>
+              </div>
+              <p class="font-bold text-xs text-[var(--app-text)] line-clamp-2">
+                {{ activeSelectedIdea()?.title }}
+              </p>
+              <p class="text-[10px] text-[var(--app-muted)] line-clamp-1 italic">
+                "{{ activeSelectedIdea()?.hookStrategy }}"
+              </p>
+            </div>
+
+            <!-- No Idea Selected but Proposed Ideas Exist -->
+            <div *ngIf="!activeSelectedIdea() && ideas().length > 0" class="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-1 text-center">
+              <p class="text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                {{ ideas().length }} ideas propuestas disponibles
+              </p>
+              <p class="text-[10px] text-[var(--app-muted)]">
+                Selecciona una idea activa en la Matriz para continuar a guionización.
+              </p>
+            </div>
+
+            <!-- No Ideas Yet -->
+            <div *ngIf="ideas().length === 0" class="py-3 text-center text-[var(--app-muted)] text-[11px]">
+              <p>No se han generado ideas para esta pieza todavía.</p>
+            </div>
+
+            <a [routerLink]="['/content/items', item()?.id, 'ideas']"
+               class="w-full py-2 rounded-lg bg-[var(--app-bg)] hover:bg-[var(--app-card-bg)] border border-[var(--app-card-border)] text-[var(--app-text)] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+              <i class="pi pi-sparkles text-purple-500"></i>
+              <span>Abrir Matriz de Ideas</span>
+            </a>
+          </div>
+
         </div>
 
       </div>
@@ -304,6 +365,7 @@ export class ContentDetailComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
 
   readonly item = signal<ContentItemDetailDto | null>(null);
+  readonly ideas = signal<ContentIdeaDto[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly errorMessage = signal<string | null>(null);
   readonly currentId = signal<string | null>(null);
@@ -316,6 +378,10 @@ export class ContentDetailComponent implements OnInit {
     const cur = this.item();
     if (!cur || !cur.evidences) return false;
     return cur.evidences.some(e => e.status === 'Captured');
+  }
+
+  get activeSelectedIdea(): () => ContentIdeaDto | null {
+    return () => this.ideas().find(i => i.status === 'Selected') || null;
   }
 
   ngOnInit() {
@@ -340,8 +406,17 @@ export class ContentDetailComponent implements OnInit {
     this.api.getContentItemDetail(id).subscribe({
       next: (detail) => {
         this.item.set(detail);
-        this.isLoading.set(false);
-        this.cdr.markForCheck();
+        this.api.getContentIdeas(id).subscribe({
+          next: (ideas) => {
+            this.ideas.set(ideas);
+            this.isLoading.set(false);
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.isLoading.set(false);
+            this.cdr.markForCheck();
+          }
+        });
       },
       error: (err) => {
         this.isLoading.set(false);

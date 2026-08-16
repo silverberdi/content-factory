@@ -479,14 +479,116 @@ public static class DatabaseInitializer
                 CreatedByEmail = ownerEmail
             };
 
+            var idea1Id = Guid.Parse("00000000-0000-0000-0000-000000000401");
+            var idea2Id = Guid.Parse("00000000-0000-0000-0000-000000000402");
+
+            var idea1 = new ContentIdea
+            {
+                Id = idea1Id,
+                ContentItemId = contentItem1Id,
+                TruthSourceId = truthSource1Id,
+                TruthSourceVersionId = truthSourceVersion1.Id,
+                Title = "3 Habilidades que la IA NO te Puede Quitar en 2026",
+                Angle = "Contraintuitivo / Empoderamiento profesional: Enfocarse en criterio analítico y verificación crítica en lugar de memorizar prompts.",
+                HookStrategy = "Pregunta provocadora inicial: '¿Crees que un prompt te salvará el empleo en 2026? Te equivocas: estas 3 habilidades valen 10 veces más.'",
+                AudienceValue = "El espectador aprende qué competencias híbridas valoran los empleadores y cómo auditar respuestas de IA.",
+                Format = "YouTube Short 30-60s",
+                IntendedOutcome = "Inspiración práctica / Retención alta",
+                FreshnessClass = IdeaFreshnessClass.Timely,
+                Priority = IdeaPriority.High,
+                Rationale = "Aprovecha el dato del 68% de empresas priorizando criterio analítico sobre velocidad mecánica.",
+                Status = ContentIdeaStatus.Selected,
+                SelectedAtUtc = DateTime.UtcNow.AddMinutes(-30),
+                SelectedByEmail = ownerEmail,
+                Version = 1,
+                CreatedAtUtc = DateTime.UtcNow.AddHours(-1),
+                CreatedByEmail = ownerEmail,
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-30),
+                UpdatedByEmail = ownerEmail
+            };
+
+            var idea1Version1 = new ContentIdeaVersion
+            {
+                Id = Guid.NewGuid(),
+                ContentIdeaId = idea1Id,
+                ContentItemId = contentItem1Id,
+                TruthSourceId = truthSource1Id,
+                TruthSourceVersionId = truthSourceVersion1.Id,
+                VersionNumber = 1,
+                Title = idea1.Title,
+                Angle = idea1.Angle,
+                HookStrategy = idea1.HookStrategy,
+                AudienceValue = idea1.AudienceValue,
+                Format = idea1.Format,
+                IntendedOutcome = idea1.IntendedOutcome,
+                FreshnessClass = idea1.FreshnessClass,
+                Priority = idea1.Priority,
+                Rationale = idea1.Rationale,
+                Status = idea1.Status,
+                EditedByEmail = ownerEmail,
+                EditedAtUtc = DateTime.UtcNow.AddMinutes(-30),
+                ChangeSummary = "Idea inicial seleccionada para guionización."
+            };
+
+            var idea2 = new ContentIdea
+            {
+                Id = idea2Id,
+                ContentItemId = contentItem1Id,
+                TruthSourceId = truthSource1Id,
+                TruthSourceVersionId = truthSourceVersion1.Id,
+                Title = "El Error de 1.000€ que Cometen al Usar IA en la Oficina",
+                Angle = "Alerta de riesgo operativo: Por qué la falta de auditoría humana en respuestas automatizadas genera fallos legales y contables.",
+                HookStrategy = "Dato de impacto: 'Un error tonto en un resumen de IA puede costarte miles de euros si no sabes hacer esto...'",
+                AudienceValue = "Consejo directo de verificación y checklist de 3 pasos para auditar documentos.",
+                Format = "YouTube Short 30-60s",
+                IntendedOutcome = "Prevención de errores / Tip accionable",
+                FreshnessClass = IdeaFreshnessClass.Evergreen,
+                Priority = IdeaPriority.Normal,
+                Rationale = "Ángulo alternativo basado en la nota de auditoría y prevención de riesgos operativos.",
+                Status = ContentIdeaStatus.Proposed,
+                Version = 1,
+                CreatedAtUtc = DateTime.UtcNow.AddHours(-1),
+                CreatedByEmail = ownerEmail,
+                UpdatedAtUtc = DateTime.UtcNow.AddHours(-1),
+                UpdatedByEmail = ownerEmail
+            };
+
+            var idea2Version1 = new ContentIdeaVersion
+            {
+                Id = Guid.NewGuid(),
+                ContentIdeaId = idea2Id,
+                ContentItemId = contentItem1Id,
+                TruthSourceId = truthSource1Id,
+                TruthSourceVersionId = truthSourceVersion1.Id,
+                VersionNumber = 1,
+                Title = idea2.Title,
+                Angle = idea2.Angle,
+                HookStrategy = idea2.HookStrategy,
+                AudienceValue = idea2.AudienceValue,
+                Format = idea2.Format,
+                IntendedOutcome = idea2.IntendedOutcome,
+                FreshnessClass = idea2.FreshnessClass,
+                Priority = idea2.Priority,
+                Rationale = idea2.Rationale,
+                Status = idea2.Status,
+                EditedByEmail = ownerEmail,
+                EditedAtUtc = DateTime.UtcNow.AddHours(-1),
+                ChangeSummary = "Propuesta alternativa de ángulo de riesgo operativo."
+            };
+
+            // Advance contentItem1 stage to IdeaSelected since idea1 is Selected
+            contentItem1.Stage = ContentItemStage.IdeaSelected;
+
             dbContext.ContentItems.AddRange(contentItem1, contentItem2);
             dbContext.ContentItemEvidences.AddRange(evidence1, evidence2, evidence3);
             dbContext.TruthSources.AddRange(truthSource1, truthSource2);
             dbContext.TruthSourceVersions.Add(truthSourceVersion1);
+            dbContext.ContentIdeas.AddRange(idea1, idea2);
+            dbContext.ContentIdeaVersions.AddRange(idea1Version1, idea2Version1);
             dbContext.EditorialTasks.Add(editorialTask1);
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Seeded initial representative ContentItems, Evidences, TruthSources, and EditorialTasks for 'IA Simple ES'.");
+            logger.LogInformation("Seeded initial representative ContentItems, Evidences, TruthSources, ContentIdeas, and EditorialTasks for 'IA Simple ES'.");
         }
     }
 }

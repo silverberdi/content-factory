@@ -68,9 +68,15 @@ Contains:
 - freshness class;
 - priority;
 - channel;
-- rationale.
+- rationale;
+- immutable lineage to exact approved TruthSourceVersionId;
+- version and optimistic concurrency token.
 
-A TruthSource may produce multiple ContentIdeas.
+Invariants:
+- A ContentItem may accumulate multiple Proposed or Dismissed ideas, but at most ONE idea may be the active Selected idea for scripting at a time.
+- Selecting a new idea atomically reverts the previously selected idea to Proposed, recording version snapshots for both.
+- Every mutation (Update, Select, Dismiss, Reopen) produces an immutable ContentIdeaVersion snapshot.
+- Deterministic application-level duplicate and near-duplicate similarity filtering prevents equivalent proposals from accumulating.
 
 ### Script
 

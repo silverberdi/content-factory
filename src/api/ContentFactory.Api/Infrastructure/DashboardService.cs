@@ -73,6 +73,8 @@ public class DashboardService(AppDbContext dbContext, IWebHostEnvironment enviro
             .CountAsync(c => c.Stage == ContentItemStage.DraftingEvidence, cancellationToken);
         var truthSourceApprovedCount = await dbContext.ContentItems
             .CountAsync(c => c.Stage == ContentItemStage.TruthSourceApproved, cancellationToken);
+        var ideaSelectedCount = await dbContext.ContentItems
+            .CountAsync(c => c.Stage == ContentItemStage.IdeaSelected, cancellationToken);
         var underReviewTruthSources = await dbContext.TruthSources
             .CountAsync(t => t.Status == TruthSourceStatus.UnderReview, cancellationToken);
         var pendingEditorialTasks = await dbContext.EditorialTasks
@@ -82,6 +84,7 @@ public class DashboardService(AppDbContext dbContext, IWebHostEnvironment enviro
             TotalContentItemsCount: totalContentItems,
             DraftingEvidenceCount: draftingEvidenceCount,
             TruthSourceApprovedCount: truthSourceApprovedCount,
+            IdeaSelectedCount: ideaSelectedCount,
             UnderReviewTruthSourcesCount: underReviewTruthSources,
             PendingEditorialTasksCount: pendingEditorialTasks
         );
@@ -96,6 +99,29 @@ public class DashboardService(AppDbContext dbContext, IWebHostEnvironment enviro
                 Title: "TruthSources Awaiting Review",
                 Description: $"{underReviewTruthSources} truth source{(underReviewTruthSources > 1 ? "s" : "")} awaiting editorial review and verification.",
                 ActionPath: "/content/items",
+                IsRepresentativeDemo: false,
+                TimestampUtc: DateTime.UtcNow
+            ));
+        }
+
+        if (truthSourceApprovedCount > 0)
+        {
+            var firstApprovedItem = await dbContext.ContentItems
+                .Where(c => c.Stage == ContentItemStage.TruthSourceApproved)
+                .OrderByDescending(c => c.UpdatedAtUtc)
+                .Select(c => new { c.Id, c.Title })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var actionPath = firstApprovedItem != null
+                ? $"/content/items/{firstApprovedItem.Id}/ideas"
+                : "/content/items";
+
+            attentionItems.Add(new AttentionItemDto(
+                Id: Guid.Parse("66666666-6666-6666-6666-666666666666"),
+                Severity: "info",
+                Title: "Approved TruthSources Ready for Ideas",
+                Description: $"{truthSourceApprovedCount} piece{(truthSourceApprovedCount > 1 ? "s" : "")} with approved TruthSource ready for creative idea generation and selection.",
+                ActionPath: actionPath,
                 IsRepresentativeDemo: false,
                 TimestampUtc: DateTime.UtcNow
             ));

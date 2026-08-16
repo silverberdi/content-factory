@@ -70,10 +70,37 @@ public record BuildTruthSourceResponse(
     string ConciseRationale
 );
 
+public record GenerateIdeasRequest(
+    Guid ChannelId,
+    string ChannelName,
+    string ChannelLanguage,
+    string ChannelNiche,
+    Guid TruthSourceId,
+    Guid TruthSourceVersionId,
+    string Summary,
+    List<string> KeyIdeas,
+    List<VerifiableClaimDto> VerifiableClaims,
+    List<string> DoNotSayConstraints,
+    List<string> PossibleAngles,
+    int Count = 3,
+    string? TargetAudience = null,
+    string? FocusAngleStyle = null
+);
+
+public record GenerateIdeasResponse(
+    List<GeneratedIdeaItem> Ideas,
+    string ConciseRationale
+);
+
 public interface IAiProviderRouter
 {
     Task<AiCapabilityResult<BuildTruthSourceResponse>> BuildTruthSourceAsync(
         BuildTruthSourceRequest request,
+        AiRoutingContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<AiCapabilityResult<GenerateIdeasResponse>> GenerateIdeasAsync(
+        GenerateIdeasRequest request,
         AiRoutingContext context,
         CancellationToken cancellationToken = default);
 }

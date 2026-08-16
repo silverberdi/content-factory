@@ -299,3 +299,203 @@ public class EditorialTasksController(IEditorialTaskService editorialTaskService
 
     private string GetCurrentUserEmail() => User.FindFirstValue(ClaimTypes.Email) ?? "anonymous";
 }
+
+[ApiController]
+[Route("api/content-items/{contentItemId:guid}/ideas")]
+[Authorize(Policy = "RequireEditorial")]
+public class ContentIdeasController(IContentIdeaService ideaService) : ControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<List<ContentIdeaDto>>> GetIdeas(
+        Guid contentItemId,
+        CancellationToken cancellationToken)
+    {
+        var ideas = await ideaService.GetIdeasByContentItemIdAsync(contentItemId, cancellationToken);
+        return Ok(ideas);
+    }
+
+    [HttpGet("{ideaId:guid}")]
+    public async Task<ActionResult<ContentIdeaDto>> GetIdeaById(
+        Guid contentItemId,
+        Guid ideaId,
+        CancellationToken cancellationToken)
+    {
+        var idea = await ideaService.GetIdeaByIdAsync(contentItemId, ideaId, cancellationToken);
+        if (idea == null) return NotFound();
+        return Ok(idea);
+    }
+
+    [HttpGet("{ideaId:guid}/versions")]
+    public async Task<ActionResult<List<ContentIdeaVersionDto>>> GetIdeaVersions(
+        Guid contentItemId,
+        Guid ideaId,
+        CancellationToken cancellationToken)
+    {
+        var versions = await ideaService.GetIdeaVersionsAsync(contentItemId, ideaId, cancellationToken);
+        return Ok(versions);
+    }
+
+    [HttpPost("generate")]
+    [HttpPost("generate-ai-ideas")]
+    public async Task<ActionResult<List<ContentIdeaDto>>> GenerateAiIdeas(
+        Guid contentItemId,
+        [FromBody] GenerateIdeasOptions? options,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var ideas = await ideaService.GenerateAiIdeasAsync(contentItemId, options, email, cancellationToken);
+            return Ok(ideas);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ContentIdeaDto>> CreateManualIdea(
+        Guid contentItemId,
+        [FromBody] CreateIdeaRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var idea = await ideaService.CreateManualIdeaAsync(contentItemId, request, email, cancellationToken);
+            return CreatedAtAction(nameof(GetIdeaById), new { contentItemId, ideaId = idea.Id }, idea);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("{ideaId:guid}")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ContentIdeaDto>> UpdateIdea(
+        Guid contentItemId,
+        Guid ideaId,
+        [FromBody] UpdateIdeaRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var idea = await ideaService.UpdateIdeaAsync(contentItemId, ideaId, request, email, cancellationToken);
+            return Ok(idea);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{ideaId:guid}/select")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ContentIdeaDto>> SelectIdea(
+        Guid contentItemId,
+        Guid ideaId,
+        [FromBody] SelectIdeaRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var idea = await ideaService.SelectIdeaAsync(contentItemId, ideaId, request, email, cancellationToken);
+            return Ok(idea);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{ideaId:guid}/dismiss")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ContentIdeaDto>> DismissIdea(
+        Guid contentItemId,
+        Guid ideaId,
+        [FromBody] DismissIdeaRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var idea = await ideaService.DismissIdeaAsync(contentItemId, ideaId, request, email, cancellationToken);
+            return Ok(idea);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{ideaId:guid}/reopen")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ContentIdeaDto>> ReopenIdea(
+        Guid contentItemId,
+        Guid ideaId,
+        [FromBody] ReopenIdeaRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var idea = await ideaService.ReopenIdeaAsync(contentItemId, ideaId, request, email, cancellationToken);
+            return Ok(idea);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    private string GetCurrentUserEmail() => User.FindFirstValue(ClaimTypes.Email) ?? "anonymous";
+}

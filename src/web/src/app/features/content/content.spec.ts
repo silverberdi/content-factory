@@ -5,9 +5,13 @@ import { provideRouter } from '@angular/router';
 import { ContentListComponent } from './content-list.component';
 import { ContentDetailComponent } from './content-detail.component';
 import { TruthSourceReviewStudioComponent } from './truth-source-review-studio.component';
+import { ContentIdeasComponent } from './content-ideas.component';
+import { GenerateIdeasModalComponent } from './generate-ideas-modal.component';
+import { IdeaEditDrawerComponent } from './idea-edit-drawer.component';
+import { IdeaVersionHistoryDrawerComponent } from './idea-version-history-drawer.component';
 import { EditorialTasksListComponent } from './editorial-tasks-list.component';
 import { AttachEvidenceModalComponent } from './attach-evidence-modal.component';
-import { ApiService, ContentItemDetailDto, TruthSourceDto } from '../../core/api.service';
+import { ApiService, ContentIdeaDto, ContentIdeaVersionDto, ContentItemDetailDto, TruthSourceDto } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 
 describe('Content & TruthSource Feature Components', () => {
@@ -17,6 +21,10 @@ describe('Content & TruthSource Feature Components', () => {
         ContentListComponent,
         ContentDetailComponent,
         TruthSourceReviewStudioComponent,
+        ContentIdeasComponent,
+        GenerateIdeasModalComponent,
+        IdeaEditDrawerComponent,
+        IdeaVersionHistoryDrawerComponent,
         EditorialTasksListComponent,
         AttachEvidenceModalComponent
       ],
@@ -336,5 +344,262 @@ describe('Content & TruthSource Feature Components', () => {
     expect(el.textContent).toContain('Idea clave 1');
     expect(el.textContent).toContain('El 68% de las empresas evalúan pensamiento crítico');
     expect(el.textContent).toContain('No prometer fórmulas mágicas');
+  });
+
+  it('should create ContentIdeasComponent and render Idea Matrix with Proposed and Selected ideas', () => {
+    const fixture = TestBed.createComponent(ContentIdeasComponent);
+    const component = fixture.componentInstance;
+
+    const mockDetail: ContentItemDetailDto = {
+      id: '00000000-0000-0000-0000-000000000301',
+      channelId: '00000000-0000-0000-0000-000000000010',
+      channelName: 'IA Simple ES',
+      title: '3 Habilidades Clave en 2026',
+      slug: '3-habilidades-clave-2026',
+      stage: 'IdeaSelected',
+      status: 'Active',
+      version: 2,
+      createdAtUtc: new Date().toISOString(),
+      createdByEmail: 'silverio.bernal@gmail.com',
+      updatedAtUtc: new Date().toISOString(),
+      updatedByEmail: 'silverio.bernal@gmail.com',
+      evidences: [],
+      truthSource: {
+        id: '00000000-0000-0000-0000-000000000302',
+        contentItemId: '00000000-0000-0000-0000-000000000301',
+        status: 'Approved',
+        summary: 'Resumen factual...',
+        keyIdeas: [],
+        verifiableClaims: [],
+        evidenceReferences: [],
+        riskNotes: '',
+        doNotSayConstraints: [],
+        possibleAngles: [],
+        localizationNotes: '',
+        rejectionReason: null,
+        rejectedAtUtc: null,
+        rejectedByEmail: null,
+        approvedAtUtc: new Date().toISOString(),
+        approvedByEmail: 'silverio.bernal@gmail.com',
+        version: 1,
+        createdAtUtc: new Date().toISOString(),
+        createdByEmail: 'silverio.bernal@gmail.com',
+        updatedAtUtc: new Date().toISOString(),
+        updatedByEmail: 'silverio.bernal@gmail.com'
+      }
+    };
+
+    const mockIdeas: ContentIdeaDto[] = [
+      {
+        id: '00000000-0000-0000-0000-000000000401',
+        contentItemId: '00000000-0000-0000-0000-000000000301',
+        truthSourceId: '00000000-0000-0000-0000-000000000302',
+        truthSourceVersionId: '00000000-0000-0000-0000-000000000303',
+        title: '3 Habilidades Clave que la IA No Reemplaza en 2026',
+        angle: 'Enfoque contraintuitivo / Empoderamiento profesional',
+        hookStrategy: '¿Crees que un prompt te salvará en 2026?',
+        audienceValue: 'Aprender pensamiento crítico y auditoría humana',
+        format: 'YouTube Short 30-60s',
+        intendedOutcome: 'Inspiración / Retención',
+        freshnessClass: 'Timely',
+        priority: 'High',
+        rationale: 'Aprovecha la síntesis factual',
+        status: 'Selected',
+        dismissalNotes: null,
+        selectedAtUtc: new Date().toISOString(),
+        selectedByEmail: 'operator@silverman.pro',
+        version: 1,
+        createdAtUtc: new Date().toISOString(),
+        createdByEmail: 'operator@silverman.pro',
+        updatedAtUtc: new Date().toISOString(),
+        updatedByEmail: 'operator@silverman.pro'
+      },
+      {
+        id: '00000000-0000-0000-0000-000000000402',
+        contentItemId: '00000000-0000-0000-0000-000000000301',
+        truthSourceId: '00000000-0000-0000-0000-000000000302',
+        truthSourceVersionId: '00000000-0000-0000-0000-000000000303',
+        title: 'El Error de 1.000€ que Cometen al Delegar Tareas en IA',
+        angle: 'Alerta de riesgo operativo en contabilidad',
+        hookStrategy: 'Un fallo tonto en una respuesta de IA puede costarte carísimo',
+        audienceValue: 'Checklist de 3 pasos para auditar resúmenes',
+        format: 'YouTube Short 30-60s',
+        intendedOutcome: 'Prevención de errores',
+        freshnessClass: 'Evergreen',
+        priority: 'Normal',
+        rationale: 'Guardrails de precisión',
+        status: 'Proposed',
+        dismissalNotes: null,
+        selectedAtUtc: null,
+        selectedByEmail: null,
+        version: 1,
+        createdAtUtc: new Date().toISOString(),
+        createdByEmail: 'operator@silverman.pro',
+        updatedAtUtc: new Date().toISOString(),
+        updatedByEmail: 'operator@silverman.pro'
+      }
+    ];
+
+    component.contentItem.set(mockDetail);
+    component.ideas.set(mockIdeas);
+    component.isLoading.set(false);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Matriz de Ideas y Ángulos Creativos');
+    expect(el.textContent).toContain('3 Habilidades Clave que la IA No Reemplaza en 2026');
+    expect(el.textContent).toContain('El Error de 1.000€ que Cometen al Delegar Tareas en IA');
+    expect(el.textContent).toContain('Idea Activa Seleccionada');
+    expect(component.selectedIdea()?.id).toBe('00000000-0000-0000-0000-000000000401');
+    expect(component.getCountForFilter('PROPOSED')).toBe(1);
+    expect(component.getCountForFilter('SELECTED')).toBe(1);
+  });
+
+  it('should render GenerateIdeasModalComponent and emit generated ideas', () => {
+    const fixture = TestBed.createComponent(GenerateIdeasModalComponent);
+    const component = fixture.componentInstance;
+
+    component.isOpen = true;
+    component.contentItemId = '00000000-0000-0000-0000-000000000301';
+    component.truthSourceVersionNumber = 1;
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Generar Propuestas de Ideas con IA');
+    expect(el.textContent).toContain('DeepSeek Reasoning');
+    expect(component.count).toBe(3);
+
+    component.count = 4;
+    expect(component.count).toBe(4);
+  });
+
+  it('should render IdeaEditDrawerComponent in edit mode and populate form values', () => {
+    const fixture = TestBed.createComponent(IdeaEditDrawerComponent);
+    const component = fixture.componentInstance;
+
+    const mockIdea: ContentIdeaDto = {
+      id: '00000000-0000-0000-0000-000000000401',
+      contentItemId: '00000000-0000-0000-0000-000000000301',
+      truthSourceId: '00000000-0000-0000-0000-000000000302',
+      truthSourceVersionId: '00000000-0000-0000-0000-000000000303',
+      title: 'Idea Editable Original',
+      angle: 'Ángulo Original',
+      hookStrategy: 'Gancho Original',
+      audienceValue: 'Valor Original',
+      format: 'YouTube Short 30-60s',
+      intendedOutcome: 'Outcome',
+      freshnessClass: 'Timely',
+      priority: 'Normal',
+      rationale: 'Rationale',
+      status: 'Proposed',
+      dismissalNotes: null,
+      selectedAtUtc: null,
+      selectedByEmail: null,
+      version: 2,
+      createdAtUtc: new Date().toISOString(),
+      createdByEmail: 'operator@silverman.pro',
+      updatedAtUtc: new Date().toISOString(),
+      updatedByEmail: 'operator@silverman.pro'
+    };
+
+    component.isOpen = true;
+    component.contentItemId = '00000000-0000-0000-0000-000000000301';
+    component.idea = mockIdea;
+    component.ngOnChanges({
+      isOpen: {
+        currentValue: true,
+        previousValue: false,
+        firstChange: true,
+        isFirstChange: () => true
+      }
+    });
+    fixture.detectChanges();
+
+    expect(component.isEditMode).toBe(true);
+    expect(component.form.title).toBe('Idea Editable Original');
+    expect(component.form.angle).toBe('Ángulo Original');
+    expect(component.form.hookStrategy).toBe('Gancho Original');
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Editar Idea (v2)');
+    expect(el.textContent).toContain('Bloqueo Optimista Activo');
+  });
+
+  it('should render IdeaVersionHistoryDrawerComponent with version history timeline', () => {
+    const fixture = TestBed.createComponent(IdeaVersionHistoryDrawerComponent);
+    const component = fixture.componentInstance;
+
+    const mockVersions: ContentIdeaVersionDto[] = [
+      {
+        id: '00000000-0000-0000-0000-000000000501',
+        contentIdeaId: '00000000-0000-0000-0000-000000000401',
+        contentItemId: '00000000-0000-0000-0000-000000000301',
+        truthSourceId: '00000000-0000-0000-0000-000000000302',
+        truthSourceVersionId: '00000000-0000-0000-0000-000000000303',
+        versionNumber: 1,
+        title: 'Versión 1 de la Idea',
+        angle: 'Ángulo V1',
+        hookStrategy: 'Gancho V1',
+        audienceValue: 'Valor V1',
+        format: 'YouTube Short 30-60s',
+        intendedOutcome: 'Outcome',
+        freshnessClass: 'Timely',
+        priority: 'Normal',
+        rationale: 'Rationale',
+        status: 'Proposed',
+        dismissalNotes: null,
+        editedByEmail: 'operator@silverman.pro',
+        editedAtUtc: new Date().toISOString(),
+        changeSummary: 'Creación inicial por IA.'
+      }
+    ];
+
+    component.isOpen = true;
+    component.idea = {
+      id: '00000000-0000-0000-0000-000000000401',
+      contentItemId: '00000000-0000-0000-0000-000000000301',
+      truthSourceId: '00000000-0000-0000-0000-000000000302',
+      truthSourceVersionId: '00000000-0000-0000-0000-000000000303',
+      title: 'Idea de Prueba',
+      angle: 'Ángulo',
+      hookStrategy: 'Gancho',
+      audienceValue: 'Valor',
+      format: 'YouTube Short 30-60s',
+      intendedOutcome: 'Outcome',
+      freshnessClass: 'Timely',
+      priority: 'Normal',
+      rationale: 'Rationale',
+      status: 'Proposed',
+      dismissalNotes: null,
+      selectedAtUtc: null,
+      selectedByEmail: null,
+      version: 1,
+      createdAtUtc: new Date().toISOString(),
+      createdByEmail: 'operator@silverman.pro',
+      updatedAtUtc: new Date().toISOString(),
+      updatedByEmail: 'operator@silverman.pro'
+    };
+    component.versions.set(mockVersions);
+    component.isLoading.set(false);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Historial de Versiones');
+    expect(el.textContent).toContain('Versión 1 de la Idea');
+    expect(el.textContent).toContain('Creación inicial por IA.');
+  });
+
+  it('should surface HTTP 409 concurrency conflict in IdeaEditDrawerComponent and offer reload action', () => {
+    const fixture = TestBed.createComponent(IdeaEditDrawerComponent);
+    const component = fixture.componentInstance;
+
+    component.isOpen = true;
+    component.concurrencyError.set('La idea fue modificada por otro operador concurrentemente. Por favor recarga los últimos cambios.');
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Conflicto de Edición Concurrente (HTTP 409)');
+    expect(el.textContent).toContain('La idea fue modificada por otro operador concurrentemente');
+    expect(el.textContent).toContain('Recargar Versión Más Reciente');
   });
 });

@@ -269,6 +269,289 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
         return sb.ToString();
     }
 
+    public async Task<AiCapabilityResult<GenerateIdeasResponse>> GenerateIdeasAsync(
+        GenerateIdeasRequest request,
+        AiRoutingContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var provider = ResolveProvider(context);
+        var apiKey = configuration["DEEPSEEK_API_KEY"] ?? Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+
+        if (provider == AiProviders.Mock || (provider == AiProviders.DeepSeek && string.IsNullOrWhiteSpace(apiKey)))
+        {
+            logger.LogInformation("Using Mock AI Provider for capability '{Capability}' (Channel: {ChannelId})",
+                AiCapabilities.GenerateIdeas, context.ChannelId);
+            return await ExecuteMockGenerateIdeasAsync(request, context, cancellationToken);
+        }
+
+        if (provider == AiProviders.DeepSeek)
+        {
+            return await ExecuteDeepSeekGenerateIdeasAsync(request, context, apiKey!, cancellationToken);
+        }
+
+        return await ExecuteMockGenerateIdeasAsync(request, context, cancellationToken);
+    }
+
+    private async Task<AiCapabilityResult<GenerateIdeasResponse>> ExecuteDeepSeekGenerateIdeasAsync(
+        GenerateIdeasRequest request,
+        AiRoutingContext context,
+        string apiKey,
+        CancellationToken cancellationToken)
+    {
+        var model = context.PreferredModel ?? configuration["DEEPSEEK_MODEL"] ?? "deepseek-chat";
+        var endpoint = configuration["DEEPSEEK_API_URL"] ?? "https://api.deepseek.com/chat/completions";
+        var promptVersion = "1.0";
+
+        var stopwatch = Stopwatch.StartNew();
+        var client = httpClientFactory.CreateClient();
+        client.Timeout = TimeSpan.FromSeconds(45);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        var systemPrompt = BuildGenerateIdeasSystemPrompt(request);
+        var userPrompt = BuildGenerateIdeasUserPrompt(request);
+
+        var payload = new
+        {
+            model,
+            messages = new[]
+            {
+                new { role = "system", content = systemPrompt },
+                new { role = "user", content = userPrompt }
+            },
+            temperature = 0.7,
+            response_format = new { type = "json_object" }
+        };
+
+        try
+        {
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(endpoint, content, cancellationToken);
+            stopwatch.Stop();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                logger.LogError("DeepSeek API error for generate_ideas: {StatusCode} - {Error}", response.StatusCode, errorBody);
+                return await ExecuteMockGenerateIdeasAsync(request, context, cancellationToken);
+            }
+
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            var parsedRoot = JsonNode.Parse(responseBody);
+            var rawContent = parsedRoot?["choices"]?[0]?["message"]?[contentField]?.GetValue<string>()
+                ?? parsedRoot?["choices"]?[0]?["message"]?["content"]?.GetValue<string>();
+
+            if (string.IsNullOrWhiteSpace(rawContent))
+            {
+                return await ExecuteMockGenerateIdeasAsync(request, context, cancellationToken);
+            }
+
+            var tokensIn = parsedRoot?["usage"]?["prompt_tokens"]?.GetValue<int>() ?? 500;
+            var tokensOut = parsedRoot?["usage"]?["completion_tokens"]?.GetValue<int>() ?? 400;
+            var cost = CalculateCost(tokensIn, tokensOut);
+
+            var responseData = JsonSerializer.Deserialize<GenerateIdeasResponse>(rawContent, JsonOptions)
+                ?? throw new JsonException("Failed to deserialize GenerateIdeasResponse");
+
+            var recommendation = new AiRecommendation
+            {
+                Id = Guid.NewGuid(),
+                ChannelId = context.ChannelId,
+                ContentItemId = context.ContentItemId,
+                TruthSourceVersionId = request.TruthSourceVersionId,
+                Capability = AiCapabilities.GenerateIdeas,
+                Provider = AiProviders.DeepSeek,
+                Model = model,
+                PromptPolicyVersion = promptVersion,
+                StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
+                Confidence = 0.92,
+                Rationale = responseData.ConciseRationale,
+                LatencyMs = stopwatch.ElapsedMilliseconds,
+                TokensIn = tokensIn,
+                TokensOut = tokensOut,
+                EstimatedCostUsd = cost,
+                AcceptedState = "Pending",
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            dbContext.AiRecommendations.Add(recommendation);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            return new AiCapabilityResult<GenerateIdeasResponse>(true, responseData, recommendation, null);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Error calling DeepSeek API for generate_ideas, falling back to mock provider");
+            return await ExecuteMockGenerateIdeasAsync(request, context, cancellationToken);
+        }
+    }
+
+    private static readonly string contentField = "content";
+
+    private async Task<AiCapabilityResult<GenerateIdeasResponse>> ExecuteMockGenerateIdeasAsync(
+        GenerateIdeasRequest request,
+        AiRoutingContext context,
+        CancellationToken cancellationToken)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var model = "mock-reasoning-ideas-v1";
+        var promptVersion = "1.0";
+
+        var count = Math.Clamp(request.Count, 2, 5);
+        var ideas = new List<GeneratedIdeaItem>
+        {
+            new(
+                Title: $"3 Claves de {Truncate(request.Summary, 45)} que la IA No Reemplaza en 2026",
+                Angle: "Enfoque contraintuitivo / Empoderamiento: Por qué el criterio crítico supera a la memorización de prompts en entornos reales.",
+                HookStrategy: "¿Crees que un prompt te salvará en 2026? Estas 3 habilidades valen 10 veces más y ningún modelo las domina.",
+                AudienceValue: "El espectador aprende a posicionarse con pensamiento crítico y auditoría humana frente a la automatización ciega.",
+                Format: "YouTube Short 30-60s",
+                IntendedOutcome: "Inspiración práctica / Retención alta",
+                FreshnessClass: IdeaFreshnessClass.Timely,
+                Priority: IdeaPriority.High,
+                Rationale: "Aprovecha la síntesis factual sobre verificación y habilidades híbridas en el mercado laboral."
+            ),
+            new(
+                Title: $"El Error de 1.000€ que Cometen al Delegar Tareas en IA",
+                Angle: "Alerta de riesgo operativo / Caso de negocio: Auditoría de respuestas para evitar fallos legales y contables costosos.",
+                HookStrategy: "Un error tonto en una respuesta de IA puede salirte carísimo si no aplicas esta regla de 30 segundos.",
+                AudienceValue: "Checklist de 3 pasos para auditar resúmenes y extracciones de datos antes de enviarlos a clientes o jefes.",
+                Format: "YouTube Short 30-60s",
+                IntendedOutcome: "Prevención de errores / Tip accionable",
+                FreshnessClass: IdeaFreshnessClass.Evergreen,
+                Priority: IdeaPriority.Normal,
+                Rationale: "Derivado de las notas de riesgo y guardrails sobre precisión de datos en tareas administrativas."
+            ),
+            new(
+                Title: $"Cómo Usar Modelos de Razonamiento Paso a Paso Sin Complicarte",
+                Angle: "Tutorial práctico de alta eficiencia: Flujo de trabajo directo para no técnicos enfocado en resultados inmediatos.",
+                HookStrategy: "Deja de pelear con prompts kilométricos: este truco de estructura hace que la IA piense antes de contestar.",
+                AudienceValue: "Técnica concreta de framing estructurado que reduce alucinaciones y ahorra tiempo en tareas repetitivas.",
+                Format: "YouTube Short 30-60s",
+                IntendedOutcome: "Tutorial paso a paso / Guardado y compartición",
+                FreshnessClass: IdeaFreshnessClass.Timely,
+                Priority: IdeaPriority.Normal,
+                Rationale: "Enfocado en la audiencia no técnica del canal buscando soluciones aplicables sin fricción."
+            )
+        };
+
+        if (count > 3)
+        {
+            ideas.Add(new(
+                Title: "La Verdad Incómoda sobre la Automatización con IA en 2026",
+                Angle: "Debunking / Análisis realista: Desmontar mitos sobre ganancias mágicas y mostrar la realidad del trabajo aumentado.",
+                HookStrategy: "Todo el mundo te promete dinero fácil con IA... pero nadie te cuenta este detalle que cambia las reglas del juego.",
+                AudienceValue: "Claridad mental para evitar cursos engañosos y centrarse en herramientas con ROI demostrable.",
+                Format: "YouTube Short 30-60s",
+                IntendedOutcome: "Construcción de confianza / Autoridad editorial",
+                FreshnessClass: IdeaFreshnessClass.Evergreen,
+                Priority: IdeaPriority.Low,
+                Rationale: "Fortalece la autoridad editorial y los valores de sobriedad y rigor del canal."
+            ));
+        }
+
+        var responseData = new GenerateIdeasResponse(
+            Ideas: ideas.Take(count).ToList(),
+            ConciseRationale: $"Propuestas creativas estructuradas para '{request.ChannelName}' a partir de TruthSource v{request.TruthSourceVersionId.ToString()[..8]}, con diversos estilos de gancho (Pregunta provocadora, Alerta de riesgo, Tutorial directo)."
+        );
+
+        stopwatch.Stop();
+        var tokensIn = 520;
+        var tokensOut = 380;
+        var cost = CalculateCost(tokensIn, tokensOut);
+
+        var recommendation = new AiRecommendation
+        {
+            Id = Guid.NewGuid(),
+            ChannelId = context.ChannelId,
+            ContentItemId = context.ContentItemId,
+            TruthSourceVersionId = request.TruthSourceVersionId,
+            Capability = AiCapabilities.GenerateIdeas,
+            Provider = AiProviders.Mock,
+            Model = model,
+            PromptPolicyVersion = promptVersion,
+            StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
+            Confidence = 0.94,
+            Rationale = responseData.ConciseRationale,
+            LatencyMs = Math.Max(stopwatch.ElapsedMilliseconds, 30),
+            TokensIn = tokensIn,
+            TokensOut = tokensOut,
+            EstimatedCostUsd = cost,
+            AcceptedState = "Pending",
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        dbContext.AiRecommendations.Add(recommendation);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return new AiCapabilityResult<GenerateIdeasResponse>(true, responseData, recommendation, null);
+    }
+
+    private static string Truncate(string value, int maxLen) =>
+        string.IsNullOrEmpty(value) || value.Length <= maxLen ? value : value[..maxLen] + "...";
+
+    private static string BuildGenerateIdeasSystemPrompt(GenerateIdeasRequest request) =>
+        $@"Eres el estratega creativo y director editorial de Content Factory para el canal '{request.ChannelName}' (Nicho: {request.ChannelNiche}, Idioma: {request.ChannelLanguage}).
+Tu objetivo es generar {request.Count} ideas editoriales y ganchos de alto impacto para videos cortos (YouTube Shorts 30-60s) basándote ESTRICTAMENTE en los hechos y síntesis del TruthSource aprobado suministrado.
+Reglas estrictas:
+1. Cada idea debe tener un ángulo diferenciado (ej. Contraintuitivo, Prevención de Riesgo, Tutorial Paso a Paso, Análisis Realista).
+2. 'hookStrategy' DEBE ser un patrón de interrupción potente para los primeros 0-3 segundos.
+3. 'audienceValue' debe declarar explícitamente el beneficio o aprendizaje del espectador.
+4. 'format' debe ser 'YouTube Short 30-60s'.
+5. Respeta al 100% las restricciones 'doNotSayConstraints'.
+6. Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
+{{
+  ""ideas"": [
+    {{
+      ""title"": ""..."",
+      ""angle"": ""..."",
+      ""hookStrategy"": ""..."",
+      ""audienceValue"": ""..."",
+      ""format"": ""YouTube Short 30-60s"",
+      ""intendedOutcome"": ""..."",
+      ""freshnessClass"": ""Breaking | Timely | Evergreen"",
+      ""priority"": ""Low | Normal | High | Urgent"",
+      ""rationale"": ""...""
+    }}
+  ],
+  ""conciseRationale"": ""...""
+}}
+NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
+
+    private static string BuildGenerateIdeasUserPrompt(GenerateIdeasRequest request)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Canal: {request.ChannelName} ({request.ChannelLanguage}) - Nicho: {request.ChannelNiche}");
+        sb.AppendLine($"TruthSource Resumen: {request.Summary}");
+        sb.AppendLine("Ideas Clave:");
+        foreach (var ki in request.KeyIdeas)
+        {
+            sb.AppendLine($"- {ki}");
+        }
+        sb.AppendLine("Afirmaciones Verificables:");
+        foreach (var vc in request.VerifiableClaims)
+        {
+            sb.AppendLine($"- {vc.Claim} (Cita: {vc.SourceCitation})");
+        }
+        if (request.DoNotSayConstraints.Count > 0)
+        {
+            sb.AppendLine("Restricciones (Do NOT Say):");
+            foreach (var sc in request.DoNotSayConstraints)
+            {
+                sb.AppendLine($"- {sc}");
+            }
+        }
+        if (!string.IsNullOrWhiteSpace(request.TargetAudience))
+        {
+            sb.AppendLine($"Audiencia objetivo: {request.TargetAudience}");
+        }
+        if (!string.IsNullOrWhiteSpace(request.FocusAngleStyle))
+        {
+            sb.AppendLine($"Estilo de ángulo preferido: {request.FocusAngleStyle}");
+        }
+        sb.AppendLine($"\nGenera {request.Count} propuestas creativas distintas en formato JSON.");
+        return sb.ToString();
+    }
+
     private static decimal CalculateCost(int tokensIn, int tokensOut)
     {
         // DeepSeek approx pricing: $0.14 / 1M in, $0.28 / 1M out

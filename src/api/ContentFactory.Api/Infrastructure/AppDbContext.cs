@@ -20,6 +20,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ContentItemEvidence> ContentItemEvidences => Set<ContentItemEvidence>();
     public DbSet<TruthSource> TruthSources => Set<TruthSource>();
     public DbSet<TruthSourceVersion> TruthSourceVersions => Set<TruthSourceVersion>();
+    public DbSet<ContentIdea> ContentIdeas => Set<ContentIdea>();
+    public DbSet<ContentIdeaVersion> ContentIdeaVersions => Set<ContentIdeaVersion>();
     public DbSet<EditorialTask> EditorialTasks => Set<EditorialTask>();
     public DbSet<AiRecommendation> AiRecommendations => Set<AiRecommendation>();
 
@@ -217,6 +219,67 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasIndex(v => new { v.TruthSourceId, v.VersionNumber }).IsUnique();
         });
 
+        modelBuilder.Entity<ContentIdea>(entity =>
+        {
+            entity.ToTable("content_ideas");
+            entity.HasKey(i => i.Id);
+            entity.Property(i => i.ContentItemId).IsRequired();
+            entity.Property(i => i.TruthSourceId).IsRequired();
+            entity.Property(i => i.TruthSourceVersionId).IsRequired();
+            entity.Property(i => i.Title).IsRequired().HasMaxLength(256);
+            entity.Property(i => i.Angle).IsRequired().HasMaxLength(512);
+            entity.Property(i => i.HookStrategy).IsRequired().HasMaxLength(512);
+            entity.Property(i => i.AudienceValue).IsRequired().HasMaxLength(512);
+            entity.Property(i => i.Format).IsRequired().HasMaxLength(64);
+            entity.Property(i => i.IntendedOutcome).IsRequired().HasMaxLength(128);
+            entity.Property(i => i.FreshnessClass).IsRequired().HasMaxLength(32);
+            entity.Property(i => i.Priority).IsRequired().HasMaxLength(32);
+            entity.Property(i => i.Rationale).IsRequired().HasMaxLength(1024);
+            entity.Property(i => i.Status).IsRequired().HasMaxLength(32);
+            entity.Property(i => i.DismissalNotes).HasMaxLength(1024);
+            entity.Property(i => i.SelectedByEmail).HasMaxLength(256);
+            entity.Property(i => i.Version).IsRequired().IsConcurrencyToken();
+            entity.Property(i => i.CreatedAtUtc).IsRequired();
+            entity.Property(i => i.CreatedByEmail).IsRequired().HasMaxLength(256);
+            entity.Property(i => i.UpdatedAtUtc).IsRequired();
+            entity.Property(i => i.UpdatedByEmail).HasMaxLength(256);
+
+            entity.HasIndex(i => i.ContentItemId);
+            entity.HasIndex(i => i.TruthSourceId);
+            entity.HasIndex(i => i.TruthSourceVersionId);
+            entity.HasIndex(i => new { i.ContentItemId, i.Status });
+        });
+
+        modelBuilder.Entity<ContentIdeaVersion>(entity =>
+        {
+            entity.ToTable("content_idea_versions");
+            entity.HasKey(v => v.Id);
+            entity.Property(v => v.ContentIdeaId).IsRequired();
+            entity.Property(v => v.ContentItemId).IsRequired();
+            entity.Property(v => v.TruthSourceId).IsRequired();
+            entity.Property(v => v.TruthSourceVersionId).IsRequired();
+            entity.Property(v => v.VersionNumber).IsRequired();
+            entity.Property(v => v.Title).IsRequired().HasMaxLength(256);
+            entity.Property(v => v.Angle).IsRequired().HasMaxLength(512);
+            entity.Property(v => v.HookStrategy).IsRequired().HasMaxLength(512);
+            entity.Property(v => v.AudienceValue).IsRequired().HasMaxLength(512);
+            entity.Property(v => v.Format).IsRequired().HasMaxLength(64);
+            entity.Property(v => v.IntendedOutcome).IsRequired().HasMaxLength(128);
+            entity.Property(v => v.FreshnessClass).IsRequired().HasMaxLength(32);
+            entity.Property(v => v.Priority).IsRequired().HasMaxLength(32);
+            entity.Property(v => v.Rationale).IsRequired().HasMaxLength(1024);
+            entity.Property(v => v.Status).IsRequired().HasMaxLength(32);
+            entity.Property(v => v.DismissalNotes).HasMaxLength(1024);
+            entity.Property(v => v.EditedByEmail).IsRequired().HasMaxLength(256);
+            entity.Property(v => v.EditedAtUtc).IsRequired();
+            entity.Property(v => v.ChangeSummary).HasMaxLength(1024);
+
+            entity.HasIndex(v => v.ContentIdeaId);
+            entity.HasIndex(v => v.ContentItemId);
+            entity.HasIndex(v => v.TruthSourceId);
+            entity.HasIndex(v => new { v.ContentIdeaId, v.VersionNumber }).IsUnique();
+        });
+
         modelBuilder.Entity<EditorialTask>(entity =>
         {
             entity.ToTable("editorial_tasks");
@@ -253,6 +316,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             entity.HasIndex(r => r.ChannelId);
             entity.HasIndex(r => r.ContentItemId);
+            entity.HasIndex(r => r.TruthSourceVersionId);
             entity.HasIndex(r => r.Capability);
         });
     }
