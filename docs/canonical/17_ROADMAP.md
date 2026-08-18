@@ -14,7 +14,7 @@ Includes:
 - solution scaffold;
 - Angular PWA;
 - .NET backend;
-- MySQL dev/prod configuration;
+- PostgreSQL dev/prod configuration;
 - local GOD auth;
 - Google production auth boundary;
 - SYSTEM_OWNER;
@@ -116,7 +116,7 @@ Capabilities:
 Some resilience work may enter earlier when required.
 
 Capabilities:
-- automated MySQL backup to Google Drive;
+- automated PostgreSQL backup to Google Drive;
 - MinIO off-site archive copy;
 - backup dashboard health;
 - retention;

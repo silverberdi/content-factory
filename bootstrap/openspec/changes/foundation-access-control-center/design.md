@@ -56,7 +56,7 @@ Do not rely only on frontend visibility.
 
 ## Persistence
 
-Use existing MySQL.
+Use existing PostgreSQL.
 Database selection is environment configuration.
 
 Use migrations.

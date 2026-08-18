@@ -10,8 +10,7 @@ Authentication:
 `development-bypass` GOD mode by default.
 
 Database:
-Ubuntu `content_factory_dev` reached through SSH tunnel.
-MySQL is never publicly exposed.
+Ubuntu `content_factory_dev` on existing PostgreSQL instance (`192.168.0.194:5432`) reached directly over the trusted private LAN using scoped role `content_factory_app`. SSH access is administrative only. PostgreSQL is never publicly exposed.
 
 n8n:
 production-only; local development uses mocks by default.
@@ -21,7 +20,7 @@ production-only; local development uses mocks by default.
 Host: Ubuntu server.
 
 Database:
-`content_factory_prod` on existing MySQL instance.
+`content_factory_prod` on existing PostgreSQL instance using scoped role `content_factory_app`.
 
 Public access:
 Cloudflare Tunnel.
@@ -31,7 +30,7 @@ Default hosts:
 - `factory-core.silverman.pro`
 
 Internal:
-- MySQL
+- PostgreSQL
 - MinIO
 - n8n internal endpoints/UI
 

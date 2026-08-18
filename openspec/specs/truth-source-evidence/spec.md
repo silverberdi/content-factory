@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the structured editorial evidence layer `TruthSource`, automated AI draft synthesis (`build_truth_source`) via configured provider routing, structured `AIRecommendation` tracking, MySQL-compatible `Version: long` optimistic concurrency, version history tracking, and the downstream approval gate.
+Defines the structured editorial evidence layer `TruthSource`, automated AI draft synthesis (`build_truth_source`) via configured provider routing, structured `AIRecommendation` tracking, application-managed `Version: long` optimistic concurrency, version history tracking, and the downstream approval gate.
 
 ## Requirements
 
@@ -73,7 +73,7 @@ Only a `TruthSource` in "Approved" status SHALL be eligible for downstream conti
 - **WHEN** a TruthSource reaches "Approved" status
 - **THEN** downstream idea generation (`generate_ideas`) and manual idea creation are unlocked for that ContentItem.
 
-### Requirement: MySQL-compatible optimistic concurrency and versioned human editing
+### Requirement: Application-managed optimistic concurrency and versioned human editing
 
 Every human edit to a `TruthSource` SHALL provide the current expected `Version: long` token. The system SHALL increment `Version` on save, verify concurrency using EF Core concurrency token checking, and persist an immutable `TruthSourceVersion` snapshot capturing the edited fields, contributing evidence IDs, diff summary, author email, and change timestamp.
 

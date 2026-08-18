@@ -27,9 +27,25 @@ public class DashboardService(AppDbContext dbContext, IWebHostEnvironment enviro
         var activeCount = channels.Count(c => c.Status == ChannelStatus.Active);
         var pilotCount = channels.Count(c => c.Status == ChannelStatus.Pilot);
 
-        var dbStatus = dbContext.Database.IsInMemory() 
-            ? "InMemory (Test/Fallback)" 
-            : "Connected (MySQL/content_factory_dev)";
+        string dbStatus;
+        if (dbContext.Database.IsInMemory())
+        {
+            dbStatus = "InMemory (Test/Fallback)";
+        }
+        else
+        {
+            var provider = dbContext.Database.ProviderName?.Contains("Npgsql", StringComparison.OrdinalIgnoreCase) == true
+                ? "PostgreSQL"
+                : dbContext.Database.ProviderName ?? "PostgreSQL";
+            var dbName = dbContext.Database.GetDbConnection().Database;
+            if (string.IsNullOrWhiteSpace(dbName))
+            {
+                dbName = environment.IsDevelopment() ? "content_factory_dev" : "content_factory_prod";
+            }
+
+            var canConnect = await dbContext.Database.CanConnectAsync(cancellationToken);
+            dbStatus = canConnect ? $"Connected ({provider}/{dbName})" : $"Disconnected ({provider}/{dbName})";
+        }
 
         var healthStatus = channels.Count > 0 ? "healthy" : "attention-required";
 

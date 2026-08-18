@@ -15,7 +15,7 @@ This change establishes a human-testable product, not only infrastructure.
 - responsive application shell;
 - .NET 10 backend;
 - OpenAPI;
-- MySQL application persistence;
+- PostgreSQL application persistence;
 - dev/prod configuration;
 - development-only GOD auth provider;
 - production Google-auth provider boundary/configuration;

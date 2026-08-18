@@ -43,7 +43,7 @@ async function capture() {
           activeChannelsCount: 0,
           pilotChannelsCount: 1,
           totalChannelsCount: 1,
-          databaseStatus: 'Connected (MySQL/content_factory_dev)',
+          databaseStatus: 'Connected (PostgreSQL/content_factory_dev)',
           backupStatus: 'Not Configured (CF-001 Scope)',
           environment: 'Development'
         },

@@ -23,11 +23,11 @@ It is not an email inbox and not a generic CRUD admin panel.
 
 - Angular 21 + PrimeNG 21 stable + Tailwind 4 PWA.
 - .NET 10 LTS backend.
-- MySQL on existing Ubuntu instance.
-- Mac development; Ubuntu production.
+- PostgreSQL on existing Ubuntu instance (`192.168.0.194`).
+- Mac development (direct LAN connection to `content_factory_dev`); Ubuntu production (`content_factory_prod`).
 - one production n8n workflow set only.
 - MinIO runtime assets.
-- Google Drive automated off-site backup/archive.
+- Google Drive automated off-site backup/archive (PostgreSQL dump semantics).
 - DeepSeek default reasoning provider; Gemini alternate.
 - Cloudflare Tunnel for public frontend/backend.
 - modular monolith.
@@ -40,7 +40,7 @@ It is not an email inbox and not a generic CRUD admin panel.
 - TECHNICAL and EDITORIAL roles assign independently;
 - development-only GOD auth provider;
 - production MUST refuse development bypass;
-- MySQL/MinIO/n8n are not public;
+- PostgreSQL/MinIO/n8n are not public;
 - no secrets committed.
 
 ## Hard UX

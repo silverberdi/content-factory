@@ -6,15 +6,17 @@
 - Production auth: Google; invitation-only.
 - Development auth: local GOD mode; impossible in production.
 - Mac is development workstation.
-- Ubuntu is production host.
-- Existing Ubuntu MySQL is used.
-- DBs: content_factory_dev and content_factory_prod.
-- MySQL is not publicly exposed.
+- Ubuntu is production host (`192.168.0.194`).
+- Existing PostgreSQL instance on Ubuntu is used.
+- Application databases: content_factory_dev and content_factory_prod.
+- Scoped application role: content_factory_app.
+- Development connects directly to PostgreSQL over private LAN; SSH is administrative only.
+- PostgreSQL is not publicly exposed.
 - Cloudflare Tunnel exposes frontend/backend.
 - Default hosts: factory.silverman.pro and factory-core.silverman.pro.
 - n8n has only production workflows; no dev/prod workflow split.
 - MinIO is runtime object storage.
-- Google Drive backup/archive is an automated feature.
+- Google Drive backup/archive is an automated feature using PostgreSQL backup semantics.
 - DeepSeek is default reasoning brain; Gemini configurable alternate.
 - AI routing supports defaults and overrides.
 - Dashboard exists from the first slice and grows incrementally.

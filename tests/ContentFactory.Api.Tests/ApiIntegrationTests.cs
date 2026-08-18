@@ -31,9 +31,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["USE_IN_MEMORY_DB"] = "true",
                 ["ConnectionStrings:DefaultConnection"] = "Filename=:memory:",
                 ["DATABASE_URL"] = null,
-                ["MYSQL_HOST"] = null,
-                ["MYSQL_DATABASE"] = null,
-                ["MYSQL_USER"] = null
+                ["POSTGRES_HOST"] = null,
+                ["POSTGRES_DATABASE"] = null,
+                ["POSTGRES_USER"] = null
             });
         });
     }

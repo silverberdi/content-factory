@@ -20,16 +20,16 @@ context: |
   - Production authentication is invitation-only Google OAuth/OIDC.
   - Development on Mac uses explicit development-only GOD bypass.
   - Production MUST refuse to start with development bypass.
-  - No public MySQL, MinIO or n8n.
+  - No public PostgreSQL, MinIO or n8n.
   - Secrets never committed.
 
   Architecture:
   - Frontend: Angular 21 stable, standalone, PrimeNG 21 stable, Tailwind CSS 4, PWA.
   - Backend: ASP.NET Core .NET 10 LTS, REST/OpenAPI, modular monolith.
-  - Database: existing Ubuntu MySQL; content_factory_dev and content_factory_prod.
-  - Development Mac reaches dev DB through SSH tunnel.
+  - Database: existing Ubuntu PostgreSQL (192.168.0.194); content_factory_dev and content_factory_prod.
+  - Development Mac reaches dev DB directly over private LAN.
   - Assets: MinIO.
-  - Off-site backup/archive: automated Google Drive feature.
+  - Off-site backup/archive: automated Google Drive feature (PostgreSQL backup semantics).
   - n8n: one production workflow set only; no dev/prod workflow duplication.
   - Public through Cloudflare Tunnel.
   - Default hosts: factory.silverman.pro and factory-core.silverman.pro.

@@ -44,7 +44,7 @@ describe('App & Core Components', () => {
       activeChannelsCount: 3,
       pilotChannelsCount: 1,
       totalChannelsCount: 4,
-      databaseStatus: 'Connected (MySQL/content_factory_dev)',
+      databaseStatus: 'Connected (PostgreSQL/content_factory_dev)',
       backupStatus: 'Not Configured (CF-001 Scope)',
       environment: 'Development'
     };
@@ -54,6 +54,6 @@ describe('App & Core Components', () => {
     expect(el.textContent).toContain('Factory Health');
     expect(el.textContent).toContain('healthy');
     expect(el.textContent).toContain('Total Channels');
-    expect(el.textContent).toContain('MySQL/content_factory_dev');
+    expect(el.textContent).toContain('PostgreSQL/content_factory_dev');
   });
 });

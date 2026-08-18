@@ -28,19 +28,22 @@ Expected first-year concurrency: fewer than 10 concurrent users.
 - OpenAPI contract
 - modular feature boundaries
 - asynchronous Job model for long operations
-- MySQL persistence using a .NET-10/EF-compatible official/stable provider selected at implementation time; do not use a prerelease provider in production without an explicit canonical decision.
+- PostgreSQL persistence using official `Npgsql.EntityFrameworkCore.PostgreSQL` provider.
 
 ## Persistence
 
-Existing Ubuntu MySQL instance.
+Existing PostgreSQL instance on Ubuntu server (`192.168.0.194`).
 
 Application databases:
 - `content_factory_dev`
 - `content_factory_prod`
 
-Development runs on macOS and reaches `content_factory_dev` through an SSH tunnel. Never expose MySQL publicly.
+Scoped application role:
+- `content_factory_app`
 
-Domain state lives in MySQL.
+Development runs on macOS and reaches `content_factory_dev` directly over the trusted private LAN (`192.168.0.194:5432`). SSH access is administrative only. Never expose PostgreSQL publicly.
+
+Domain state lives in PostgreSQL.
 Media/assets live in MinIO.
 Google Drive is off-site backup/archive, not primary runtime storage.
 

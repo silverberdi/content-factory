@@ -87,7 +87,7 @@ public static class DatabaseInitializer
             }
         }
 
-        // 2. Seed initial pilot channel IA Simple ES (in both dev and prod baseline)
+        // 2. Seed initial pilot channel IA Simple ES (Baseline channel)
         const string pilotSlug = "ia-simple-es";
         var pilotChannel = await dbContext.Channels.FirstOrDefaultAsync(c => c.Slug == pilotSlug, cancellationToken);
         if (pilotChannel == null)
@@ -108,7 +108,16 @@ public static class DatabaseInitializer
             logger.LogInformation("Initial pilot channel 'IA Simple ES' initialized.");
         }
 
-        // 3. Seed initial Discovery Sources for IA Simple ES
+        // In Production, stop after system baseline (Schema, Owner, Canonical Roles, Pilot Channel).
+        // Zero representative demo/development content (DiscoverySources, Candidates, ContentItems, TruthSources, Ideas, Tasks) is created in Production or content_factory_prod.
+        var isProdDb = !dbContext.Database.IsInMemory() && string.Equals(dbContext.Database.GetDbConnection().Database, "content_factory_prod", StringComparison.OrdinalIgnoreCase);
+        if (!isDevelopment || isProdDb)
+        {
+            logger.LogInformation("Production bootstrap initialization complete (schema, SYSTEM_OWNER, canonical roles, pilot channel). Skipping representative development seed data (isDevelopment={IsDev}, isProdDb={IsProdDb}).", isDevelopment, isProdDb);
+            return;
+        }
+
+        // 3. Seed initial Discovery Sources for IA Simple ES (Development only)
         var existingSources = await dbContext.DiscoverySources
             .Where(s => s.ChannelId == pilotChannel.Id)
             .ToListAsync(cancellationToken);

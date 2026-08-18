@@ -4,7 +4,7 @@
 - [ ] Scaffold .NET 10 API and Angular 21 PWA with strict TypeScript.
 - [ ] Configure PrimeNG 21 stable, Tailwind 4 and light/dark theme foundation.
 - [ ] Establish modular backend boundaries and OpenAPI.
-- [ ] Configure MySQL environment settings and migrations.
+- [ ] Configure PostgreSQL environment settings and migrations.
 - [ ] Implement DevelopmentBypassAuthenticationProvider and production fail-fast guard.
 - [ ] Implement GoogleAuthenticationProvider boundary/configuration without committing secrets.
 - [ ] Implement SYSTEM_OWNER, roles, capabilities and authorization policies.

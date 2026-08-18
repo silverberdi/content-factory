@@ -90,7 +90,7 @@ Public:
 - authenticated inbound callbacks only when explicitly designed.
 
 Not public:
-- MySQL;
+- PostgreSQL;
 - MinIO;
 - n8n management UI/webhooks unless a specific authenticated endpoint is required;
 - internal service ports.

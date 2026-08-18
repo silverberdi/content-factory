@@ -22,12 +22,12 @@ Do not use PrimeNG 22 release candidates for the production baseline.
 - .NET 10 LTS
 - ASP.NET Core
 - OpenAPI
-- MySQL
+- PostgreSQL (`Npgsql.EntityFrameworkCore.PostgreSQL`)
 - structured logging
 - modular monolith
 
 ## Storage/orchestration
-- existing MySQL on Ubuntu
+- existing PostgreSQL on Ubuntu (`192.168.0.194`)
 - MinIO
 - single production n8n workflow set
 - Google Drive off-site backup/archive

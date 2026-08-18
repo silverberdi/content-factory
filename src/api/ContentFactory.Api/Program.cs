@@ -30,6 +30,7 @@ if (builder.Environment.IsProduction() && string.Equals(authMode, "development-b
 var useInMemory = string.Equals(Environment.GetEnvironmentVariable("USE_IN_MEMORY_DB"), "true", StringComparison.OrdinalIgnoreCase)
     || string.Equals(builder.Configuration["USE_IN_MEMORY_DB"], "true", StringComparison.OrdinalIgnoreCase)
     || string.Equals(builder.Configuration["DATABASE_PROVIDER"], "in-memory", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(builder.Configuration["DB_PROVIDER"], "in-memory", StringComparison.OrdinalIgnoreCase)
     || builder.Configuration.GetConnectionString("DefaultConnection")?.StartsWith("Filename=", StringComparison.OrdinalIgnoreCase) == true;
 
 if (useInMemory)
@@ -46,14 +47,14 @@ else
 
     if (string.IsNullOrWhiteSpace(connectionString))
     {
-        var host = builder.Configuration["MYSQL_HOST"];
-        var port = builder.Configuration["MYSQL_PORT"] ?? "3306";
-        var db = builder.Configuration["MYSQL_DATABASE"];
-        var user = builder.Configuration["MYSQL_USER"];
-        var pass = builder.Configuration["MYSQL_PASSWORD"];
+        var host = builder.Configuration["POSTGRES_HOST"] ?? builder.Configuration["DB_HOST"];
+        var port = builder.Configuration["POSTGRES_PORT"] ?? builder.Configuration["DB_PORT"] ?? "5432";
+        var db = builder.Configuration["POSTGRES_DATABASE"] ?? builder.Configuration["POSTGRES_DB"] ?? builder.Configuration["DB_NAME"];
+        var user = builder.Configuration["POSTGRES_USER"] ?? builder.Configuration["DB_USER"];
+        var pass = builder.Configuration["POSTGRES_PASSWORD"] ?? builder.Configuration["DB_PASSWORD"];
         if (!string.IsNullOrWhiteSpace(host) && !string.IsNullOrWhiteSpace(db) && !string.IsNullOrWhiteSpace(user))
         {
-            connectionString = $"Server={host};Port={port};Database={db};User={user};Password={pass};";
+            connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};";
         }
     }
 
@@ -63,9 +64,9 @@ else
         {
             try
             {
-                options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 36)), mySqlOptions =>
+                options.UseNpgsql(connectionString, npgsqlOptions =>
                 {
-                    mySqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null);
+                    npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorCodesToAdd: null);
                 });
             }
             catch

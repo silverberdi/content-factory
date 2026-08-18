@@ -5,7 +5,7 @@
 Backup/archive is a product feature, not a manual checklist item.
 
 Google Drive is the off-site destination for:
-- application database backups;
+- PostgreSQL application database backups (`content_factory_dev` and `content_factory_prod` created via PostgreSQL backup tooling e.g. `pg_dump`);
 - critical configuration/documentation backup packages;
 - selected retained files copied outside MinIO;
 - published-content archive policy where configured.
@@ -61,4 +61,4 @@ Rejected/intermediate assets may have configurable 30/60/90-day retention later.
 ## Restore
 
 A backup is not considered trustworthy merely because upload succeeded.
-Document restoration and add periodic restoration/integrity validation as the platform matures.
+Document restoration using PostgreSQL restore tooling (e.g. `pg_restore` / `psql`) and add periodic restoration/integrity validation as the platform matures.

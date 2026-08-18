@@ -74,7 +74,7 @@ import { FactoryHealthDto } from '../../core/api.service';
             <i class="pi pi-database text-blue-500 text-xs"></i> Database Persistence
           </span>
           <div class="mt-2">
-            <span class="text-xs font-mono font-medium text-[var(--app-text)] block truncate" [title]="health?.databaseStatus || 'MySQL'">
+            <span class="text-xs font-mono font-medium text-[var(--app-text)] block truncate" [title]="health?.databaseStatus || 'PostgreSQL'">
               {{ health?.databaseStatus || 'Connected' }}
             </span>
           </div>
