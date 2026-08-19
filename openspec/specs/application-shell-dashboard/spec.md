@@ -21,6 +21,12 @@ After authentication, the application SHALL open the dashboard as the primary op
 - **THEN** factory health and attention information are prioritized
 - **AND** the operator can reach frequent channel actions without desktop-only interaction assumptions.
 
+#### Scenario: Factory health reports PostgreSQL connectivity
+- **WHEN** an authenticated operator views the dashboard with an active relational database connection
+- **THEN** the factory health widget displays database status indicating PostgreSQL connectivity (e.g. `Connected (PostgreSQL/content_factory_dev)` or `Connected (PostgreSQL/content_factory_prod)`)
+- **AND** when running against in-memory fallback, it displays `InMemory (Test/Fallback)`
+- **AND** no obsolete MySQL provider labels or references are displayed.
+
 ### Requirement: Responsive themes
 
 The shell SHALL support light and dark themes from the first release.
