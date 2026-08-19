@@ -80,8 +80,19 @@ Invariants:
 
 ### Script
 
-Versioned editorial script.
-Human edits are first-class versions, not destructive replacement.
+Versioned editorial script derived from the active Selected ContentIdea and approved TruthSource.
+
+Contains:
+- ordered `ScriptScene` collection (Hook, Problem, Insight, Climax, CTA) with narration text and visual prompts;
+- lightweight `ScriptSceneEvidenceReference` linking verifiable claims to approved TruthSource claims;
+- configurable speaking-rate pacing (`PacingWpm`, default 140 WPM for `IA Simple ES`, 130-150 WPM guidance);
+- estimated spoken duration aggregate (decoupled from future measured TTS/audio duration);
+- immutable lineage to exact `ContentIdeaVersionId` and `TruthSourceVersionId`;
+- dynamic upstream staleness evaluation (`IsStale` when upstream idea or TruthSource version evolves);
+- explicit human review lifecycle (`Draft` → `UnderReview` → `Approved` / `Rejected`, and `Reopen` → `Draft`);
+- mandatory rejection reason and audit history;
+- advisory AI critique (`review_script`) where human approval remains authoritative;
+- immutable `ScriptVersion` snapshot history and full-spectrum optimistic concurrency.
 
 ### EditorialTask
 

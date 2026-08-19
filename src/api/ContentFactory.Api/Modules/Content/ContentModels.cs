@@ -5,6 +5,8 @@ public static class ContentItemStage
     public const string DraftingEvidence = "DraftingEvidence";
     public const string TruthSourceApproved = "TruthSourceApproved";
     public const string IdeaSelected = "IdeaSelected";
+    public const string ScriptDrafted = "ScriptDrafted";
+    public const string ScriptUnderReview = "ScriptUnderReview";
     public const string ScriptApproved = "ScriptApproved";
     public const string InProduction = "InProduction";
     public const string Published = "Published";
@@ -15,6 +17,8 @@ public static class ContentItemStage
         DraftingEvidence,
         TruthSourceApproved,
         IdeaSelected,
+        ScriptDrafted,
+        ScriptUnderReview,
         ScriptApproved,
         InProduction,
         Published,
@@ -555,3 +559,267 @@ public record GeneratedIdeaItem(
     string Priority,
     string Rationale
 );
+
+public static class ScriptStatus
+{
+    public const string Draft = "Draft";
+    public const string UnderReview = "UnderReview";
+    public const string Approved = "Approved";
+    public const string Rejected = "Rejected";
+
+    public static readonly string[] All = [Draft, UnderReview, Approved, Rejected];
+}
+
+public static class SceneType
+{
+    public const string Hook = "Hook";
+    public const string Problem = "Problem";
+    public const string Insight = "Insight";
+    public const string Climax = "Climax";
+    public const string CallToAction = "CallToAction";
+
+    public static readonly string[] All = [Hook, Problem, Insight, Climax, CallToAction];
+}
+
+public class Script
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid ContentItemId { get; set; }
+    public Guid ChannelId { get; set; }
+    public Guid ContentIdeaId { get; set; }
+    public Guid ContentIdeaVersionId { get; set; }
+    public Guid TruthSourceId { get; set; }
+    public Guid TruthSourceVersionId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public int TargetDurationSeconds { get; set; } = 45;
+    public int PacingWpm { get; set; } = 140;
+    public double EstimatedDurationSeconds { get; set; }
+    public int TotalWordCount { get; set; }
+    public string Language { get; set; } = "es-ES";
+    public string Status { get; set; } = ScriptStatus.Draft;
+    public string? RejectionReason { get; set; }
+    public DateTime? RejectedAtUtc { get; set; }
+    public string? RejectedByEmail { get; set; }
+    public DateTime? ApprovedAtUtc { get; set; }
+    public string? ApprovedByEmail { get; set; }
+    public DateTime? SubmittedForReviewAtUtc { get; set; }
+    public string? SubmittedForReviewByEmail { get; set; }
+    public long Version { get; set; } = 1;
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public string CreatedByEmail { get; set; } = string.Empty;
+    public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
+    public string? UpdatedByEmail { get; set; }
+
+    public List<ScriptScene> Scenes { get; set; } = [];
+}
+
+public class ScriptScene
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid ScriptId { get; set; }
+    public int OrderIndex { get; set; }
+    public string SceneType { get; set; } = ContentFactory.Api.Modules.Content.SceneType.Hook;
+    public string NarrationText { get; set; } = string.Empty;
+    public string VisualPrompt { get; set; } = string.Empty;
+    public double EstimatedDurationSeconds { get; set; }
+    public int WordCount { get; set; }
+
+    public List<ScriptSceneEvidenceReference> EvidenceReferences { get; set; } = [];
+}
+
+public class ScriptSceneEvidenceReference
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid ScriptSceneId { get; set; }
+    public Guid? TruthSourceClaimId { get; set; }
+    public string ClaimStatement { get; set; } = string.Empty;
+    public string? EditorialNote { get; set; }
+}
+
+public class ScriptVersion
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid ScriptId { get; set; }
+    public Guid ContentItemId { get; set; }
+    public Guid ContentIdeaId { get; set; }
+    public Guid ContentIdeaVersionId { get; set; }
+    public Guid TruthSourceId { get; set; }
+    public Guid TruthSourceVersionId { get; set; }
+    public long VersionNumber { get; set; }
+    public string SnapshotJson { get; set; } = string.Empty;
+    public string? ChangeSummary { get; set; }
+    public string Status { get; set; } = ScriptStatus.Draft;
+    public string? RejectionReason { get; set; }
+    public int PacingWpm { get; set; } = 140;
+    public double EstimatedDurationSeconds { get; set; }
+    public int TotalWordCount { get; set; }
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public string CreatedByEmail { get; set; } = string.Empty;
+}
+
+public record ScriptSceneEvidenceReferenceDto(
+    Guid Id,
+    Guid ScriptSceneId,
+    Guid? TruthSourceClaimId,
+    string ClaimStatement,
+    string? EditorialNote
+);
+
+public record ScriptSceneDto(
+    Guid Id,
+    Guid ScriptId,
+    int OrderIndex,
+    string SceneType,
+    string NarrationText,
+    string VisualPrompt,
+    double EstimatedDurationSeconds,
+    int WordCount,
+    List<ScriptSceneEvidenceReferenceDto> EvidenceReferences
+);
+
+public record ScriptDto(
+    Guid Id,
+    Guid ContentItemId,
+    Guid ChannelId,
+    Guid ContentIdeaId,
+    Guid ContentIdeaVersionId,
+    Guid TruthSourceId,
+    Guid TruthSourceVersionId,
+    string Title,
+    int TargetDurationSeconds,
+    int PacingWpm,
+    double EstimatedDurationSeconds,
+    int TotalWordCount,
+    string Language,
+    string Status,
+    string? RejectionReason,
+    DateTime? RejectedAtUtc,
+    string? RejectedByEmail,
+    DateTime? ApprovedAtUtc,
+    string? ApprovedByEmail,
+    DateTime? SubmittedForReviewAtUtc,
+    string? SubmittedForReviewByEmail,
+    bool IsStale,
+    string? StaleReason,
+    long Version,
+    DateTime CreatedAtUtc,
+    string CreatedByEmail,
+    DateTime UpdatedAtUtc,
+    string? UpdatedByEmail,
+    List<ScriptSceneDto> Scenes
+);
+
+public record ScriptVersionDto(
+    Guid Id,
+    Guid ScriptId,
+    Guid ContentItemId,
+    Guid ContentIdeaId,
+    Guid ContentIdeaVersionId,
+    Guid TruthSourceId,
+    Guid TruthSourceVersionId,
+    long VersionNumber,
+    string SnapshotJson,
+    string? ChangeSummary,
+    string Status,
+    string? RejectionReason,
+    int PacingWpm,
+    double EstimatedDurationSeconds,
+    int TotalWordCount,
+    DateTime CreatedAtUtc,
+    string CreatedByEmail
+);
+
+public record SaveScriptSceneRequest(
+    Guid? Id,
+    int OrderIndex,
+    string SceneType,
+    string NarrationText,
+    string VisualPrompt,
+    List<ScriptSceneEvidenceReferenceDto>? EvidenceReferences
+);
+
+public record CreateScriptRequest(
+    string Title,
+    int? TargetDurationSeconds,
+    int? PacingWpm,
+    string? Language,
+    List<SaveScriptSceneRequest>? Scenes
+);
+
+public record UpdateScriptRequest(
+    string Title,
+    int? TargetDurationSeconds,
+    int? PacingWpm,
+    string? Language,
+    List<SaveScriptSceneRequest> Scenes,
+    string? ChangeSummary,
+    long ExpectedVersion
+);
+
+public record SubmitScriptForReviewRequest(
+    long ExpectedVersion
+);
+
+public record ApproveScriptRequest(
+    long ExpectedVersion
+);
+
+public record RejectScriptRequest(
+    string Reason,
+    long ExpectedVersion
+);
+
+public record ReopenScriptRequest(
+    long ExpectedVersion
+);
+
+public record GenerateScriptOptions(
+    string? CustomInstructions = null,
+    string? ToneStyle = null,
+    int? TargetDurationSeconds = null,
+    int? PacingWpm = null
+);
+
+public record ScriptSceneCritiqueDto(
+    int OrderIndex,
+    string SceneType,
+    string Status, // Pass, Warning, Critical
+    string? ClaimFidelityNotes,
+    string? RetentionNotes,
+    string? PacingNotes,
+    List<string> Suggestions
+);
+
+public record ScriptReviewDimensionDto(
+    string Dimension,
+    string Status, // Pass, Warning, Critical
+    string Notes
+);
+
+public record ScriptReviewResultDto(
+    string OverallStatus, // Pass, Warning, Critical
+    double FactualAlignmentScore,
+    string RetentionAnalysis,
+    string PacingAssessment,
+    List<string> DoNotSayComplianceNotes,
+    List<ScriptReviewDimensionDto> Dimensions,
+    List<ScriptSceneCritiqueDto> SceneCritiques,
+    List<string> ActionableRecommendations
+);
+
+public record GeneratedScriptSceneItem(
+    int OrderIndex,
+    string SceneType,
+    string NarrationText,
+    string VisualPrompt,
+    List<ScriptSceneEvidenceReferenceDto>? EvidenceReferences = null
+);
+
+public record GeneratedScriptResult(
+    string Title,
+    int TargetDurationSeconds,
+    int PacingWpm,
+    string Language,
+    List<GeneratedScriptSceneItem> Scenes
+);
+

@@ -9,6 +9,7 @@ public static class AiCapabilities
     public const string ScoreSource = "score_source";
     public const string GenerateIdeas = "generate_ideas";
     public const string GenerateScript = "generate_script";
+    public const string ReviewScript = "review_script";
 
     public static readonly string[] All =
     [
@@ -16,7 +17,8 @@ public static class AiCapabilities
         SuggestTopics,
         ScoreSource,
         GenerateIdeas,
-        GenerateScript
+        GenerateScript,
+        ReviewScript
     ];
 }
 
@@ -92,6 +94,57 @@ public record GenerateIdeasResponse(
     string ConciseRationale
 );
 
+public record GenerateScriptRequest(
+    Guid ChannelId,
+    string ChannelName,
+    string ChannelLanguage,
+    string ChannelNiche,
+    Guid TruthSourceId,
+    Guid TruthSourceVersionId,
+    Guid ContentIdeaId,
+    Guid ContentIdeaVersionId,
+    string IdeaTitle,
+    string IdeaAngle,
+    string IdeaHookStrategy,
+    string IdeaAudienceValue,
+    string IdeaFormat,
+    string IdeaIntendedOutcome,
+    string Summary,
+    List<string> KeyIdeas,
+    List<VerifiableClaimDto> VerifiableClaims,
+    List<string> DoNotSayConstraints,
+    int TargetDurationSeconds = 45,
+    int PacingWpm = 140,
+    string? CustomInstructions = null,
+    string? ToneStyle = null
+);
+
+public record GenerateScriptResponse(
+    GeneratedScriptResult Script,
+    string ConciseRationale
+);
+
+public record ReviewScriptRequest(
+    Guid ChannelId,
+    string ChannelName,
+    string ChannelLanguage,
+    Guid TruthSourceId,
+    Guid TruthSourceVersionId,
+    string TruthSourceSummary,
+    List<string> KeyIdeas,
+    List<VerifiableClaimDto> VerifiableClaims,
+    List<string> DoNotSayConstraints,
+    string ScriptTitle,
+    int TargetDurationSeconds,
+    int PacingWpm,
+    List<ScriptSceneDto> Scenes
+);
+
+public record ReviewScriptResponse(
+    ScriptReviewResultDto ReviewResult,
+    string ConciseRationale
+);
+
 public interface IAiProviderRouter
 {
     Task<AiCapabilityResult<BuildTruthSourceResponse>> BuildTruthSourceAsync(
@@ -101,6 +154,16 @@ public interface IAiProviderRouter
 
     Task<AiCapabilityResult<GenerateIdeasResponse>> GenerateIdeasAsync(
         GenerateIdeasRequest request,
+        AiRoutingContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<AiCapabilityResult<GenerateScriptResponse>> GenerateScriptAsync(
+        GenerateScriptRequest request,
+        AiRoutingContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<AiCapabilityResult<ReviewScriptResponse>> ReviewScriptAsync(
+        ReviewScriptRequest request,
         AiRoutingContext context,
         CancellationToken cancellationToken = default);
 }

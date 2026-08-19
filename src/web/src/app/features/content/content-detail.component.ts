@@ -70,14 +70,20 @@ import { AttachEvidenceModalComponent } from './attach-evidence-modal.component'
 
           <!-- Studio Quick Navigation Buttons -->
           <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            <a [routerLink]="['/content/items', item()?.id, 'script']"
+               class="px-3.5 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
+              <i class="pi pi-file-edit"></i>
+              <span>Script Studio</span>
+            </a>
+
             <a [routerLink]="['/content/items', item()?.id, 'ideas']"
-               class="px-3.5 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
+               class="px-3 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
               <i class="pi pi-lightbulb"></i>
-              <span>Matriz de Ideas & Ángulos</span>
+              <span>Matriz de Ideas</span>
             </a>
 
             <a [routerLink]="['/content/items', item()?.id, 'truth-source']"
-               class="px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
+               class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
               <i class="pi pi-check-square"></i>
               <span>TruthSource Studio</span>
             </a>
@@ -343,6 +349,65 @@ import { AttachEvidenceModalComponent } from './attach-evidence-modal.component'
             </a>
           </div>
 
+          <!-- Script Studio Summary Card (Right Col) -->
+          <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-[var(--app-card-border)] pb-3">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-file-edit text-blue-600 dark:text-blue-400"></i>
+                <h2 class="text-sm font-bold text-[var(--app-text)]">Guión Editorial</h2>
+              </div>
+              <span *ngIf="script()" 
+                    class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-mono border"
+                    [ngClass]="{
+                      'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': script()?.status === 'Approved',
+                      'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30': script()?.status === 'UnderReview',
+                      'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30': script()?.status === 'Draft',
+                      'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30': script()?.status === 'Rejected'
+                    }">
+                {{ script()?.status }} (v{{ script()?.version }})
+              </span>
+            </div>
+
+            <!-- Stale Alert if script is stale -->
+            <div *ngIf="script()?.isStale" class="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 space-y-1">
+              <div class="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-bold text-[10px]">
+                <i class="pi pi-exclamation-triangle"></i>
+                <span>Lineage Desactualizado</span>
+              </div>
+              <p class="text-[10px] text-[var(--app-text)] leading-tight">
+                {{ script()?.staleReason || 'El guión requiere reconciliación con la idea/TruthSource actual.' }}
+              </p>
+            </div>
+
+            <!-- Script Metrics if exists -->
+            <div *ngIf="script()" class="space-y-2">
+              <p class="font-bold text-xs text-[var(--app-text)] line-clamp-1">
+                {{ script()?.title }}
+              </p>
+              <div class="grid grid-cols-2 gap-2 text-center text-[11px]">
+                <div class="p-2 rounded bg-[var(--app-bg)] border border-[var(--app-card-border)]">
+                  <span class="text-[var(--app-muted)] block text-[10px]">Escenas</span>
+                  <span class="font-bold text-[var(--app-text)]">{{ script()?.scenes?.length || 0 }}</span>
+                </div>
+                <div class="p-2 rounded bg-[var(--app-bg)] border border-[var(--app-card-border)]">
+                  <span class="text-[var(--app-muted)] block text-[10px]">Duración</span>
+                  <span class="font-bold text-blue-600 dark:text-blue-400">~{{ script()?.estimatedDurationSeconds?.toFixed(1) }}s</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- No Script Yet -->
+            <div *ngIf="!script()" class="py-3 text-center text-[var(--app-muted)] text-[11px]">
+              <p>Aún no se ha redactado el guión para esta pieza.</p>
+            </div>
+
+            <a [routerLink]="['/content/items', item()?.id, 'script']"
+               class="w-full py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs">
+              <i class="pi pi-file-edit"></i>
+              <span>{{ script() ? 'Abrir Script Studio' : 'Crear / Generar Guión' }}</span>
+            </a>
+          </div>
+
         </div>
 
       </div>
@@ -366,6 +431,7 @@ export class ContentDetailComponent implements OnInit {
 
   readonly item = signal<ContentItemDetailDto | null>(null);
   readonly ideas = signal<ContentIdeaDto[]>([]);
+  readonly script = signal<any | null>(null);
   readonly isLoading = signal<boolean>(true);
   readonly errorMessage = signal<string | null>(null);
   readonly currentId = signal<string | null>(null);
@@ -406,13 +472,22 @@ export class ContentDetailComponent implements OnInit {
     this.api.getContentItemDetail(id).subscribe({
       next: (detail) => {
         this.item.set(detail);
+        
+        // Fetch ideas
         this.api.getContentIdeas(id).subscribe({
-          next: (ideas) => {
-            this.ideas.set(ideas);
+          next: (ideas) => this.ideas.set(ideas),
+          error: () => {}
+        });
+
+        // Fetch script if any
+        this.api.getScript(id).subscribe({
+          next: (sc) => {
+            this.script.set(sc);
             this.isLoading.set(false);
             this.cdr.markForCheck();
           },
           error: () => {
+            this.script.set(null);
             this.isLoading.set(false);
             this.cdr.markForCheck();
           }

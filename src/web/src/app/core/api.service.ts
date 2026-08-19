@@ -181,6 +181,8 @@ export type ContentItemStage =
   | 'DraftingEvidence'
   | 'TruthSourceApproved'
   | 'IdeaSelected'
+  | 'ScriptDrafted'
+  | 'ScriptUnderReview'
   | 'ScriptApproved'
   | 'InProduction'
   | 'Published'
@@ -715,4 +717,208 @@ export class ApiService {
   getIdeaVersions(contentItemId: string, ideaId: string): Observable<ContentIdeaVersionDto[]> {
     return this.http.get<ContentIdeaVersionDto[]>(`${this.baseUrl}/content-items/${contentItemId}/ideas/${ideaId}/versions`);
   }
+
+  // --- CF-012 / CF-013 Script Editorial Pipeline Endpoints ---
+
+  getScript(contentItemId: string): Observable<ScriptDto> {
+    return this.http.get<ScriptDto>(`${this.baseUrl}/content-items/${contentItemId}/script`);
+  }
+
+  getScriptVersions(contentItemId: string, scriptId?: string): Observable<ScriptVersionDto[]> {
+    const query = scriptId ? `?scriptId=${encodeURIComponent(scriptId)}` : '';
+    return this.http.get<ScriptVersionDto[]>(`${this.baseUrl}/content-items/${contentItemId}/script/versions${query}`);
+  }
+
+  getScriptVersion(contentItemId: string, versionId: string, scriptId?: string): Observable<ScriptVersionDto> {
+    const query = scriptId ? `?scriptId=${encodeURIComponent(scriptId)}` : '';
+    return this.http.get<ScriptVersionDto>(`${this.baseUrl}/content-items/${contentItemId}/script/versions/${versionId}${query}`);
+  }
+
+  createScript(contentItemId: string, request: CreateScriptRequest): Observable<ScriptDto> {
+    return this.http.post<ScriptDto>(`${this.baseUrl}/content-items/${contentItemId}/script`, request);
+  }
+
+  updateScript(contentItemId: string, scriptId: string, request: UpdateScriptRequest): Observable<ScriptDto> {
+    return this.http.put<ScriptDto>(`${this.baseUrl}/content-items/${contentItemId}/script/${scriptId}`, request);
+  }
+
+  generateAiScript(contentItemId: string, options?: GenerateScriptOptions): Observable<ScriptDto> {
+    return this.http.post<ScriptDto>(`${this.baseUrl}/content-items/${contentItemId}/script/generate`, options || {});
+  }
+
+  reviewScript(contentItemId: string, scriptId: string): Observable<ScriptReviewResultDto> {
+    return this.http.post<ScriptReviewResultDto>(`${this.baseUrl}/content-items/${contentItemId}/script/${scriptId}/review`, {});
+  }
+
+  submitScriptForReview(contentItemId: string, scriptId: string, request: SubmitScriptForReviewRequest): Observable<ScriptDto> {
+    return this.http.post<ScriptDto>(`${this.baseUrl}/content-items/${contentItemId}/script/${scriptId}/submit-for-review`, request);
+  }
+
+  approveScript(contentItemId: string, scriptId: string, request: ApproveScriptRequest): Observable<ScriptDto> {
+    return this.http.post<ScriptDto>(`${this.baseUrl}/content-items/${contentItemId}/script/${scriptId}/approve`, request);
+  }
+
+  rejectScript(contentItemId: string, scriptId: string, request: RejectScriptRequest): Observable<ScriptDto> {
+    return this.http.post<ScriptDto>(`${this.baseUrl}/content-items/${contentItemId}/script/${scriptId}/reject`, request);
+  }
+
+  reopenScript(contentItemId: string, scriptId: string, request: ReopenScriptRequest): Observable<ScriptDto> {
+    return this.http.post<ScriptDto>(`${this.baseUrl}/content-items/${contentItemId}/script/${scriptId}/reopen`, request);
+  }
 }
+
+// --- CF-012 / CF-013 Script Domain Interfaces ---
+
+export type ScriptStatus = 'Draft' | 'UnderReview' | 'Approved' | 'Rejected';
+export type SceneType = 'Hook' | 'Problem' | 'Insight' | 'Climax' | 'CallToAction';
+
+export interface ScriptSceneEvidenceReferenceDto {
+  id: string;
+  scriptSceneId: string;
+  truthSourceClaimId?: string | null;
+  claimStatement: string;
+  editorialNote?: string | null;
+}
+
+export interface ScriptSceneDto {
+  id: string;
+  scriptId: string;
+  orderIndex: number;
+  sceneType: SceneType | string;
+  narrationText: string;
+  visualPrompt: string;
+  estimatedDurationSeconds: number;
+  wordCount: number;
+  evidenceReferences: ScriptSceneEvidenceReferenceDto[];
+}
+
+export interface ScriptDto {
+  id: string;
+  contentItemId: string;
+  channelId: string;
+  contentIdeaId: string;
+  contentIdeaVersionId: string;
+  truthSourceId: string;
+  truthSourceVersionId: string;
+  title: string;
+  targetDurationSeconds: number;
+  pacingWpm: number;
+  estimatedDurationSeconds: number;
+  totalWordCount: number;
+  language: string;
+  status: ScriptStatus | string;
+  rejectionReason?: string | null;
+  rejectedAtUtc?: string | null;
+  rejectedByEmail?: string | null;
+  approvedAtUtc?: string | null;
+  approvedByEmail?: string | null;
+  submittedForReviewAtUtc?: string | null;
+  submittedForReviewByEmail?: string | null;
+  isStale: boolean;
+  staleReason?: string | null;
+  version: number;
+  createdAtUtc: string;
+  createdByEmail: string;
+  updatedAtUtc: string;
+  updatedByEmail: string;
+  scenes: ScriptSceneDto[];
+}
+
+export interface ScriptVersionDto {
+  id: string;
+  scriptId: string;
+  contentItemId: string;
+  contentIdeaId: string;
+  contentIdeaVersionId: string;
+  truthSourceId: string;
+  truthSourceVersionId: string;
+  versionNumber: number;
+  snapshotJson: string;
+  changeSummary: string;
+  status: string;
+  rejectionReason?: string | null;
+  pacingWpm: number;
+  estimatedDurationSeconds: number;
+  totalWordCount: number;
+  createdAtUtc: string;
+  createdByEmail: string;
+}
+
+export interface ScriptReviewDimensionDto {
+  dimension: string;
+  status: 'Pass' | 'Warning' | 'Critical';
+  notes: string;
+}
+
+export interface ScriptSceneCritiqueDto {
+  orderIndex: number;
+  sceneType: string;
+  status: 'Pass' | 'Warning' | 'Critical';
+  claimFidelityNotes: string;
+  retentionNotes?: string | null;
+  pacingNotes?: string | null;
+  suggestions: string[];
+}
+
+export interface ScriptReviewResultDto {
+  overallStatus: 'Pass' | 'Warning' | 'Critical';
+  factualAlignmentScore: number;
+  retentionAnalysis: string;
+  pacingAssessment: string;
+  doNotSayComplianceNotes: string[];
+  dimensions: ScriptReviewDimensionDto[];
+  sceneCritiques: ScriptSceneCritiqueDto[];
+  actionableRecommendations: string[];
+}
+
+export interface SaveScriptSceneRequest {
+  id?: string | null;
+  orderIndex?: number;
+  sceneType?: string;
+  narrationText: string;
+  visualPrompt: string;
+  evidenceReferences?: { id?: string; truthSourceClaimId?: string; claimStatement: string; editorialNote?: string | null }[] | null;
+}
+
+export interface CreateScriptRequest {
+  title: string;
+  targetDurationSeconds?: number | null;
+  pacingWpm?: number | null;
+  language?: string | null;
+  scenes?: SaveScriptSceneRequest[] | null;
+}
+
+export interface UpdateScriptRequest {
+  title: string;
+  targetDurationSeconds?: number | null;
+  pacingWpm?: number | null;
+  language?: string | null;
+  scenes: SaveScriptSceneRequest[];
+  changeSummary?: string | null;
+  expectedVersion: number;
+}
+
+export interface GenerateScriptOptions {
+  targetDurationSeconds?: number | null;
+  pacingWpm?: number | null;
+  customInstructions?: string | null;
+  toneStyle?: string | null;
+}
+
+export interface SubmitScriptForReviewRequest {
+  expectedVersion: number;
+}
+
+export interface ApproveScriptRequest {
+  expectedVersion: number;
+}
+
+export interface RejectScriptRequest {
+  reason: string;
+  expectedVersion: number;
+}
+
+export interface ReopenScriptRequest {
+  expectedVersion: number;
+}
+

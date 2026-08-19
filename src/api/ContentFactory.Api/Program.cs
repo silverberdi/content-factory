@@ -156,6 +156,7 @@ builder.Services.AddScoped<IEvidenceCaptureService, EvidenceCaptureService>();
 builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<ITruthSourceService, TruthSourceService>();
 builder.Services.AddScoped<IContentIdeaService, ContentIdeaService>();
+builder.Services.AddScoped<IScriptService, ScriptService>();
 builder.Services.AddScoped<IEditorialTaskService, EditorialTaskService>();
 
 // 6. Controllers & OpenAPI

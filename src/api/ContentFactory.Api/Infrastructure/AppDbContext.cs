@@ -22,6 +22,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<TruthSourceVersion> TruthSourceVersions => Set<TruthSourceVersion>();
     public DbSet<ContentIdea> ContentIdeas => Set<ContentIdea>();
     public DbSet<ContentIdeaVersion> ContentIdeaVersions => Set<ContentIdeaVersion>();
+    public DbSet<Script> Scripts => Set<Script>();
+    public DbSet<ScriptScene> ScriptScenes => Set<ScriptScene>();
+    public DbSet<ScriptSceneEvidenceReference> ScriptSceneEvidenceReferences => Set<ScriptSceneEvidenceReference>();
+    public DbSet<ScriptVersion> ScriptVersions => Set<ScriptVersion>();
     public DbSet<EditorialTask> EditorialTasks => Set<EditorialTask>();
     public DbSet<AiRecommendation> AiRecommendations => Set<AiRecommendation>();
 
@@ -318,6 +322,106 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasIndex(r => r.ContentItemId);
             entity.HasIndex(r => r.TruthSourceVersionId);
             entity.HasIndex(r => r.Capability);
+        });
+
+        modelBuilder.Entity<Script>(entity =>
+        {
+            entity.ToTable("scripts");
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.ContentItemId).IsRequired();
+            entity.Property(s => s.ChannelId).IsRequired();
+            entity.Property(s => s.ContentIdeaId).IsRequired();
+            entity.Property(s => s.ContentIdeaVersionId).IsRequired();
+            entity.Property(s => s.TruthSourceId).IsRequired();
+            entity.Property(s => s.TruthSourceVersionId).IsRequired();
+            entity.Property(s => s.Title).IsRequired().HasMaxLength(512);
+            entity.Property(s => s.TargetDurationSeconds).IsRequired();
+            entity.Property(s => s.PacingWpm).IsRequired();
+            entity.Property(s => s.EstimatedDurationSeconds).IsRequired();
+            entity.Property(s => s.TotalWordCount).IsRequired();
+            entity.Property(s => s.Language).IsRequired().HasMaxLength(16);
+            entity.Property(s => s.Status).IsRequired().HasMaxLength(32);
+            entity.Property(s => s.RejectionReason).HasMaxLength(2048);
+            entity.Property(s => s.RejectedByEmail).HasMaxLength(256);
+            entity.Property(s => s.ApprovedByEmail).HasMaxLength(256);
+            entity.Property(s => s.SubmittedForReviewByEmail).HasMaxLength(256);
+            entity.Property(s => s.Version).IsRequired().IsConcurrencyToken();
+            entity.Property(s => s.CreatedAtUtc).IsRequired();
+            entity.Property(s => s.CreatedByEmail).IsRequired().HasMaxLength(256);
+            entity.Property(s => s.UpdatedAtUtc).IsRequired();
+            entity.Property(s => s.UpdatedByEmail).HasMaxLength(256);
+
+            entity.HasMany(s => s.Scenes)
+                  .WithOne()
+                  .HasForeignKey(sc => sc.ScriptId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(s => s.ContentItemId);
+            entity.HasIndex(s => s.ChannelId);
+            entity.HasIndex(s => s.ContentIdeaId);
+            entity.HasIndex(s => s.ContentIdeaVersionId);
+            entity.HasIndex(s => s.TruthSourceId);
+            entity.HasIndex(s => s.TruthSourceVersionId);
+            entity.HasIndex(s => new { s.ContentItemId, s.Status });
+        });
+
+        modelBuilder.Entity<ScriptScene>(entity =>
+        {
+            entity.ToTable("script_scenes");
+            entity.HasKey(sc => sc.Id);
+            entity.Property(sc => sc.ScriptId).IsRequired();
+            entity.Property(sc => sc.OrderIndex).IsRequired();
+            entity.Property(sc => sc.SceneType).IsRequired().HasMaxLength(32);
+            entity.Property(sc => sc.NarrationText).IsRequired();
+            entity.Property(sc => sc.VisualPrompt).IsRequired();
+            entity.Property(sc => sc.EstimatedDurationSeconds).IsRequired();
+            entity.Property(sc => sc.WordCount).IsRequired();
+
+            entity.HasMany(sc => sc.EvidenceReferences)
+                  .WithOne()
+                  .HasForeignKey(er => er.ScriptSceneId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(sc => sc.ScriptId);
+            entity.HasIndex(sc => new { sc.ScriptId, sc.OrderIndex });
+        });
+
+        modelBuilder.Entity<ScriptSceneEvidenceReference>(entity =>
+        {
+            entity.ToTable("script_scene_evidence_references");
+            entity.HasKey(er => er.Id);
+            entity.Property(er => er.ScriptSceneId).IsRequired();
+            entity.Property(er => er.ClaimStatement).IsRequired().HasMaxLength(2048);
+            entity.Property(er => er.EditorialNote).HasMaxLength(1024);
+
+            entity.HasIndex(er => er.ScriptSceneId);
+            entity.HasIndex(er => er.TruthSourceClaimId);
+        });
+
+        modelBuilder.Entity<ScriptVersion>(entity =>
+        {
+            entity.ToTable("script_versions");
+            entity.HasKey(v => v.Id);
+            entity.Property(v => v.ScriptId).IsRequired();
+            entity.Property(v => v.ContentItemId).IsRequired();
+            entity.Property(v => v.ContentIdeaId).IsRequired();
+            entity.Property(v => v.ContentIdeaVersionId).IsRequired();
+            entity.Property(v => v.TruthSourceId).IsRequired();
+            entity.Property(v => v.TruthSourceVersionId).IsRequired();
+            entity.Property(v => v.VersionNumber).IsRequired();
+            entity.Property(v => v.SnapshotJson).IsRequired();
+            entity.Property(v => v.ChangeSummary).HasMaxLength(1024);
+            entity.Property(v => v.Status).IsRequired().HasMaxLength(32);
+            entity.Property(v => v.RejectionReason).HasMaxLength(2048);
+            entity.Property(v => v.PacingWpm).IsRequired();
+            entity.Property(v => v.EstimatedDurationSeconds).IsRequired();
+            entity.Property(v => v.TotalWordCount).IsRequired();
+            entity.Property(v => v.CreatedAtUtc).IsRequired();
+            entity.Property(v => v.CreatedByEmail).IsRequired().HasMaxLength(256);
+
+            entity.HasIndex(v => v.ScriptId);
+            entity.HasIndex(v => v.ContentItemId);
+            entity.HasIndex(v => new { v.ScriptId, v.VersionNumber }).IsUnique();
         });
     }
 }

@@ -586,7 +586,159 @@ public static class DatabaseInitializer
             };
 
             // Advance contentItem1 stage to IdeaSelected since idea1 is Selected
-            contentItem1.Stage = ContentItemStage.IdeaSelected;
+            contentItem1.Stage = ContentItemStage.ScriptUnderReview;
+
+            var script1Id = Guid.Parse("00000000-0000-0000-0000-000000000501");
+            var script1 = new Script
+            {
+                Id = script1Id,
+                ContentItemId = contentItem1Id,
+                ChannelId = pilotChannel.Id,
+                ContentIdeaId = idea1Id,
+                ContentIdeaVersionId = idea1Id,
+                TruthSourceId = truthSource1Id,
+                TruthSourceVersionId = truthSourceVersion1.Id,
+                Title = "3 Habilidades que la IA NO te Puede Quitar en 2026",
+                TargetDurationSeconds = 45,
+                PacingWpm = 140,
+                EstimatedDurationSeconds = 43.7,
+                TotalWordCount = 102,
+                Language = "es-ES",
+                Status = ScriptStatus.UnderReview,
+                SubmittedForReviewAtUtc = DateTime.UtcNow.AddMinutes(-20),
+                SubmittedForReviewByEmail = ownerEmail,
+                Version = 1,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-25),
+                CreatedByEmail = ownerEmail,
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-20),
+                UpdatedByEmail = ownerEmail
+            };
+
+            var sc1 = new ScriptScene
+            {
+                Id = Guid.NewGuid(),
+                ScriptId = script1Id,
+                OrderIndex = 1,
+                SceneType = SceneType.Hook,
+                NarrationText = "¿Crees que un prompt te salvará el empleo en 2026? Te equivocas: estas 3 habilidades valen 10 veces más.",
+                VisualPrompt = "Primer plano dinámico a cámara con tipografía de alto contraste resaltando '2026'.",
+                EstimatedDurationSeconds = 7.7,
+                WordCount = 18,
+                EvidenceReferences =
+                [
+                    new ScriptSceneEvidenceReference
+                    {
+                        Id = Guid.NewGuid(),
+                        ClaimStatement = "El 68% de las empresas priorizan criterio analítico sobre velocidad mecánica al evaluar candidatos con IA.",
+                        EditorialNote = "Gancho alineado con la afirmación verificable del estudio de empleo."
+                    }
+                ]
+            };
+
+            var sc2 = new ScriptScene
+            {
+                Id = Guid.NewGuid(),
+                ScriptId = script1Id,
+                OrderIndex = 2,
+                SceneType = SceneType.Problem,
+                NarrationText = "Generar texto en 5 segundos no impresiona a nadie si el resultado contiene alucinaciones o errores contables.",
+                VisualPrompt = "B-roll rápido de oficina con documentos resaltados con marcas de error rojas.",
+                EstimatedDurationSeconds = 7.7,
+                WordCount = 18
+            };
+
+            var sc3 = new ScriptScene
+            {
+                Id = Guid.NewGuid(),
+                ScriptId = script1Id,
+                OrderIndex = 3,
+                SceneType = SceneType.Insight,
+                NarrationText = "El 68% de las empresas buscan profesionales que sepan auditar respuestas, verificar fuentes y conectar herramientas a procesos reales.",
+                VisualPrompt = "Gráfico animado con el porcentaje del 68% y diagrama de flujo de verificación en 3 pasos.",
+                EstimatedDurationSeconds = 9.4,
+                WordCount = 22,
+                EvidenceReferences =
+                [
+                    new ScriptSceneEvidenceReference
+                    {
+                        Id = Guid.NewGuid(),
+                        ClaimStatement = "El 68% de las empresas consultadas priorizan el criterio analítico sobre la velocidad al evaluar candidatos que usan IA.",
+                        EditorialNote = "Dato empírico verificado en TruthSource."
+                    }
+                ]
+            };
+
+            var sc4 = new ScriptScene
+            {
+                Id = Guid.NewGuid(),
+                ScriptId = script1Id,
+                OrderIndex = 4,
+                SceneType = SceneType.Climax,
+                NarrationText = "El verdadero poder no es automatizar a ciegas: es tener el criterio para saber cuándo una respuesta es correcta.",
+                VisualPrompt = "Primer plano seguro del presentador con icono de verificación verde en pantalla.",
+                EstimatedDurationSeconds = 9.4,
+                WordCount = 22
+            };
+
+            var sc5 = new ScriptScene
+            {
+                Id = Guid.NewGuid(),
+                ScriptId = script1Id,
+                OrderIndex = 5,
+                SceneType = SceneType.CallToAction,
+                NarrationText = "Guarda este video para tu próxima reunión y cuéntame en comentarios qué habilidad estás entrenando hoy.",
+                VisualPrompt = "Animación sutil de botón guardar y flecha apuntando a comentarios.",
+                EstimatedDurationSeconds = 9.4,
+                WordCount = 22
+            };
+
+            script1.Scenes.AddRange([sc1, sc2, sc3, sc4, sc5]);
+
+            var script1Version = new ScriptVersion
+            {
+                Id = Guid.NewGuid(),
+                ScriptId = script1Id,
+                ContentItemId = contentItem1Id,
+                ContentIdeaId = idea1Id,
+                ContentIdeaVersionId = idea1Id,
+                TruthSourceId = truthSource1Id,
+                TruthSourceVersionId = truthSourceVersion1.Id,
+                VersionNumber = 1,
+                SnapshotJson = JsonSerializer.Serialize(new
+                {
+                    script1.Id,
+                    script1.Title,
+                    script1.TargetDurationSeconds,
+                    script1.PacingWpm,
+                    script1.EstimatedDurationSeconds,
+                    script1.TotalWordCount,
+                    script1.Language,
+                    script1.Status,
+                    Scenes = script1.Scenes
+                }),
+                ChangeSummary = "Borrador inicial enviado a revisión editorial.",
+                Status = ScriptStatus.UnderReview,
+                PacingWpm = 140,
+                EstimatedDurationSeconds = 43.7,
+                TotalWordCount = 102,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-20),
+                CreatedByEmail = ownerEmail
+            };
+
+            var editorialTask2 = new EditorialTask
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000332"),
+                ChannelId = pilotChannel.Id,
+                ContentItemId = contentItem1Id,
+                TaskType = EditorialTaskType.ReviewScript,
+                Priority = EditorialTaskPriority.Normal,
+                Status = EditorialTaskStatus.Pending,
+                AssignedUserEmail = ownerEmail,
+                DueDateUtc = DateTime.UtcNow.AddHours(12),
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-20),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-20),
+                CreatedByEmail = ownerEmail
+            };
 
             dbContext.ContentItems.AddRange(contentItem1, contentItem2);
             dbContext.ContentItemEvidences.AddRange(evidence1, evidence2, evidence3);
@@ -594,10 +746,12 @@ public static class DatabaseInitializer
             dbContext.TruthSourceVersions.Add(truthSourceVersion1);
             dbContext.ContentIdeas.AddRange(idea1, idea2);
             dbContext.ContentIdeaVersions.AddRange(idea1Version1, idea2Version1);
-            dbContext.EditorialTasks.Add(editorialTask1);
+            dbContext.Scripts.Add(script1);
+            dbContext.ScriptVersions.Add(script1Version);
+            dbContext.EditorialTasks.AddRange(editorialTask1, editorialTask2);
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Seeded initial representative ContentItems, Evidences, TruthSources, ContentIdeas, and EditorialTasks for 'IA Simple ES'.");
+            logger.LogInformation("Seeded initial representative ContentItems, Evidences, TruthSources, ContentIdeas, Scripts, and EditorialTasks for 'IA Simple ES'.");
         }
     }
 }

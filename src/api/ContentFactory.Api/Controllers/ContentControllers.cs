@@ -499,3 +499,285 @@ public class ContentIdeasController(IContentIdeaService ideaService) : Controlle
 
     private string GetCurrentUserEmail() => User.FindFirstValue(ClaimTypes.Email) ?? "anonymous";
 }
+
+[ApiController]
+[Route("api/v1/content-items/{contentItemId:guid}/script")]
+[Authorize]
+public class ScriptsController(IScriptService scriptService) : ControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<ScriptDto>> GetScript(
+        Guid contentItemId,
+        CancellationToken cancellationToken)
+    {
+        var script = await scriptService.GetScriptByContentItemIdAsync(contentItemId, cancellationToken);
+        if (script == null) return NotFound(new { error = "No script found for this ContentItem." });
+        return Ok(script);
+    }
+
+    [HttpGet("versions")]
+    public async Task<ActionResult<List<ScriptVersionDto>>> GetScriptVersions(
+        Guid contentItemId,
+        [FromQuery] Guid? scriptId,
+        CancellationToken cancellationToken)
+    {
+        Guid targetScriptId;
+        if (scriptId.HasValue && scriptId.Value != Guid.Empty)
+        {
+            targetScriptId = scriptId.Value;
+        }
+        else
+        {
+            var script = await scriptService.GetScriptByContentItemIdAsync(contentItemId, cancellationToken);
+            if (script == null) return Ok(new List<ScriptVersionDto>());
+            targetScriptId = script.Id;
+        }
+
+        var versions = await scriptService.GetScriptVersionsAsync(contentItemId, targetScriptId, cancellationToken);
+        return Ok(versions);
+    }
+
+    [HttpGet("versions/{versionId:guid}")]
+    public async Task<ActionResult<ScriptVersionDto>> GetScriptVersion(
+        Guid contentItemId,
+        Guid versionId,
+        [FromQuery] Guid? scriptId,
+        CancellationToken cancellationToken)
+    {
+        Guid targetScriptId;
+        if (scriptId.HasValue && scriptId.Value != Guid.Empty)
+        {
+            targetScriptId = scriptId.Value;
+        }
+        else
+        {
+            var script = await scriptService.GetScriptByContentItemIdAsync(contentItemId, cancellationToken);
+            if (script == null) return NotFound(new { error = "Script not found." });
+            targetScriptId = script.Id;
+        }
+
+        var version = await scriptService.GetScriptVersionAsync(contentItemId, targetScriptId, versionId, cancellationToken);
+        if (version == null) return NotFound(new { error = "Script version not found." });
+        return Ok(version);
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ScriptDto>> CreateScript(
+        Guid contentItemId,
+        [FromBody] CreateScriptRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var script = await scriptService.CreateScriptAsync(contentItemId, request, email, cancellationToken);
+            return CreatedAtAction(nameof(GetScript), new { contentItemId }, script);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("{scriptId:guid}")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ScriptDto>> UpdateScript(
+        Guid contentItemId,
+        Guid scriptId,
+        [FromBody] UpdateScriptRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var script = await scriptService.UpdateScriptAsync(contentItemId, scriptId, request, email, cancellationToken);
+            return Ok(script);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("generate")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ScriptDto>> GenerateAiScript(
+        Guid contentItemId,
+        [FromBody] GenerateScriptOptions? options,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var script = await scriptService.GenerateAiScriptAsync(contentItemId, options, email, cancellationToken);
+            return Ok(script);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{scriptId:guid}/review")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ScriptReviewResultDto>> ReviewScript(
+        Guid contentItemId,
+        Guid scriptId,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var result = await scriptService.ReviewScriptAsync(contentItemId, scriptId, email, cancellationToken);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{scriptId:guid}/submit-for-review")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ScriptDto>> SubmitForReview(
+        Guid contentItemId,
+        Guid scriptId,
+        [FromBody] SubmitScriptForReviewRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var script = await scriptService.SubmitForReviewAsync(contentItemId, scriptId, request, email, cancellationToken);
+            return Ok(script);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{scriptId:guid}/approve")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ScriptDto>> ApproveScript(
+        Guid contentItemId,
+        Guid scriptId,
+        [FromBody] ApproveScriptRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var script = await scriptService.ApproveScriptAsync(contentItemId, scriptId, request, email, cancellationToken);
+            return Ok(script);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{scriptId:guid}/reject")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ScriptDto>> RejectScript(
+        Guid contentItemId,
+        Guid scriptId,
+        [FromBody] RejectScriptRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var script = await scriptService.RejectScriptAsync(contentItemId, scriptId, request, email, cancellationToken);
+            return Ok(script);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{scriptId:guid}/reopen")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<ScriptDto>> ReopenScript(
+        Guid contentItemId,
+        Guid scriptId,
+        [FromBody] ReopenScriptRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var script = await scriptService.ReopenScriptAsync(contentItemId, scriptId, request, email, cancellationToken);
+            return Ok(script);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    private string GetCurrentUserEmail() => User.FindFirstValue(ClaimTypes.Email) ?? "anonymous";
+}

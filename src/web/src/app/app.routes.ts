@@ -9,6 +9,7 @@ import { ContentListComponent } from './features/content/content-list.component'
 import { ContentDetailComponent } from './features/content/content-detail.component';
 import { TruthSourceReviewStudioComponent } from './features/content/truth-source-review-studio.component';
 import { ContentIdeasComponent } from './features/content/content-ideas.component';
+import { ScriptStudioComponent } from './features/content/script-studio.component';
 import { EditorialTasksListComponent } from './features/content/editorial-tasks-list.component';
 
 export const routes: Routes = [
@@ -26,6 +27,7 @@ export const routes: Routes = [
       { path: 'content/items/:id', component: ContentDetailComponent },
       { path: 'content/items/:id/truth-source', component: TruthSourceReviewStudioComponent },
       { path: 'content/items/:id/ideas', component: ContentIdeasComponent },
+      { path: 'content/items/:id/script', component: ScriptStudioComponent },
       { path: 'editorial/tasks', component: EditorialTasksListComponent },
       { path: 'channels', component: ChannelsComponent },
       { path: 'system', component: SystemComponent }

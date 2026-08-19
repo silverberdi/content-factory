@@ -11,7 +11,13 @@ import { IdeaEditDrawerComponent } from './idea-edit-drawer.component';
 import { IdeaVersionHistoryDrawerComponent } from './idea-version-history-drawer.component';
 import { EditorialTasksListComponent } from './editorial-tasks-list.component';
 import { AttachEvidenceModalComponent } from './attach-evidence-modal.component';
-import { ApiService, ContentIdeaDto, ContentIdeaVersionDto, ContentItemDetailDto, TruthSourceDto } from '../../core/api.service';
+import { ScriptStudioComponent } from './script-studio.component';
+import { ScriptSceneCardComponent } from './script-scene-card.component';
+import { GenerateScriptModalComponent } from './generate-script-modal.component';
+import { ScriptReviewPanelComponent } from './script-review-panel.component';
+import { ScriptVersionHistoryDrawerComponent } from './script-version-history-drawer.component';
+import { RejectScriptModalComponent } from './reject-script-modal.component';
+import { ApiService, ContentIdeaDto, ContentIdeaVersionDto, ContentItemDetailDto, ScriptDto, ScriptReviewResultDto, ScriptVersionDto, TruthSourceDto } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 
 describe('Content & TruthSource Feature Components', () => {
@@ -26,7 +32,13 @@ describe('Content & TruthSource Feature Components', () => {
         IdeaEditDrawerComponent,
         IdeaVersionHistoryDrawerComponent,
         EditorialTasksListComponent,
-        AttachEvidenceModalComponent
+        AttachEvidenceModalComponent,
+        ScriptStudioComponent,
+        ScriptSceneCardComponent,
+        GenerateScriptModalComponent,
+        ScriptReviewPanelComponent,
+        ScriptVersionHistoryDrawerComponent,
+        RejectScriptModalComponent
       ],
       providers: [
         provideHttpClient(),
@@ -602,4 +614,225 @@ describe('Content & TruthSource Feature Components', () => {
     expect(el.textContent).toContain('La idea fue modificada por otro operador concurrentemente');
     expect(el.textContent).toContain('Recargar Versión Más Reciente');
   });
+
+  it('should create ScriptStudioComponent and render live pacing, scenes, and duration metrics', () => {
+    const fixture = TestBed.createComponent(ScriptStudioComponent);
+    const component = fixture.componentInstance;
+
+    const mockDetail: ContentItemDetailDto = {
+      id: '00000000-0000-0000-0000-000000000301',
+      channelId: '00000000-0000-0000-0000-000000000010',
+      channelName: 'IA Simple ES',
+      title: '3 Habilidades Clave en 2026',
+      slug: '3-habilidades-clave-2026',
+      stage: 'ScriptUnderReview',
+      status: 'Active',
+      version: 2,
+      createdAtUtc: new Date().toISOString(),
+      createdByEmail: 'operator@silverman.pro',
+      updatedAtUtc: new Date().toISOString(),
+      updatedByEmail: 'operator@silverman.pro',
+      evidences: []
+    };
+
+    const mockScript: ScriptDto = {
+      id: '00000000-0000-0000-0000-000000000501',
+      contentItemId: '00000000-0000-0000-0000-000000000301',
+      channelId: '00000000-0000-0000-0000-000000000010',
+      contentIdeaId: '00000000-0000-0000-0000-000000000401',
+      contentIdeaVersionId: '00000000-0000-0000-0000-000000000401',
+      truthSourceId: '00000000-0000-0000-0000-000000000302',
+      truthSourceVersionId: '00000000-0000-0000-0000-000000000303',
+      title: '3 Habilidades que la IA NO te Puede Quitar en 2026',
+      targetDurationSeconds: 45,
+      pacingWpm: 140,
+      estimatedDurationSeconds: 43.7,
+      totalWordCount: 102,
+      language: 'es-ES',
+      status: 'UnderReview',
+      isStale: false,
+      staleReason: null,
+      version: 1,
+      createdAtUtc: new Date().toISOString(),
+      createdByEmail: 'operator@silverman.pro',
+      updatedAtUtc: new Date().toISOString(),
+      updatedByEmail: 'operator@silverman.pro',
+      scenes: [
+        {
+          id: 'sc-1',
+          scriptId: '00000000-0000-0000-0000-000000000501',
+          orderIndex: 1,
+          sceneType: 'Hook',
+          narrationText: '¿Crees que un prompt te salvará el empleo en 2026? Te equivocas: estas 3 habilidades valen 10 veces más.',
+          visualPrompt: 'Primer plano directo a cámara',
+          estimatedDurationSeconds: 7.7,
+          wordCount: 18,
+          evidenceReferences: [
+            {
+              id: 'er-1',
+              scriptSceneId: 'sc-1',
+              truthSourceClaimId: '00000000-0000-0000-0000-000000000001',
+              claimStatement: 'El 68% de las empresas priorizan criterio analítico.',
+              editorialNote: 'Gancho inicial respaldado'
+            }
+          ]
+        },
+        {
+          id: 'sc-2',
+          scriptId: '00000000-0000-0000-0000-000000000501',
+          orderIndex: 2,
+          sceneType: 'Problem',
+          narrationText: 'Generar texto en 5 segundos no impresiona a nadie si el resultado contiene alucinaciones.',
+          visualPrompt: 'B-roll oficina con marcas de error',
+          estimatedDurationSeconds: 6.0,
+          wordCount: 14,
+          evidenceReferences: []
+        }
+      ]
+    };
+
+    component.contentItemId.set('00000000-0000-0000-0000-000000000301');
+    component.contentItem.set(mockDetail);
+    component.script.set(mockScript);
+    component.scenes.set(mockScript.scenes);
+    component.currentPacingWpm = 140;
+    component.errorMessage.set(null);
+    component.isLoading.set(false);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Script Studio');
+    expect(el.textContent).toContain('3 Habilidades que la IA NO te Puede Quitar en 2026');
+    expect(el.textContent).toContain('UnderReview');
+    expect(el.textContent).toContain('140 WPM');
+    expect(el.textContent).toContain('33 palabras');
+    expect(el.textContent).toContain('Hook');
+    expect(el.textContent).toContain('Problem');
+    expect(el.textContent).toContain('El 68% de las empresas priorizan criterio analítico');
+  });
+
+  it('should render Stale Lineage Warning in ScriptStudioComponent when script is marked stale', () => {
+    const fixture = TestBed.createComponent(ScriptStudioComponent);
+    const component = fixture.componentInstance;
+
+    const mockDetail: ContentItemDetailDto = {
+      id: '00000000-0000-0000-0000-000000000301',
+      channelId: '00000000-0000-0000-0000-000000000010',
+      channelName: 'IA Simple ES',
+      title: 'Stale Piece Test',
+      slug: 'stale-piece-test',
+      stage: 'ScriptUnderReview',
+      status: 'Active',
+      version: 2,
+      createdAtUtc: new Date().toISOString(),
+      createdByEmail: 'operator@silverman.pro',
+      updatedAtUtc: new Date().toISOString(),
+      updatedByEmail: 'operator@silverman.pro',
+      evidences: []
+    };
+
+    const staleScript: ScriptDto = {
+      id: '00000000-0000-0000-0000-000000000501',
+      contentItemId: '00000000-0000-0000-0000-000000000301',
+      channelId: '00000000-0000-0000-0000-000000000010',
+      contentIdeaId: '00000000-0000-0000-0000-000000000401',
+      contentIdeaVersionId: '00000000-0000-0000-0000-000000000401',
+      truthSourceId: '00000000-0000-0000-0000-000000000302',
+      truthSourceVersionId: '00000000-0000-0000-0000-000000000303',
+      title: 'Stale Script Title',
+      targetDurationSeconds: 45,
+      pacingWpm: 140,
+      estimatedDurationSeconds: 45.0,
+      totalWordCount: 105,
+      language: 'es-ES',
+      status: 'UnderReview',
+      isStale: true,
+      staleReason: 'La idea seleccionada ha cambiado. Reconciliación requerida.',
+      version: 1,
+      createdAtUtc: new Date().toISOString(),
+      createdByEmail: 'operator@silverman.pro',
+      updatedAtUtc: new Date().toISOString(),
+      updatedByEmail: 'operator@silverman.pro',
+      scenes: []
+    };
+
+    component.contentItemId.set('00000000-0000-0000-0000-000000000301');
+    component.contentItem.set(mockDetail);
+    component.script.set(staleScript);
+    component.errorMessage.set(null);
+    component.isLoading.set(false);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Lineage Desactualizado');
+    expect(el.textContent).toContain('La idea seleccionada ha cambiado. Reconciliación requerida.');
+  });
+
+  it('should render ScriptReviewPanelComponent with advisory findings and governance disclaimer', () => {
+    const fixture = TestBed.createComponent(ScriptReviewPanelComponent);
+    const component = fixture.componentInstance;
+
+    const mockReview: ScriptReviewResultDto = {
+      overallStatus: 'Pass',
+      factualAlignmentScore: 0.95,
+      retentionAnalysis: 'El gancho inicial en los primeros 3s genera curiosidad sin sensacionalismo.',
+      pacingAssessment: 'Duración estimada de 44.5s a 140 WPM. Ritmo equilibrado.',
+      doNotSayComplianceNotes: ['Cero infracciones detectadas.'],
+      dimensions: [
+        { dimension: 'Fidelidad Factual', status: 'Pass', notes: 'Todas las afirmaciones corresponden al TruthSource.' },
+        { dimension: 'Ritmo y Duración', status: 'Pass', notes: 'Duración 44.5s contra objetivo 45s.' }
+      ],
+      sceneCritiques: [
+        {
+          orderIndex: 1,
+          sceneType: 'Hook',
+          status: 'Pass',
+          claimFidelityNotes: 'Afirmación consistente con estudio de empleo.',
+          retentionNotes: 'Gancho directo',
+          pacingNotes: '7.7s',
+          suggestions: []
+        }
+      ],
+      actionableRecommendations: [
+        'Mantener dinamismo visual entre el problema y el insight.'
+      ]
+    };
+
+    component.reviewResult = mockReview;
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Auditoría Editorial Consultiva (IA)');
+    expect(el.textContent).toContain('Dictamen Consultivo:');
+    expect(el.textContent).toContain('95%');
+    expect(el.textContent).toContain('El gancho inicial en los primeros 3s genera curiosidad');
+    expect(el.textContent).toContain('Fidelidad Factual');
+    expect(el.textContent).toContain('Mantener dinamismo visual entre el problema y el insight');
+  });
+
+  it('should render RejectScriptModalComponent and require non-empty reason', () => {
+    const fixture = TestBed.createComponent(RejectScriptModalComponent);
+    const component = fixture.componentInstance;
+
+    component.isOpen = true;
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Rechazar Guión');
+    expect(el.textContent).toContain('Motivo del Rechazo');
+
+    let rejectedReason = '';
+    component.rejected.subscribe(r => rejectedReason = r);
+
+    // Empty reason should not emit
+    component.reason = '   ';
+    component.submit();
+    expect(rejectedReason).toBe('');
+
+    // Valid reason emits
+    component.reason = 'Gancho excede los 3 segundos.';
+    component.submit();
+    expect(rejectedReason).toBe('Gancho excede los 3 segundos.');
+  });
 });
+
