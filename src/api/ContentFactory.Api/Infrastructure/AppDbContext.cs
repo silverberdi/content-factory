@@ -26,6 +26,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ScriptScene> ScriptScenes => Set<ScriptScene>();
     public DbSet<ScriptSceneEvidenceReference> ScriptSceneEvidenceReferences => Set<ScriptSceneEvidenceReference>();
     public DbSet<ScriptVersion> ScriptVersions => Set<ScriptVersion>();
+    public DbSet<Storyboard> Storyboards => Set<Storyboard>();
+    public DbSet<StoryboardFrame> StoryboardFrames => Set<StoryboardFrame>();
+    public DbSet<AssetPlan> AssetPlans => Set<AssetPlan>();
+    public DbSet<AssetRequirement> AssetRequirements => Set<AssetRequirement>();
+    public DbSet<StoryboardVersion> StoryboardVersions => Set<StoryboardVersion>();
     public DbSet<EditorialTask> EditorialTasks => Set<EditorialTask>();
     public DbSet<AiRecommendation> AiRecommendations => Set<AiRecommendation>();
 
@@ -422,6 +427,147 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasIndex(v => v.ScriptId);
             entity.HasIndex(v => v.ContentItemId);
             entity.HasIndex(v => new { v.ScriptId, v.VersionNumber }).IsUnique();
+        });
+
+        modelBuilder.Entity<Storyboard>(entity =>
+        {
+            entity.ToTable("storyboards");
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.ContentItemId).IsRequired();
+            entity.Property(s => s.ChannelId).IsRequired();
+            entity.Property(s => s.ScriptId).IsRequired();
+            entity.Property(s => s.ScriptVersionId).IsRequired();
+            entity.Property(s => s.TruthSourceId).IsRequired();
+            entity.Property(s => s.TruthSourceVersionId).IsRequired();
+            entity.Property(s => s.IsCurrent).IsRequired();
+            entity.Property(s => s.Title).IsRequired().HasMaxLength(512);
+            entity.Property(s => s.TargetDurationSeconds).IsRequired();
+            entity.Property(s => s.TotalEstimatedDurationSeconds).IsRequired();
+            entity.Property(s => s.Status).IsRequired().HasMaxLength(32);
+            entity.Property(s => s.RejectionReason).HasMaxLength(2048);
+            entity.Property(s => s.RejectedByEmail).HasMaxLength(256);
+            entity.Property(s => s.ApprovedByEmail).HasMaxLength(256);
+            entity.Property(s => s.SubmittedForReviewByEmail).HasMaxLength(256);
+            entity.Property(s => s.Version).IsRequired();
+            entity.Property(s => s.CreatedAtUtc).IsRequired();
+            entity.Property(s => s.CreatedByEmail).IsRequired().HasMaxLength(256);
+            entity.Property(s => s.UpdatedAtUtc).IsRequired();
+            entity.Property(s => s.UpdatedByEmail).HasMaxLength(256);
+
+            entity.HasMany(s => s.Frames)
+                  .WithOne()
+                  .HasForeignKey(f => f.StoryboardId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(s => s.AssetPlan)
+                  .WithOne()
+                  .HasForeignKey<AssetPlan>(ap => ap.StoryboardId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(s => s.ContentItemId);
+            entity.HasIndex(s => s.ChannelId);
+            entity.HasIndex(s => s.ScriptId);
+            entity.HasIndex(s => s.ScriptVersionId);
+            entity.HasIndex(s => s.TruthSourceId);
+            entity.HasIndex(s => s.TruthSourceVersionId);
+            entity.HasIndex(s => new { s.ContentItemId, s.IsCurrent });
+            entity.HasIndex(s => new { s.ContentItemId, s.Status });
+        });
+
+        modelBuilder.Entity<StoryboardFrame>(entity =>
+        {
+            entity.ToTable("storyboard_frames");
+            entity.HasKey(f => f.Id);
+            entity.Property(f => f.StoryboardId).IsRequired();
+            entity.Property(f => f.OrderIndex).IsRequired();
+            entity.Property(f => f.ScriptSceneId).IsRequired();
+            entity.Property(f => f.ScriptSceneOrderIndex).IsRequired();
+            entity.Property(f => f.FramingIntent).IsRequired().HasMaxLength(64);
+            entity.Property(f => f.CompositionIntent).HasMaxLength(1024);
+            entity.Property(f => f.CameraMotionIntent).IsRequired().HasMaxLength(64);
+            entity.Property(f => f.Subject).HasMaxLength(512);
+            entity.Property(f => f.Environment).HasMaxLength(512);
+            entity.Property(f => f.StyleIntent).HasMaxLength(512);
+            entity.Property(f => f.VisualPrompt).IsRequired();
+            entity.Property(f => f.NegativePrompt).HasMaxLength(2048);
+            entity.Property(f => f.AudioCue).IsRequired();
+            entity.Property(f => f.EstimatedDurationSeconds).IsRequired();
+            entity.Property(f => f.OnScreenText).HasMaxLength(512);
+            entity.Property(f => f.TransitionIntent).IsRequired().HasMaxLength(64);
+            entity.Property(f => f.CreatedAtUtc).IsRequired();
+            entity.Property(f => f.UpdatedAtUtc).IsRequired();
+
+            entity.HasIndex(f => f.StoryboardId);
+            entity.HasIndex(f => new { f.StoryboardId, f.OrderIndex });
+            entity.HasIndex(f => f.ScriptSceneId);
+        });
+
+        modelBuilder.Entity<AssetPlan>(entity =>
+        {
+            entity.ToTable("asset_plans");
+            entity.HasKey(ap => ap.Id);
+            entity.Property(ap => ap.StoryboardId).IsRequired();
+            entity.Property(ap => ap.ContentItemId).IsRequired();
+            entity.Property(ap => ap.Status).IsRequired().HasMaxLength(32);
+            entity.Property(ap => ap.Version).IsRequired();
+            entity.Property(ap => ap.CreatedAtUtc).IsRequired();
+            entity.Property(ap => ap.UpdatedAtUtc).IsRequired();
+
+            entity.HasMany(ap => ap.Requirements)
+                  .WithOne()
+                  .HasForeignKey(r => r.AssetPlanId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(ap => ap.StoryboardId).IsUnique();
+            entity.HasIndex(ap => ap.ContentItemId);
+        });
+
+        modelBuilder.Entity<AssetRequirement>(entity =>
+        {
+            entity.ToTable("asset_requirements");
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.AssetPlanId).IsRequired();
+            entity.Property(r => r.AssetType).IsRequired().HasMaxLength(64);
+            entity.Property(r => r.AspectRatio).IsRequired().HasMaxLength(32);
+            entity.Property(r => r.VisualPrompt).IsRequired();
+            entity.Property(r => r.NegativePrompt).HasMaxLength(2048);
+            entity.Property(r => r.StyleIntent).HasMaxLength(512);
+            entity.Property(r => r.MotionIntent).HasMaxLength(512);
+            entity.Property(r => r.VoiceIntent).HasMaxLength(512);
+            entity.Property(r => r.MusicMood).HasMaxLength(512);
+            entity.Property(r => r.SoundEffectIntent).HasMaxLength(512);
+            entity.Property(r => r.SubtitleProfile).HasMaxLength(512);
+            entity.Property(r => r.OverlaySpecification).HasMaxLength(1024);
+            entity.Property(r => r.CreatedAtUtc).IsRequired();
+            entity.Property(r => r.UpdatedAtUtc).IsRequired();
+
+            entity.HasIndex(r => r.AssetPlanId);
+            entity.HasIndex(r => r.FrameId);
+        });
+
+        modelBuilder.Entity<StoryboardVersion>(entity =>
+        {
+            entity.ToTable("storyboard_versions");
+            entity.HasKey(v => v.Id);
+            entity.Property(v => v.StoryboardId).IsRequired();
+            entity.Property(v => v.ContentItemId).IsRequired();
+            entity.Property(v => v.ScriptId).IsRequired();
+            entity.Property(v => v.ScriptVersionId).IsRequired();
+            entity.Property(v => v.TruthSourceId).IsRequired();
+            entity.Property(v => v.TruthSourceVersionId).IsRequired();
+            entity.Property(v => v.VersionNumber).IsRequired();
+            entity.Property(v => v.SnapshotJson).IsRequired();
+            entity.Property(v => v.ChangeSummary).HasMaxLength(1024);
+            entity.Property(v => v.Status).IsRequired().HasMaxLength(32);
+            entity.Property(v => v.RejectionReason).HasMaxLength(2048);
+            entity.Property(v => v.TotalEstimatedDurationSeconds).IsRequired();
+            entity.Property(v => v.TotalFrameCount).IsRequired();
+            entity.Property(v => v.CreatedAtUtc).IsRequired();
+            entity.Property(v => v.CreatedByEmail).IsRequired().HasMaxLength(256);
+
+            entity.HasIndex(v => v.StoryboardId);
+            entity.HasIndex(v => v.ContentItemId);
+            entity.HasIndex(v => new { v.StoryboardId, v.VersionNumber }).IsUnique();
         });
     }
 }

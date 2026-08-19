@@ -98,8 +98,15 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
         </div>
 
         <div actions class="flex items-center gap-2 flex-wrap">
+          <a *ngIf="script()?.status === 'Approved'"
+             [routerLink]="['/content/items', contentItemId(), 'storyboard']"
+             class="cf-btn-primary">
+            <i class="pi pi-images"></i>
+            <span>Ir a Storyboard Studio</span>
+          </a>
+
           <button (click)="openAiGenerateModal()" [disabled]="isActionInProgress()"
-                  class="cf-btn-primary">
+                  [ngClass]="script()?.status === 'Approved' ? 'cf-btn-secondary' : 'cf-btn-primary'">
             <i class="pi pi-sparkles"></i>
             <span>{{ script() ? 'Regenerar con IA' : 'Generar Guión con IA' }}</span>
           </button>

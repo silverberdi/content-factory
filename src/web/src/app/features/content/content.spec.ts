@@ -17,7 +17,14 @@ import { GenerateScriptModalComponent } from './generate-script-modal.component'
 import { ScriptReviewPanelComponent } from './script-review-panel.component';
 import { ScriptVersionHistoryDrawerComponent } from './script-version-history-drawer.component';
 import { RejectScriptModalComponent } from './reject-script-modal.component';
-import { ApiService, ContentIdeaDto, ContentIdeaVersionDto, ContentItemDetailDto, ScriptDto, ScriptReviewResultDto, ScriptVersionDto, TruthSourceDto } from '../../core/api.service';
+import { StoryboardStudioComponent } from './storyboard-studio.component';
+import { StoryboardFrameCardComponent } from './storyboard-frame-card.component';
+import { AssetPlanSummaryComponent } from './asset-plan-summary.component';
+import { GenerateStoryboardModalComponent } from './generate-storyboard-modal.component';
+import { StoryboardReviewPanelComponent } from './storyboard-review-panel.component';
+import { StoryboardVersionHistoryDrawerComponent } from './storyboard-version-history-drawer.component';
+import { RejectStoryboardModalComponent } from './reject-storyboard-modal.component';
+import { ApiService, AssetPlanDto, ContentIdeaDto, ContentIdeaVersionDto, ContentItemDetailDto, ProductionEligibilityDto, ScriptDto, ScriptReviewResultDto, ScriptVersionDto, StoryboardCritiqueResultDto, StoryboardDto, StoryboardFrameDto, StoryboardVersionDto, TruthSourceDto } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 
 describe('Content & TruthSource Feature Components', () => {
@@ -38,7 +45,14 @@ describe('Content & TruthSource Feature Components', () => {
         GenerateScriptModalComponent,
         ScriptReviewPanelComponent,
         ScriptVersionHistoryDrawerComponent,
-        RejectScriptModalComponent
+        RejectScriptModalComponent,
+        StoryboardStudioComponent,
+        StoryboardFrameCardComponent,
+        AssetPlanSummaryComponent,
+        GenerateStoryboardModalComponent,
+        StoryboardReviewPanelComponent,
+        StoryboardVersionHistoryDrawerComponent,
+        RejectStoryboardModalComponent
       ],
       providers: [
         provideHttpClient(),
@@ -834,5 +848,352 @@ describe('Content & TruthSource Feature Components', () => {
     component.submit();
     expect(rejectedReason).toBe('Gancho excede los 3 segundos.');
   });
+
+  it('should render StoryboardStudioComponent with frames, timing bar and downstream eligibility', () => {
+    const fixture = TestBed.createComponent(StoryboardStudioComponent);
+    const component = fixture.componentInstance;
+
+    const mockDetail: ContentItemDetailDto = {
+      id: '00000000-0000-0000-0000-000000000401',
+      channelId: '00000000-0000-0000-0000-000000000010',
+      channelName: 'IA Simple ES',
+      title: 'IA en Logística: Storyboard de Producción',
+      slug: 'ia-en-logistica-storyboard',
+      stage: 'StoryboardDrafted',
+      status: 'Active',
+      version: 1,
+      createdAtUtc: new Date().toISOString(),
+      createdByEmail: 'operator@silverman.pro',
+      updatedAtUtc: new Date().toISOString(),
+      updatedByEmail: 'operator@silverman.pro',
+      evidences: [],
+      truthSource: null
+    };
+
+    const mockFrames: StoryboardFrameDto[] = [
+      {
+        id: 'f1',
+        storyboardId: 'sb1',
+        orderIndex: 1,
+        scriptSceneId: 'sc1',
+        scriptSceneOrderIndex: 1,
+        framingIntent: 'ExtremeCloseUp',
+        compositionIntent: 'Enfoque en ojos',
+        cameraMotionIntent: 'SlowZoomIn',
+        subject: 'Operador de almacén',
+        environment: 'Almacén moderno',
+        styleIntent: 'Cinematográfico',
+        visualPrompt: 'Primer plano extremo de ojos reflejando pantalla con métricas de almacén...',
+        negativePrompt: 'blur',
+        audioCue: '¿Sabías que el 40% de los errores...',
+        estimatedDurationSeconds: 4.5,
+        onScreenText: '40% DE ERRORES',
+        transitionIntent: 'Cut',
+        createdAtUtc: new Date().toISOString(),
+        updatedAtUtc: new Date().toISOString()
+      },
+      {
+        id: 'f2',
+        storyboardId: 'sb1',
+        orderIndex: 2,
+        scriptSceneId: 'sc2',
+        scriptSceneOrderIndex: 2,
+        framingIntent: 'MediumShot',
+        compositionIntent: 'Tercio superior',
+        cameraMotionIntent: 'TrackingShot',
+        subject: 'Robots AGV en almacén',
+        environment: 'Pasillo de logística automatizado',
+        styleIntent: 'Dark Tech',
+        visualPrompt: 'Plano medio de robots AGV desplazando palets con luces LED...',
+        negativePrompt: 'low quality',
+        audioCue: 'La automatización predictiva reduce...',
+        estimatedDurationSeconds: 6.0,
+        onScreenText: 'ROBOTS AGV EN ACCIÓN',
+        transitionIntent: 'CrossDissolve',
+        createdAtUtc: new Date().toISOString(),
+        updatedAtUtc: new Date().toISOString()
+      }
+    ];
+
+    const mockAssetPlan: AssetPlanDto = {
+      id: 'ap1',
+      storyboardId: 'sb1',
+      contentItemId: '00000000-0000-0000-0000-000000000401',
+      status: 'Planned',
+      version: 1,
+      createdAtUtc: new Date().toISOString(),
+      updatedAtUtc: new Date().toISOString(),
+      requirements: [
+        {
+          id: 'ar1',
+          assetPlanId: 'ap1',
+          frameId: 'f1',
+          frameOrderIndex: 1,
+          assetType: 'AiImage',
+          aspectRatio: '9:16',
+          visualPrompt: 'Primer plano extremo...',
+          negativePrompt: 'blur',
+          styleIntent: 'Cinematográfico',
+          motionIntent: 'SlowZoomIn',
+          targetDurationSeconds: 4.5,
+          voiceIntent: 'Locutor sobrio',
+          musicMood: 'Tech Ambient',
+          soundEffectIntent: '',
+          subtitleProfile: 'Captions kinetic',
+          overlaySpecification: '40% DE ERRORES',
+          createdAtUtc: new Date().toISOString(),
+          updatedAtUtc: new Date().toISOString()
+        },
+        {
+          id: 'ar2',
+          assetPlanId: 'ap1',
+          assetType: 'TtsVoiceover',
+          aspectRatio: 'N/A',
+          visualPrompt: 'Pista de locución completa',
+          negativePrompt: '',
+          styleIntent: '',
+          motionIntent: '',
+          targetDurationSeconds: 45.0,
+          voiceIntent: 'Español neutro',
+          musicMood: '',
+          soundEffectIntent: '',
+          subtitleProfile: '',
+          overlaySpecification: '',
+          createdAtUtc: new Date().toISOString(),
+          updatedAtUtc: new Date().toISOString()
+        }
+      ]
+    };
+
+    const mockStoryboard: StoryboardDto = {
+      id: 'sb1',
+      contentItemId: '00000000-0000-0000-0000-000000000401',
+      channelId: '00000000-0000-0000-0000-000000000010',
+      scriptId: 'sc-main',
+      scriptVersionId: 'sv-1',
+      truthSourceId: 'ts-main',
+      truthSourceVersionId: 'tsv-1',
+      isCurrent: true,
+      title: 'Storyboard de Producción Logística',
+      targetDurationSeconds: 45.0,
+      totalEstimatedDurationSeconds: 10.5,
+      status: 'Draft',
+      isStale: false,
+      version: 1,
+      createdAtUtc: new Date().toISOString(),
+      createdByEmail: 'operator@silverman.pro',
+      updatedAtUtc: new Date().toISOString(),
+      updatedByEmail: 'operator@silverman.pro',
+      frames: mockFrames,
+      assetPlan: mockAssetPlan
+    };
+
+    const mockEligibility: ProductionEligibilityDto = {
+      isEligible: false,
+      currentStoryboardExists: true,
+      isApproved: false,
+      isNotStale: true,
+      isAssetPlanComplete: false,
+      isUpstreamLineageCurrent: true,
+      visualRequirementCount: 1,
+      audioRequirementCount: 1,
+      subtitleRequirementCount: 0,
+      blockerReasons: ['Storyboard status is Draft, must be Approved.'],
+      statusSummary: 'Ineligible'
+    };
+
+    component.contentItemId.set('00000000-0000-0000-0000-000000000401');
+    component.contentItem.set(mockDetail);
+    component.storyboard.set(mockStoryboard);
+    component.frames.set(mockFrames);
+    component.eligibility.set(mockEligibility);
+    component.isLoading.set(false);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Storyboard Studio');
+    expect(el.textContent).toContain('Storyboard de Producción Logística');
+    expect(el.textContent).toContain('Draft');
+    expect(el.textContent).toContain('v1');
+    expect(el.textContent).toContain('10.5s');
+    expect(el.textContent).toContain('Bloqueado para Producción');
+  });
+
+  it('should render StoryboardFrameCardComponent with 9:16 vertical badge and allow frame editing', () => {
+    const fixture = TestBed.createComponent(StoryboardFrameCardComponent);
+    const component = fixture.componentInstance;
+
+    component.frame = {
+      id: 'f1',
+      storyboardId: 'sb1',
+      orderIndex: 1,
+      scriptSceneId: 'sc1',
+      scriptSceneOrderIndex: 1,
+      framingIntent: 'ExtremeCloseUp',
+      compositionIntent: 'Enfoque en ojos',
+      cameraMotionIntent: 'SlowZoomIn',
+      subject: 'Operador de almacén',
+      environment: 'Almacén moderno',
+      styleIntent: 'Cinematográfico',
+      visualPrompt: 'Primer plano extremo de ojos...',
+      negativePrompt: 'blur',
+      audioCue: '¿Sabías que el 40%...',
+      estimatedDurationSeconds: 4.5,
+      onScreenText: '40% DE ERRORES',
+      transitionIntent: 'Cut',
+      createdAtUtc: new Date().toISOString(),
+      updatedAtUtc: new Date().toISOString()
+    };
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('#1');
+    expect(el.textContent).toContain('Escena 1');
+    expect(el.textContent).toContain('9:16');
+    expect(el.textContent).toContain('ExtremeCloseUp');
+    expect(el.textContent).toContain('SlowZoomIn');
+    expect(el.textContent).toContain('"40% DE ERRORES"');
+  });
+
+  it('should render AssetPlanSummaryComponent with grouped asset categories and readiness indicator', () => {
+    const fixture = TestBed.createComponent(AssetPlanSummaryComponent);
+    const component = fixture.componentInstance;
+
+    component.assetPlan = {
+      id: 'ap1',
+      storyboardId: 'sb1',
+      contentItemId: '00000000-0000-0000-0000-000000000401',
+      status: 'ReadyForGeneration',
+      version: 1,
+      createdAtUtc: new Date().toISOString(),
+      updatedAtUtc: new Date().toISOString(),
+      requirements: [
+        {
+          id: 'ar1',
+          assetPlanId: 'ap1',
+          frameId: 'f1',
+          frameOrderIndex: 1,
+          assetType: 'AiImage',
+          aspectRatio: '9:16',
+          visualPrompt: 'Toma vertical de almacén',
+          negativePrompt: '',
+          styleIntent: '',
+          motionIntent: '',
+          voiceIntent: '',
+          musicMood: '',
+          soundEffectIntent: '',
+          subtitleProfile: '',
+          overlaySpecification: '',
+          createdAtUtc: new Date().toISOString(),
+          updatedAtUtc: new Date().toISOString()
+        },
+        {
+          id: 'ar2',
+          assetPlanId: 'ap1',
+          assetType: 'TtsVoiceover',
+          aspectRatio: 'N/A',
+          visualPrompt: 'Voz en off completa',
+          negativePrompt: '',
+          styleIntent: '',
+          motionIntent: '',
+          voiceIntent: 'Español sobrio',
+          musicMood: '',
+          soundEffectIntent: '',
+          subtitleProfile: '',
+          overlaySpecification: '',
+          createdAtUtc: new Date().toISOString(),
+          updatedAtUtc: new Date().toISOString()
+        },
+        {
+          id: 'ar3',
+          assetPlanId: 'ap1',
+          assetType: 'SubtitleTrack',
+          aspectRatio: '9:16',
+          visualPrompt: 'Subtítulos cinéticos',
+          negativePrompt: '',
+          styleIntent: '',
+          motionIntent: '',
+          voiceIntent: '',
+          musicMood: '',
+          soundEffectIntent: '',
+          subtitleProfile: 'Spanish kinetic',
+          overlaySpecification: '',
+          createdAtUtc: new Date().toISOString(),
+          updatedAtUtc: new Date().toISOString()
+        }
+      ]
+    };
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Especificación del Plan de Producción (Asset Plan)');
+    expect(el.textContent).toContain('Listo para Producción');
+    expect(el.textContent).toContain('3 Requerimientos');
+    expect(el.textContent).toContain('Visuales 9:16');
+    expect(el.textContent).toContain('Locución TTS');
+    expect(el.textContent).toContain('Subtítulos');
+  });
+
+  it('should render StoryboardReviewPanelComponent with 0-100 visual alignment score and critique dimensions', () => {
+    const fixture = TestBed.createComponent(StoryboardReviewPanelComponent);
+    const component = fixture.componentInstance;
+
+    const mockCritique: StoryboardCritiqueResultDto = {
+      overallStatus: 'Pass',
+      visualAlignmentScore: 92,
+      narrativeContinuityAssessment: 'Excelente continuidad visual entre tomas.',
+      timingPacingAssessment: 'El ritmo de 45s coincide con la locución.',
+      dimensions: [
+        { dimension: 'Consistencia Visual', status: 'Pass', notes: 'Estilo cinemático consistente.' },
+        { dimension: 'Encuadre Vertical 9:16', status: 'Pass', notes: 'Sujeto centrado para formato vertical.' }
+      ],
+      frameCritiques: [
+        {
+          orderIndex: 1,
+          scriptSceneOrderIndex: 1,
+          status: 'Pass',
+          visualNarrativeFidelityNotes: 'Toma 1 ilustra fielmente el gancho.',
+          suggestions: []
+        }
+      ],
+      actionableRecommendations: ['Preparar generación de imagen con estilo cinemático.']
+    };
+
+    component.critique = mockCritique;
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Revisión Asesora IA (Storyboard)');
+    expect(el.textContent).toContain('92%');
+    expect(el.textContent).toContain('Aprobado por IA');
+    expect(el.textContent).toContain('Consistencia Visual');
+    expect(el.textContent).toContain('Encuadre Vertical 9:16');
+  });
+
+  it('should render RejectStoryboardModalComponent and validate mandatory reason', () => {
+    const fixture = TestBed.createComponent(RejectStoryboardModalComponent);
+    const component = fixture.componentInstance;
+
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Rechazar Storyboard y Plan');
+    expect(el.textContent).toContain('Motivo Obligatorio del Rechazo');
+
+    let emittedReason = '';
+    component.reject.subscribe(r => emittedReason = r);
+
+    // Empty reason
+    component.reason = '  ';
+    component.submit();
+    expect(emittedReason).toBe('');
+    expect(component.showValidation).toBe(true);
+
+    // Valid reason
+    component.reason = 'Los encuadres de la escena 2 son muy rápidos.';
+    component.submit();
+    expect(emittedReason).toBe('Los encuadres de la escena 2 son muy rápidos.');
+  });
 });
+
 

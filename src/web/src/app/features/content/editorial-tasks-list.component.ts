@@ -115,12 +115,17 @@ import { PageToolbarComponent } from '../../shared/layout/page-toolbar.component
                   {{ (t.dueDateUtc | date:'yyyy-MM-dd HH:mm') || 'Sin fecha' }}
                 </td>
                 <td class="py-3 px-4 text-right">
+                  <a *ngIf="t.taskType === 'ReviewStoryboard'" [routerLink]="['/content/items', t.contentItemId, 'storyboard']"
+                     class="cf-btn-primary">
+                    <i class="pi pi-images text-xs"></i>
+                    <span>Revisar Storyboard</span>
+                  </a>
                   <a *ngIf="t.taskType === 'ReviewScript'" [routerLink]="['/content/items', t.contentItemId, 'script']"
                      class="cf-btn-primary">
                     <i class="pi pi-file-edit text-xs"></i>
                     <span>Revisar Guión</span>
                   </a>
-                  <a *ngIf="t.taskType !== 'ReviewScript'" [routerLink]="['/content/items', t.contentItemId, 'truth-source']"
+                  <a *ngIf="t.taskType !== 'ReviewScript' && t.taskType !== 'ReviewStoryboard'" [routerLink]="['/content/items', t.contentItemId, 'truth-source']"
                      class="cf-btn-secondary">
                     <i class="pi pi-check-square text-indigo-500 text-xs"></i>
                     <span>Revisar TruthSource</span>

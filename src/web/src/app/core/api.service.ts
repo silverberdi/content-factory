@@ -765,6 +765,62 @@ export class ApiService {
   reopenScript(contentItemId: string, scriptId: string, request: ReopenScriptRequest): Observable<ScriptDto> {
     return this.http.post<ScriptDto>(`${this.baseUrl}/content-items/${contentItemId}/script/${scriptId}/reopen`, request);
   }
+
+  // --- CF-014 / CF-015 Storyboard & Production Planning Endpoints ---
+
+  getStoryboard(contentItemId: string): Observable<StoryboardDto> {
+    return this.http.get<StoryboardDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard`);
+  }
+
+  getStoryboardVersions(contentItemId: string, storyboardId?: string): Observable<StoryboardVersionDto[]> {
+    const query = storyboardId ? `?storyboardId=${encodeURIComponent(storyboardId)}` : '';
+    return this.http.get<StoryboardVersionDto[]>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/versions${query}`);
+  }
+
+  getStoryboardVersion(contentItemId: string, versionId: string, storyboardId?: string): Observable<StoryboardVersionDto> {
+    const query = storyboardId ? `?storyboardId=${encodeURIComponent(storyboardId)}` : '';
+    return this.http.get<StoryboardVersionDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/versions/${versionId}${query}`);
+  }
+
+  createStoryboard(contentItemId: string, request: CreateStoryboardRequest): Observable<StoryboardDto> {
+    return this.http.post<StoryboardDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard`, request);
+  }
+
+  updateStoryboard(contentItemId: string, storyboardId: string, request: UpdateStoryboardRequest): Observable<StoryboardDto> {
+    return this.http.put<StoryboardDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/${storyboardId}`, request);
+  }
+
+  generateAiStoryboard(contentItemId: string, options?: PlanStoryboardOptions): Observable<StoryboardDto> {
+    return this.http.post<StoryboardDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/generate`, options || {});
+  }
+
+  reviewStoryboard(contentItemId: string, storyboardId: string): Observable<StoryboardCritiqueResultDto> {
+    return this.http.post<StoryboardCritiqueResultDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/${storyboardId}/review`, {});
+  }
+
+  submitStoryboardForReview(contentItemId: string, storyboardId: string, request: SubmitStoryboardForReviewRequest): Observable<StoryboardDto> {
+    return this.http.post<StoryboardDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/${storyboardId}/submit-for-review`, request);
+  }
+
+  approveStoryboard(contentItemId: string, storyboardId: string, request: ApproveStoryboardRequest): Observable<StoryboardDto> {
+    return this.http.post<StoryboardDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/${storyboardId}/approve`, request);
+  }
+
+  rejectStoryboard(contentItemId: string, storyboardId: string, request: RejectStoryboardRequest): Observable<StoryboardDto> {
+    return this.http.post<StoryboardDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/${storyboardId}/reject`, request);
+  }
+
+  reopenStoryboard(contentItemId: string, storyboardId: string, request: ReopenStoryboardRequest): Observable<StoryboardDto> {
+    return this.http.post<StoryboardDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/${storyboardId}/reopen`, request);
+  }
+
+  reconcileStoryboard(contentItemId: string, storyboardId: string, request: ReconcileStoryboardRequest): Observable<StoryboardDto> {
+    return this.http.post<StoryboardDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/${storyboardId}/reconcile`, request);
+  }
+
+  getProductionEligibility(contentItemId: string): Observable<ProductionEligibilityDto> {
+    return this.http.get<ProductionEligibilityDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/production-eligibility`);
+  }
 }
 
 // --- CF-012 / CF-013 Script Domain Interfaces ---
@@ -921,4 +977,257 @@ export interface RejectScriptRequest {
 export interface ReopenScriptRequest {
   expectedVersion: number;
 }
+
+// --- CF-014 / CF-015 Storyboard & Production Planning Interfaces ---
+
+export type StoryboardStatus = 'Draft' | 'UnderReview' | 'Approved' | 'Rejected';
+export type FramingIntent = 'ExtremeCloseUp' | 'CloseUp' | 'MediumShot' | 'WideShot' | 'IsometricUi' | 'MotionGraphic';
+export type CameraMotionIntent = 'Static' | 'SlowZoomIn' | 'PanUp' | 'TrackingShot' | 'DynamicGlitch';
+export type TransitionIntent = 'Cut' | 'Dissolve' | 'Wipe' | 'ZoomIn' | 'Glitch' | 'PanUp';
+export type AssetType = 'AiImage' | 'AiVideo' | 'BRoll' | 'GraphicOverlay' | 'TtsVoiceover' | 'BackgroundMusic' | 'SoundEffect' | 'SubtitleTrack';
+export type AssetPlanStatus = 'Planned' | 'ReadyForGeneration';
+
+export interface StoryboardFrameDto {
+  id: string;
+  storyboardId: string;
+  orderIndex: number;
+  scriptSceneId: string;
+  scriptSceneOrderIndex: number;
+  framingIntent: string;
+  compositionIntent: string;
+  cameraMotionIntent: string;
+  subject: string;
+  environment: string;
+  styleIntent: string;
+  visualPrompt: string;
+  negativePrompt: string;
+  audioCue: string;
+  estimatedDurationSeconds: number;
+  onScreenText: string;
+  transitionIntent: string;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+}
+
+export interface AssetRequirementDto {
+  id: string;
+  assetPlanId: string;
+  frameId?: string | null;
+  frameOrderIndex?: number | null;
+  assetType: string;
+  aspectRatio: string;
+  visualPrompt: string;
+  negativePrompt: string;
+  styleIntent: string;
+  motionIntent: string;
+  targetDurationSeconds?: number | null;
+  voiceIntent: string;
+  musicMood: string;
+  soundEffectIntent: string;
+  subtitleProfile: string;
+  overlaySpecification: string;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+}
+
+export interface AssetPlanDto {
+  id: string;
+  storyboardId: string;
+  contentItemId: string;
+  status: string;
+  version: number;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  requirements: AssetRequirementDto[];
+}
+
+export interface StoryboardDto {
+  id: string;
+  contentItemId: string;
+  channelId: string;
+  scriptId: string;
+  scriptVersionId: string;
+  truthSourceId: string;
+  truthSourceVersionId: string;
+  isCurrent: boolean;
+  supersededAtUtc?: string | null;
+  reconciledFromStoryboardId?: string | null;
+  title: string;
+  targetDurationSeconds: number;
+  totalEstimatedDurationSeconds: number;
+  status: StoryboardStatus | string;
+  rejectionReason?: string | null;
+  rejectedAtUtc?: string | null;
+  rejectedByEmail?: string | null;
+  approvedAtUtc?: string | null;
+  approvedByEmail?: string | null;
+  submittedForReviewAtUtc?: string | null;
+  submittedForReviewByEmail?: string | null;
+  isStale: boolean;
+  staleReason?: string | null;
+  version: number;
+  createdAtUtc: string;
+  createdByEmail: string;
+  updatedAtUtc: string;
+  updatedByEmail: string;
+  frames: StoryboardFrameDto[];
+  assetPlan?: AssetPlanDto | null;
+}
+
+export interface StoryboardVersionDto {
+  id: string;
+  storyboardId: string;
+  contentItemId: string;
+  scriptId: string;
+  scriptVersionId: string;
+  truthSourceId: string;
+  truthSourceVersionId: string;
+  versionNumber: number;
+  snapshotJson: string;
+  changeSummary: string;
+  status: string;
+  rejectionReason?: string | null;
+  totalEstimatedDurationSeconds: number;
+  totalFrameCount: number;
+  frameCount?: number;
+  assetRequirementCount: number;
+  createdAtUtc: string;
+  createdByEmail: string;
+}
+
+export interface StoryboardReviewDimensionDto {
+  dimension: string;
+  status: 'Pass' | 'Warning' | 'Critical';
+  notes: string;
+}
+
+export interface StoryboardFrameCritiqueDto {
+  frameIndex?: number;
+  orderIndex?: number;
+  scriptSceneOrderIndex: number;
+  status: 'Pass' | 'Warning' | 'Critical';
+  hookVisualNotes?: string | null;
+  framingVarietyNotes?: string | null;
+  compositionNotes?: string | null;
+  timingNotes?: string | null;
+  promptFidelityNotes?: string | null;
+  visualNarrativeFidelityNotes?: string;
+  motionFeasibilityNotes?: string | null;
+  timingAlignmentNotes?: string | null;
+  suggestions: string[];
+}
+
+export interface StoryboardCritiqueResultDto {
+  overallStatus: 'Pass' | 'Warning' | 'Critical';
+  visualAlignmentScore: number;
+  hookVisualAssessment?: string;
+  framingDiversityAssessment?: string;
+  timingAlignmentAssessment?: string;
+  narrativeContinuityAssessment?: string;
+  timingPacingAssessment?: string;
+  dimensions: StoryboardReviewDimensionDto[];
+  frameCritiques: StoryboardFrameCritiqueDto[];
+  actionableRecommendations: string[];
+}
+
+export interface ProductionEligibilityDto {
+  contentItemId?: string;
+  storyboardId?: string | null;
+  storyboardVersion?: number | null;
+  blockerReason?: string | null;
+  isEligible: boolean;
+  currentStoryboardExists: boolean;
+  isApproved: boolean;
+  isNotStale: boolean;
+  isAssetPlanComplete: boolean;
+  isUpstreamLineageCurrent: boolean;
+  visualRequirementCount: number;
+  audioRequirementCount: number;
+  subtitleRequirementCount: number;
+  blockerReasons: string[];
+  statusSummary: string;
+}
+
+export interface SaveStoryboardFrameRequest {
+  id?: string | null;
+  orderIndex?: number;
+  scriptSceneId: string;
+  scriptSceneOrderIndex: number;
+  framingIntent?: string | null;
+  compositionIntent?: string | null;
+  cameraMotionIntent?: string | null;
+  subject?: string | null;
+  environment?: string | null;
+  styleIntent?: string | null;
+  visualPrompt: string;
+  negativePrompt?: string | null;
+  audioCue: string;
+  estimatedDurationSeconds: number;
+  onScreenText?: string | null;
+  transitionIntent?: string | null;
+}
+
+export interface SaveAssetRequirementRequest {
+  id?: string | null;
+  frameId?: string | null;
+  frameOrderIndex?: number | null;
+  assetType?: string | null;
+  aspectRatio?: string | null;
+  visualPrompt?: string | null;
+  negativePrompt?: string | null;
+  styleIntent?: string | null;
+  motionIntent?: string | null;
+  targetDurationSeconds?: number | null;
+  voiceIntent?: string | null;
+  musicMood?: string | null;
+  soundEffectIntent?: string | null;
+  subtitleProfile?: string | null;
+  overlaySpecification?: string | null;
+}
+
+export interface CreateStoryboardRequest {
+  title: string;
+  targetDurationSeconds?: number | null;
+  frames?: SaveStoryboardFrameRequest[] | null;
+  assetRequirements?: SaveAssetRequirementRequest[] | null;
+}
+
+export interface UpdateStoryboardRequest {
+  title: string;
+  targetDurationSeconds?: number | null;
+  frames: SaveStoryboardFrameRequest[];
+  assetRequirements?: SaveAssetRequirementRequest[] | null;
+  changeSummary?: string | null;
+  expectedVersion: number;
+}
+
+export interface PlanStoryboardOptions {
+  targetDurationSeconds?: number | null;
+  visualStylePreset?: string | null;
+  cameraMotionIntensity?: string | null;
+  frameDensityMultiplier?: number | null;
+}
+
+export interface SubmitStoryboardForReviewRequest {
+  expectedVersion: number;
+}
+
+export interface ApproveStoryboardRequest {
+  expectedVersion: number;
+}
+
+export interface RejectStoryboardRequest {
+  reason: string;
+  expectedVersion: number;
+}
+
+export interface ReopenStoryboardRequest {
+  expectedVersion: number;
+}
+
+export interface ReconcileStoryboardRequest {
+  expectedVersion: number;
+  reuseFramePlanning?: boolean;
+}
+
 

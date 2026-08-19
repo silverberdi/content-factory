@@ -694,6 +694,11 @@ public static class DatabaseInitializer
 
             script1.Scenes.AddRange([sc1, sc2, sc3, sc4, sc5]);
 
+            script1.Status = ScriptStatus.Approved;
+            script1.ApprovedAtUtc = DateTime.UtcNow.AddMinutes(-10);
+            script1.ApprovedByEmail = ownerEmail;
+            contentItem1.Stage = ContentItemStage.StoryboardDrafted;
+
             var script1Version = new ScriptVersion
             {
                 Id = Guid.NewGuid(),
@@ -716,12 +721,242 @@ public static class DatabaseInitializer
                     script1.Status,
                     Scenes = script1.Scenes
                 }),
-                ChangeSummary = "Borrador inicial enviado a revisión editorial.",
-                Status = ScriptStatus.UnderReview,
+                ChangeSummary = "Guión aprobado por el equipo editorial.",
+                Status = ScriptStatus.Approved,
                 PacingWpm = 140,
                 EstimatedDurationSeconds = 43.7,
                 TotalWordCount = 102,
                 CreatedAtUtc = DateTime.UtcNow.AddMinutes(-20),
+                CreatedByEmail = ownerEmail
+            };
+
+            var storyboard1Id = Guid.Parse("00000000-0000-0000-0000-000000000501");
+            var storyboard1 = new Storyboard
+            {
+                Id = storyboard1Id,
+                ContentItemId = contentItem1Id,
+                ChannelId = pilotChannel.Id,
+                ScriptId = script1Id,
+                ScriptVersionId = script1Version.Id,
+                TruthSourceId = truthSource1Id,
+                TruthSourceVersionId = truthSourceVersion1.Id,
+                IsCurrent = true,
+                Title = "Storyboard: 3 Habilidades que la IA NO te Puede Quitar en 2026",
+                TargetDurationSeconds = 45,
+                TotalEstimatedDurationSeconds = 43.7,
+                Status = StoryboardStatus.Draft,
+                Version = 1,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                CreatedByEmail = ownerEmail,
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedByEmail = ownerEmail
+            };
+
+            var frame1 = new StoryboardFrame
+            {
+                Id = Guid.NewGuid(),
+                StoryboardId = storyboard1Id,
+                OrderIndex = 1,
+                ScriptSceneId = sc1.Id,
+                ScriptSceneOrderIndex = 1,
+                FramingIntent = FramingIntent.CloseUp,
+                CompositionIntent = "Rostro centrado con mirada desafiante a cámara en encuadre vertical 9:16",
+                CameraMotionIntent = CameraMotionIntent.SlowZoomIn,
+                Subject = "Profesional joven mirando fijamente a cámara",
+                Environment = "Oficina moderna desenfocada con luz lateral fría",
+                StyleIntent = "Cinematográfico realista 8k",
+                VisualPrompt = "Primer plano en formato vertical 9:16 de profesional mirando a cámara con determinación, iluminación cinematográfica sobria.",
+                NegativePrompt = "blur, low quality, distorted hands",
+                AudioCue = sc1.NarrationText,
+                EstimatedDurationSeconds = sc1.EstimatedDurationSeconds,
+                OnScreenText = "3 HABILIDADES QUE LA IA NO SUSTITUIRÁ",
+                TransitionIntent = TransitionIntent.Cut,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            };
+
+            var frame2 = new StoryboardFrame
+            {
+                Id = Guid.NewGuid(),
+                StoryboardId = storyboard1Id,
+                OrderIndex = 2,
+                ScriptSceneId = sc2.Id,
+                ScriptSceneOrderIndex = 2,
+                FramingIntent = FramingIntent.MediumShot,
+                CompositionIntent = "Sujeto a la izquierda con overlay de error en tercio derecho",
+                CameraMotionIntent = CameraMotionIntent.TrackingShot,
+                Subject = "Pantalla de laptop mostrando código con alerta roja de fallo de IA",
+                Environment = "Escritorio de trabajo con iluminación tenue",
+                StyleIntent = "Dark Tech Editorial",
+                VisualPrompt = "Plano medio vertical 9:16 de interfaz de software con aviso de error en datos no auditados.",
+                NegativePrompt = "blur, cartoonish",
+                AudioCue = sc2.NarrationText,
+                EstimatedDurationSeconds = sc2.EstimatedDurationSeconds,
+                OnScreenText = "MEMORIZAR PROMPTS = OBSOLETO",
+                TransitionIntent = TransitionIntent.Dissolve,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            };
+
+            var frame3 = new StoryboardFrame
+            {
+                Id = Guid.NewGuid(),
+                StoryboardId = storyboard1Id,
+                OrderIndex = 3,
+                ScriptSceneId = sc3.Id,
+                ScriptSceneOrderIndex = 3,
+                FramingIntent = FramingIntent.WideShot,
+                CompositionIntent = "Diagrama de flujo de auditoría de 3 pasos centrado",
+                CameraMotionIntent = CameraMotionIntent.SlowZoomIn,
+                Subject = "Gráfico holográfico interactivo con métrica del 68%",
+                Environment = "Fondo minimalista tecnológico",
+                StyleIntent = "3D Render Isométrico Limpio",
+                VisualPrompt = "Animación gráfica 9:16 de estadística 68% empresas buscando profesionales con criterio analítico.",
+                NegativePrompt = "messy layout, small unreadable text",
+                AudioCue = sc3.NarrationText,
+                EstimatedDurationSeconds = sc3.EstimatedDurationSeconds,
+                OnScreenText = "68% EMPRESAS PIDEN CRITERIO",
+                TransitionIntent = TransitionIntent.Cut,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            };
+
+            var frame4 = new StoryboardFrame
+            {
+                Id = Guid.NewGuid(),
+                StoryboardId = storyboard1Id,
+                OrderIndex = 4,
+                ScriptSceneId = sc4.Id,
+                ScriptSceneOrderIndex = 4,
+                FramingIntent = FramingIntent.MediumShot,
+                CompositionIntent = "Presentador en tercio medio con icono de check verde verificado",
+                CameraMotionIntent = CameraMotionIntent.Static,
+                Subject = "Operador experto validando reporte en tablet",
+                Environment = "Sala de reuniones con iluminación balanceada",
+                StyleIntent = "Fotografía editorial sobria",
+                VisualPrompt = "Plano medio vertical 9:16 de profesional validando datos con confianza, estética premium.",
+                NegativePrompt = "artificial smile, low res",
+                AudioCue = sc4.NarrationText,
+                EstimatedDurationSeconds = sc4.EstimatedDurationSeconds,
+                OnScreenText = "CRITERIO > VELOCIDAD CIEGA",
+                TransitionIntent = TransitionIntent.Cut,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            };
+
+            var frame5 = new StoryboardFrame
+            {
+                Id = Guid.NewGuid(),
+                StoryboardId = storyboard1Id,
+                OrderIndex = 5,
+                ScriptSceneId = sc5.Id,
+                ScriptSceneOrderIndex = 5,
+                FramingIntent = FramingIntent.CloseUp,
+                CompositionIntent = "Botón de guardado y flecha animada en tercio inferior",
+                CameraMotionIntent = CameraMotionIntent.PanUp,
+                Subject = "Mano interactuando con smartphone guardando video",
+                Environment = "Fondo desenfocado de canal IA Simple ES",
+                StyleIntent = "Clean UI Overlay",
+                VisualPrompt = "Primer plano vertical 9:16 de interacción táctil guardando contenido con animación dinámica.",
+                NegativePrompt = "distorted hand, blurry",
+                AudioCue = sc5.NarrationText,
+                EstimatedDurationSeconds = sc5.EstimatedDurationSeconds,
+                OnScreenText = "GUARDA ESTE VIDEO",
+                TransitionIntent = TransitionIntent.Dissolve,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            };
+
+            storyboard1.Frames.AddRange([frame1, frame2, frame3, frame4, frame5]);
+
+            var assetPlan1Id = Guid.NewGuid();
+            var assetPlan1 = new AssetPlan
+            {
+                Id = assetPlan1Id,
+                StoryboardId = storyboard1Id,
+                ContentItemId = contentItem1Id,
+                Status = AssetPlanStatus.Planned,
+                Version = 1,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            };
+
+            foreach (var fr in storyboard1.Frames)
+            {
+                assetPlan1.Requirements.Add(new AssetRequirement
+                {
+                    Id = Guid.NewGuid(),
+                    AssetPlanId = assetPlan1Id,
+                    FrameId = fr.Id,
+                    FrameOrderIndex = fr.OrderIndex,
+                    AssetType = AssetType.AiImage,
+                    AspectRatio = "9:16",
+                    VisualPrompt = fr.VisualPrompt,
+                    NegativePrompt = fr.NegativePrompt,
+                    StyleIntent = fr.StyleIntent,
+                    MotionIntent = fr.CameraMotionIntent,
+                    TargetDurationSeconds = fr.EstimatedDurationSeconds,
+                    VoiceIntent = "Locución sobria en español",
+                    MusicMood = "Tech Ambient",
+                    SubtitleProfile = "Captions cinéticos centrados",
+                    OverlaySpecification = fr.OnScreenText,
+                    CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                    UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+                });
+            }
+
+            assetPlan1.Requirements.Add(new AssetRequirement
+            {
+                Id = Guid.NewGuid(),
+                AssetPlanId = assetPlan1Id,
+                AssetType = AssetType.TtsVoiceover,
+                AspectRatio = "N/A",
+                VisualPrompt = "Pista completa de narración en off",
+                VoiceIntent = "Español neutro con cadencia profesional",
+                TargetDurationSeconds = 43.7,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            });
+
+            assetPlan1.Requirements.Add(new AssetRequirement
+            {
+                Id = Guid.NewGuid(),
+                AssetPlanId = assetPlan1Id,
+                AssetType = AssetType.SubtitleTrack,
+                AspectRatio = "9:16",
+                VisualPrompt = "Captions cinéticos sincronizados",
+                SubtitleProfile = "Spanish formatted kinetic captions",
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            });
+
+            storyboard1.AssetPlan = assetPlan1;
+
+            var storyboard1Version = new StoryboardVersion
+            {
+                Id = Guid.NewGuid(),
+                StoryboardId = storyboard1Id,
+                ContentItemId = contentItem1Id,
+                ScriptId = script1Id,
+                ScriptVersionId = script1Version.Id,
+                TruthSourceId = truthSource1Id,
+                TruthSourceVersionId = truthSourceVersion1.Id,
+                VersionNumber = 1,
+                SnapshotJson = JsonSerializer.Serialize(new
+                {
+                    storyboard1.Id,
+                    storyboard1.Title,
+                    storyboard1.TargetDurationSeconds,
+                    storyboard1.TotalEstimatedDurationSeconds,
+                    storyboard1.Status,
+                    Frames = storyboard1.Frames,
+                    AssetPlan = storyboard1.AssetPlan
+                }),
+                ChangeSummary = "Planificación inicial de tomas visuales y especificación de activos de producción.",
+                Status = StoryboardStatus.Draft,
+                TotalEstimatedDurationSeconds = 43.7,
+                TotalFrameCount = 5,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
                 CreatedByEmail = ownerEmail
             };
 
@@ -730,13 +965,13 @@ public static class DatabaseInitializer
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000332"),
                 ChannelId = pilotChannel.Id,
                 ContentItemId = contentItem1Id,
-                TaskType = EditorialTaskType.ReviewScript,
+                TaskType = EditorialTaskType.ReviewStoryboard,
                 Priority = EditorialTaskPriority.Normal,
                 Status = EditorialTaskStatus.Pending,
                 AssignedUserEmail = ownerEmail,
                 DueDateUtc = DateTime.UtcNow.AddHours(12),
-                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-20),
-                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-20),
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
                 CreatedByEmail = ownerEmail
             };
 
@@ -748,10 +983,12 @@ public static class DatabaseInitializer
             dbContext.ContentIdeaVersions.AddRange(idea1Version1, idea2Version1);
             dbContext.Scripts.Add(script1);
             dbContext.ScriptVersions.Add(script1Version);
+            dbContext.Storyboards.Add(storyboard1);
+            dbContext.StoryboardVersions.Add(storyboard1Version);
             dbContext.EditorialTasks.AddRange(editorialTask1, editorialTask2);
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Seeded initial representative ContentItems, Evidences, TruthSources, ContentIdeas, Scripts, and EditorialTasks for 'IA Simple ES'.");
+            logger.LogInformation("Seeded initial representative ContentItems, Evidences, TruthSources, ContentIdeas, Scripts, Storyboards, and EditorialTasks for 'IA Simple ES'.");
         }
     }
 }

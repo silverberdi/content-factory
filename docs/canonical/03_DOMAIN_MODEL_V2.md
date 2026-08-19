@@ -94,6 +94,21 @@ Contains:
 - advisory AI critique (`review_script`) where human approval remains authoritative;
 - immutable `ScriptVersion` snapshot history and full-spectrum optimistic concurrency.
 
+### Storyboard & AssetPlan
+
+Visual production specification and provider-agnostic asset planning derived from the approved Script.
+
+Contains:
+- ordered `StoryboardFrame` collection (vertical 9:16 format) capturing framing intent, composition notes, camera motion intent, subject, environment, visual style, visual prompt, negative prompt, audio cues, on-screen text, frame estimated duration, and transition intent;
+- explicit linkage of every `StoryboardFrame` to its originating `ScriptScene`;
+- embedded `AssetPlan` specifying WHAT media is needed across categories (AiImage, AiVideo, BRoll, GraphicOverlay, TtsVoiceover, BackgroundMusic, SoundEffect, SubtitleTrack) without encoding runtime provider execution parameters (workflows, samplers, checkpoints);
+- lightweight planning lifecycle (`Planned`, `ReadyForGeneration`), strictly decoupled from production execution states (generating, generated, failed, MinIO references, cost/runtime measurements);
+- single editorial gate: approving a Storyboard approves the exact `AssetPlan` captured in that `StoryboardVersion` snapshot;
+- immutable lineage to `ScriptId`, `ScriptVersionId`, `TruthSourceId`, and `TruthSourceVersionId`;
+- successor reconciliation creating a successor draft derived from new approved script versions while archiving predecessor (`IsCurrent = false`, `SupersededAtUtc`, `ReconciledFromStoryboardId`);
+- strictly enforced "One Current Storyboard" invariant per ContentItem;
+- downstream production gating precondition (`IsCurrent == true`, `Status == Approved`, `IsStale == false`, `AssetPlan.Status == ReadyForGeneration`).
+
 ### EditorialTask
 
 Human-action item, not an inbox message.

@@ -10,6 +10,8 @@ public static class AiCapabilities
     public const string GenerateIdeas = "generate_ideas";
     public const string GenerateScript = "generate_script";
     public const string ReviewScript = "review_script";
+    public const string PlanStoryboard = "plan_storyboard";
+    public const string ReviewStoryboard = "review_storyboard";
 
     public static readonly string[] All =
     [
@@ -18,7 +20,9 @@ public static class AiCapabilities
         ScoreSource,
         GenerateIdeas,
         GenerateScript,
-        ReviewScript
+        ReviewScript,
+        PlanStoryboard,
+        ReviewStoryboard
     ];
 }
 
@@ -145,6 +149,48 @@ public record ReviewScriptResponse(
     string ConciseRationale
 );
 
+public record PlanStoryboardRequest(
+    Guid ChannelId,
+    string ChannelName,
+    string ChannelLanguage,
+    string ChannelNiche,
+    Guid ScriptId,
+    Guid ScriptVersionId,
+    Guid TruthSourceId,
+    Guid TruthSourceVersionId,
+    string ScriptTitle,
+    int TargetDurationSeconds,
+    int PacingWpm,
+    List<ScriptSceneDto> Scenes,
+    string? VisualStylePreset = null,
+    string? CameraMotionIntensity = null,
+    int? FrameDensityMultiplier = 1
+);
+
+public record PlanStoryboardResponse(
+    GeneratedStoryboardResult Storyboard,
+    string ConciseRationale
+);
+
+public record ReviewStoryboardRequest(
+    Guid ChannelId,
+    string ChannelName,
+    string ChannelLanguage,
+    Guid ScriptId,
+    Guid ScriptVersionId,
+    string ScriptTitle,
+    int ScriptTargetDurationSeconds,
+    List<ScriptSceneDto> ScriptScenes,
+    string StoryboardTitle,
+    int TargetDurationSeconds,
+    List<StoryboardFrameDto> Frames
+);
+
+public record ReviewStoryboardResponse(
+    StoryboardReviewResultDto ReviewResult,
+    string ConciseRationale
+);
+
 public interface IAiProviderRouter
 {
     Task<AiCapabilityResult<BuildTruthSourceResponse>> BuildTruthSourceAsync(
@@ -164,6 +210,16 @@ public interface IAiProviderRouter
 
     Task<AiCapabilityResult<ReviewScriptResponse>> ReviewScriptAsync(
         ReviewScriptRequest request,
+        AiRoutingContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<AiCapabilityResult<PlanStoryboardResponse>> PlanStoryboardAsync(
+        PlanStoryboardRequest request,
+        AiRoutingContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<AiCapabilityResult<ReviewStoryboardResponse>> ReviewStoryboardAsync(
+        ReviewStoryboardRequest request,
         AiRoutingContext context,
         CancellationToken cancellationToken = default);
 }

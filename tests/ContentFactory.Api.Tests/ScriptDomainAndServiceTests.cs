@@ -506,4 +506,53 @@ public class MockAiProviderRouter : IAiProviderRouter
             null,
             null));
     }
+
+    public Task<AiCapabilityResult<PlanStoryboardResponse>> PlanStoryboardAsync(
+        PlanStoryboardRequest request,
+        AiRoutingContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var storyboard = new GeneratedStoryboardResult(
+            Title: $"{request.ScriptTitle} - Storyboard",
+            TargetDurationSeconds: request.TargetDurationSeconds,
+            VisualStylePreset: request.VisualStylePreset ?? "Tech Minimalist 9:16",
+            Frames:
+            [
+                new(1, 1, FramingIntent.CloseUp, "Comp 1", CameraMotionIntent.SlowZoomIn, "Subj", "Env", "Style", "Prompt 1", "Neg", "Audio 1", 8.0, "Text 1", TransitionIntent.Cut),
+                new(2, 2, FramingIntent.MediumShot, "Comp 2", CameraMotionIntent.TrackingShot, "Subj", "Env", "Style", "Prompt 2", "Neg", "Audio 2", 10.0, "Text 2", TransitionIntent.Dissolve),
+                new(3, 3, FramingIntent.MotionGraphic, "Comp 3", CameraMotionIntent.SlowZoomIn, "Subj", "Env", "Style", "Prompt 3", "Neg", "Audio 3", 12.0, "Text 3", TransitionIntent.ZoomIn),
+                new(4, 4, FramingIntent.ExtremeCloseUp, "Comp 4", CameraMotionIntent.Static, "Subj", "Env", "Style", "Prompt 4", "Neg", "Audio 4", 8.0, "Text 4", TransitionIntent.Wipe),
+                new(5, 5, FramingIntent.WideShot, "Comp 5", CameraMotionIntent.SlowZoomIn, "Subj", "Env", "Style", "Prompt 5", "Neg", "Audio 5", 7.0, "Text 5", TransitionIntent.Cut)
+            ]
+        );
+
+        return Task.FromResult(new AiCapabilityResult<PlanStoryboardResponse>(
+            true,
+            new PlanStoryboardResponse(storyboard, "Mock storyboard rationale"),
+            null,
+            null));
+    }
+
+    public Task<AiCapabilityResult<ReviewStoryboardResponse>> ReviewStoryboardAsync(
+        ReviewStoryboardRequest request,
+        AiRoutingContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var review = new StoryboardReviewResultDto(
+            OverallStatus: "Pass",
+            VisualAlignmentScore: 0.95,
+            HookVisualAssessment: "Gancho visual potente",
+            FramingDiversityAssessment: "Diversidad adecuada",
+            TimingAlignmentAssessment: "Tiempos alineados",
+            Dimensions: [new StoryboardReviewDimensionDto("Composición", "Pass", "Vertical 9:16")],
+            FrameCritiques: [],
+            ActionableRecommendations: ["Asegurar zonas seguras"]
+        );
+
+        return Task.FromResult(new AiCapabilityResult<ReviewStoryboardResponse>(
+            true,
+            new ReviewStoryboardResponse(review, "Mock storyboard review rationale"),
+            null,
+            null));
+    }
 }

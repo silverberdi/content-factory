@@ -502,6 +502,7 @@ public class ContentIdeasController(IContentIdeaService ideaService) : Controlle
 
 [ApiController]
 [Route("api/v1/content-items/{contentItemId:guid}/script")]
+[Route("api/content-items/{contentItemId:guid}/script")]
 [Authorize]
 public class ScriptsController(IScriptService scriptService) : ControllerBase
 {
@@ -781,3 +782,338 @@ public class ScriptsController(IScriptService scriptService) : ControllerBase
 
     private string GetCurrentUserEmail() => User.FindFirstValue(ClaimTypes.Email) ?? "anonymous";
 }
+
+[ApiController]
+[Route("api/v1/content-items/{contentItemId:guid}/storyboard")]
+[Route("api/content-items/{contentItemId:guid}/storyboard")]
+[Authorize]
+public class StoryboardsController(IStoryboardService storyboardService) : ControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<StoryboardDto>> GetStoryboard(
+        Guid contentItemId,
+        CancellationToken cancellationToken)
+    {
+        var storyboard = await storyboardService.GetStoryboardByContentItemIdAsync(contentItemId, cancellationToken);
+        if (storyboard == null) return NotFound(new { error = "No storyboard found for this ContentItem." });
+        return Ok(storyboard);
+    }
+
+    [HttpGet("versions")]
+    public async Task<ActionResult<List<StoryboardVersionDto>>> GetStoryboardVersions(
+        Guid contentItemId,
+        [FromQuery] Guid? storyboardId,
+        CancellationToken cancellationToken)
+    {
+        Guid targetStoryboardId;
+        if (storyboardId.HasValue && storyboardId.Value != Guid.Empty)
+        {
+            targetStoryboardId = storyboardId.Value;
+        }
+        else
+        {
+            var storyboard = await storyboardService.GetStoryboardByContentItemIdAsync(contentItemId, cancellationToken);
+            if (storyboard == null) return Ok(new List<StoryboardVersionDto>());
+            targetStoryboardId = storyboard.Id;
+        }
+
+        var versions = await storyboardService.GetStoryboardVersionsAsync(contentItemId, targetStoryboardId, cancellationToken);
+        return Ok(versions);
+    }
+
+    [HttpGet("versions/{versionId:guid}")]
+    public async Task<ActionResult<StoryboardVersionDto>> GetStoryboardVersion(
+        Guid contentItemId,
+        Guid versionId,
+        [FromQuery] Guid? storyboardId,
+        CancellationToken cancellationToken)
+    {
+        Guid targetStoryboardId;
+        if (storyboardId.HasValue && storyboardId.Value != Guid.Empty)
+        {
+            targetStoryboardId = storyboardId.Value;
+        }
+        else
+        {
+            var storyboard = await storyboardService.GetStoryboardByContentItemIdAsync(contentItemId, cancellationToken);
+            if (storyboard == null) return NotFound(new { error = "Storyboard not found." });
+            targetStoryboardId = storyboard.Id;
+        }
+
+        var version = await storyboardService.GetStoryboardVersionAsync(contentItemId, targetStoryboardId, versionId, cancellationToken);
+        if (version == null) return NotFound(new { error = "Storyboard version not found." });
+        return Ok(version);
+    }
+
+    [HttpGet("production-eligibility")]
+    public async Task<ActionResult<ProductionEligibilityDto>> CheckProductionEligibility(
+        Guid contentItemId,
+        CancellationToken cancellationToken)
+    {
+        var result = await storyboardService.CheckProductionEligibilityAsync(contentItemId, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<StoryboardDto>> CreateStoryboard(
+        Guid contentItemId,
+        [FromBody] CreateStoryboardRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var storyboard = await storyboardService.CreateStoryboardAsync(contentItemId, request, email, cancellationToken);
+            return CreatedAtAction(nameof(GetStoryboard), new { contentItemId }, storyboard);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("{storyboardId:guid}")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<StoryboardDto>> UpdateStoryboard(
+        Guid contentItemId,
+        Guid storyboardId,
+        [FromBody] UpdateStoryboardRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var storyboard = await storyboardService.UpdateStoryboardAsync(contentItemId, storyboardId, request, email, cancellationToken);
+            return Ok(storyboard);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("generate")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<StoryboardDto>> GenerateAiStoryboard(
+        Guid contentItemId,
+        [FromBody] GenerateStoryboardOptions? options,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var storyboard = await storyboardService.GenerateAiStoryboardAsync(contentItemId, options, email, cancellationToken);
+            return Ok(storyboard);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{storyboardId:guid}/review")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<StoryboardReviewResultDto>> ReviewStoryboard(
+        Guid contentItemId,
+        Guid storyboardId,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var result = await storyboardService.ReviewStoryboardAsync(contentItemId, storyboardId, email, cancellationToken);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{storyboardId:guid}/submit-for-review")]
+    [HttpPost("{storyboardId:guid}/submit-review")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<StoryboardDto>> SubmitForReview(
+        Guid contentItemId,
+        Guid storyboardId,
+        [FromBody] SubmitStoryboardForReviewRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var storyboard = await storyboardService.SubmitForReviewAsync(contentItemId, storyboardId, request, email, cancellationToken);
+            return Ok(storyboard);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{storyboardId:guid}/approve")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<StoryboardDto>> ApproveStoryboard(
+        Guid contentItemId,
+        Guid storyboardId,
+        [FromBody] ApproveStoryboardRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var storyboard = await storyboardService.ApproveStoryboardAsync(contentItemId, storyboardId, request, email, cancellationToken);
+            return Ok(storyboard);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{storyboardId:guid}/reject")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<StoryboardDto>> RejectStoryboard(
+        Guid contentItemId,
+        Guid storyboardId,
+        [FromBody] RejectStoryboardRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var storyboard = await storyboardService.RejectStoryboardAsync(contentItemId, storyboardId, request, email, cancellationToken);
+            return Ok(storyboard);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{storyboardId:guid}/reopen")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<StoryboardDto>> ReopenStoryboard(
+        Guid contentItemId,
+        Guid storyboardId,
+        [FromBody] ReopenStoryboardRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var storyboard = await storyboardService.ReopenStoryboardAsync(contentItemId, storyboardId, request, email, cancellationToken);
+            return Ok(storyboard);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{storyboardId:guid}/reconcile")]
+    [Authorize(Policy = "RequireEditorial")]
+    public async Task<ActionResult<StoryboardDto>> ReconcileStoryboard(
+        Guid contentItemId,
+        Guid storyboardId,
+        [FromBody] ReconcileStoryboardRequest request,
+        CancellationToken cancellationToken)
+    {
+        var email = GetCurrentUserEmail();
+        try
+        {
+            var storyboard = await storyboardService.ReconcileStoryboardAsync(contentItemId, storyboardId, request, email, cancellationToken);
+            return Ok(storyboard);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            return Conflict(new
+            {
+                code = "CONCURRENCY_CONFLICT",
+                message = ex.Message,
+                currentVersion = ex.CurrentVersion
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    private string GetCurrentUserEmail() => User.FindFirstValue(ClaimTypes.Email) ?? "anonymous";
+}
+
