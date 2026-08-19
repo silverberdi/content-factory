@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ApiService, ContentIdeaDto, ContentItemDetailDto, ContentItemEvidenceDto, TruthSourceDto } from '../../core/api.service';
 import { AttachEvidenceModalComponent } from './attach-evidence-modal.component';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
 
 @Component({
   selector: 'app-content-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, AttachEvidenceModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, AttachEvidenceModalComponent, PageHeaderComponent],
+  host: { class: 'block w-full' },
   template: `
     <!-- Loading State -->
     <div *ngIf="isLoading()" class="p-12 text-center text-xs text-[var(--app-muted)] space-y-2">
@@ -21,76 +23,64 @@ import { AttachEvidenceModalComponent } from './attach-evidence-modal.component'
       <i class="pi pi-exclamation-triangle text-2xl text-red-500 block"></i>
       <p class="font-bold text-sm text-[var(--app-text)]">{{ errorMessage() }}</p>
       <div class="flex items-center justify-center gap-2 pt-2">
-        <button (click)="retryLoad()" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs cursor-pointer shadow-xs">
+        <button (click)="retryLoad()" class="cf-btn-primary">
           <i class="pi pi-refresh mr-1 text-[10px]"></i> Reintentar
         </button>
-        <a [routerLink]="['/content/items']" class="px-3.5 py-1.5 rounded-lg border border-[var(--app-card-border)] text-xs text-[var(--app-muted)] hover:text-[var(--app-text)]">
+        <a [routerLink]="['/content/items']" class="cf-btn-secondary">
           Volver al Workspace
         </a>
       </div>
     </div>
 
     <!-- Loaded Content Item Detail -->
-    <div *ngIf="!isLoading() && item()" class="space-y-4 max-w-7xl mx-auto">
+    <div *ngIf="!isLoading() && item()" class="cf-page-container space-y-4 text-xs">
       
-      <!-- Operational Header (Where is this piece?) -->
-      <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-xl p-4 sm:p-5 shadow-xs">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2 flex-wrap text-xs">
-              <a [routerLink]="['/content/items']" class="text-[var(--app-muted)] hover:text-[var(--app-text)] flex items-center gap-1">
-                <i class="pi pi-arrow-left text-[10px]"></i> Workspace
-              </a>
-              <span class="text-[var(--app-muted)]">/</span>
-              <span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-bold">
-                {{ item()?.channelName || 'Canal' }}
-              </span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border font-mono"
-                    [ngClass]="{
-                      'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30': item()?.stage === 'DraftingEvidence',
-                      'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': item()?.stage === 'TruthSourceApproved',
-                      'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30': item()?.stage === 'IdeaDrafting',
-                      'bg-slate-500/15 text-slate-500 border-slate-500/30': item()?.stage === 'Published'
-                    }">
-                {{ item()?.stage }}
-              </span>
-              <span class="text-[10px] font-mono text-[var(--app-muted)]">
-                v{{ item()?.version }} • Actualizado {{ item()?.updatedAtUtc | date:'yyyy-MM-dd HH:mm' }}
-              </span>
-            </div>
-
-            <h1 class="text-base sm:text-xl font-bold text-[var(--app-text)] leading-snug">
-              {{ item()?.title }}
-            </h1>
-            <p class="text-xs font-mono text-[var(--app-muted)]">
-              Slug: /{{ item()?.slug }} • Creado por: {{ item()?.createdByEmail }}
-            </p>
-          </div>
-
-          <!-- Studio Quick Navigation Buttons -->
-          <div class="flex items-center gap-2 shrink-0 flex-wrap">
-            <a [routerLink]="['/content/items', item()?.id, 'script']"
-               class="px-3.5 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
-              <i class="pi pi-file-edit"></i>
-              <span>Script Studio</span>
-            </a>
-
-            <a [routerLink]="['/content/items', item()?.id, 'ideas']"
-               class="px-3 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
-              <i class="pi pi-lightbulb"></i>
-              <span>Matriz de Ideas</span>
-            </a>
-
-            <a [routerLink]="['/content/items', item()?.id, 'truth-source']"
-               class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
-              <i class="pi pi-check-square"></i>
-              <span>TruthSource Studio</span>
-            </a>
-          </div>
-
+      <!-- Canonical Page Header -->
+      <app-page-header 
+        [title]="item()?.title || 'Detalle de Pieza'"
+        [subtitle]="'Slug: /' + item()?.slug + ' • Creado por: ' + item()?.createdByEmail"
+        backLink="/content/items"
+        backLabel="Volver al Workspace">
+        
+        <div meta class="flex items-center gap-2 flex-wrap">
+          <span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-bold">
+            {{ item()?.channelName || 'Canal' }}
+          </span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border font-mono"
+                [ngClass]="{
+                  'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30': item()?.stage === 'DraftingEvidence',
+                  'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': item()?.stage === 'TruthSourceApproved',
+                  'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30': item()?.stage === 'IdeaDrafting',
+                  'bg-slate-500/15 text-slate-500 border-slate-500/30': item()?.stage === 'Published'
+                }">
+            {{ item()?.stage }}
+          </span>
+          <span class="text-[10px] font-mono text-[var(--app-muted)]">
+            v{{ item()?.version }} • Actualizado {{ item()?.updatedAtUtc | date:'yyyy-MM-dd HH:mm' }}
+          </span>
         </div>
-      </div>
+
+        <div actions class="flex items-center gap-2 flex-wrap">
+          <a [routerLink]="['/content/items', item()?.id, 'script']"
+             class="cf-btn-primary">
+            <i class="pi pi-file-edit"></i>
+            <span>Script Studio</span>
+          </a>
+
+          <a [routerLink]="['/content/items', item()?.id, 'ideas']"
+             class="cf-btn-secondary">
+            <i class="pi pi-lightbulb text-purple-500"></i>
+            <span>Matriz de Ideas</span>
+          </a>
+
+          <a [routerLink]="['/content/items', item()?.id, 'truth-source']"
+             class="cf-btn-secondary">
+            <i class="pi pi-check-square text-indigo-500"></i>
+            <span>TruthSource Studio</span>
+          </a>
+        </div>
+
+      </app-page-header>
 
       <!-- Main Layout: Evidences (Left / 2 cols) & TruthSource/Ideas Summary (Right / 1 col) -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 text-xs">

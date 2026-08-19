@@ -4,45 +4,58 @@ import { FormsModule } from '@angular/forms';
 import { ApiService, ChannelDto } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { ChannelDrawerComponent } from './channel-drawer.component';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
+import { PageToolbarComponent } from '../../shared/layout/page-toolbar.component';
 
 @Component({
   selector: 'app-channels',
   standalone: true,
-  imports: [CommonModule, FormsModule, ChannelDrawerComponent],
+  imports: [CommonModule, FormsModule, ChannelDrawerComponent, PageHeaderComponent, PageToolbarComponent],
+  host: { class: 'block w-full' },
   template: `
-    <div class="space-y-4 max-w-full">
-      <!-- Section Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--app-card-border)]">
-        <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-tight text-[var(--app-text)]">Editorial Channel Registry</h1>
-          <p class="text-xs text-[var(--app-muted)]">Multi-channel portfolio management, audience promises, and pipeline status.</p>
-        </div>
-        <div class="flex items-center gap-2.5">
-          <input type="text" [(ngModel)]="searchTerm" placeholder="Filter channels..." 
-                 class="text-xs px-3 py-1.5 rounded-lg border border-[var(--app-card-border)] bg-[var(--app-card-bg)] text-[var(--app-text)] focus:outline-none focus:border-blue-500 max-w-[220px]" />
+    <div class="cf-page-container space-y-4 text-xs">
+      
+      <!-- Canonical Page Header -->
+      <app-page-header 
+        title="Registro de Canales Editoriales" 
+        subtitle="Gestión del portafolio multicanal, nichos temáticos y configuración de distribución"
+        [badge]="channels().length"
+        badgeSeverity="info">
+        <div actions class="flex items-center gap-2">
           <button (click)="openCreateChannel()" *ngIf="authService.isTechnical()" 
-                  class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer">
-            <i class="pi pi-plus text-[10px]"></i> <span>New Channel</span>
+                  class="cf-btn-primary">
+            <i class="pi pi-plus text-xs"></i> <span>Nuevo Canal</span>
           </button>
         </div>
-      </div>
+      </app-page-header>
+
+      <!-- Canonical Page Toolbar -->
+      <app-page-toolbar>
+        <div start class="flex items-center gap-2 flex-wrap flex-1">
+          <div class="relative min-w-[220px] flex-1 sm:max-w-xs">
+            <input type="text" [(ngModel)]="searchTerm" placeholder="Filtrar canales por nombre, slug, nicho..." 
+                   class="cf-toolbar-control w-full pl-8" />
+            <i class="pi pi-search absolute left-2.5 top-2.5 text-[var(--app-muted)] text-xs"></i>
+          </div>
+        </div>
+      </app-page-toolbar>
 
       <!-- Channels Data Table -->
-      <div class="rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-xs overflow-hidden">
+      <div class="cf-card overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-[var(--app-bg)] text-[var(--app-muted)] uppercase text-[10px] tracking-wider border-b border-[var(--app-card-border)]">
+          <table class="cf-table">
+            <thead>
               <tr>
-                <th class="py-3 px-4 font-bold">Channel</th>
-                <th class="py-3 px-4 font-bold">Slug</th>
-                <th class="py-3 px-4 font-bold">Language</th>
-                <th class="py-3 px-4 font-bold">Editorial Niche</th>
-                <th class="py-3 px-4 font-bold">Status</th>
-                <th class="py-3 px-4 font-bold">Registered</th>
-                <th class="py-3 px-4 font-bold text-right">Actions</th>
+                <th>Channel</th>
+                <th>Slug</th>
+                <th>Language</th>
+                <th>Editorial Niche</th>
+                <th>Status</th>
+                <th>Registered</th>
+                <th class="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[var(--app-card-border)]">
+            <tbody>
               <tr *ngFor="let ch of filteredChannels()" class="hover:bg-[var(--app-surface-hover)] transition-colors">
                 <td class="py-3 px-4 font-bold text-[var(--app-text)]">{{ ch.name }}</td>
                 <td class="py-3 px-4 font-mono text-[var(--app-muted)] text-[11px]">{{ ch.slug }}</td>

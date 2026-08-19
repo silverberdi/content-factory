@@ -4,18 +4,36 @@ import { FormsModule } from '@angular/forms';
 import { ApiService, ChannelDto, DiscoveryCandidateDto, DiscoverySummaryDto } from '../../core/api.service';
 import { CandidatePreviewDrawerComponent } from './candidate-preview-drawer.component';
 import { QuickSubmitModalComponent } from './quick-submit-modal.component';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
+import { PageToolbarComponent } from '../../shared/layout/page-toolbar.component';
 
 @Component({
   selector: 'app-discovery-triage',
   standalone: true,
-  imports: [CommonModule, FormsModule, CandidatePreviewDrawerComponent, QuickSubmitModalComponent],
+  imports: [CommonModule, FormsModule, CandidatePreviewDrawerComponent, QuickSubmitModalComponent, PageHeaderComponent, PageToolbarComponent],
+  host: { class: 'block w-full' },
   template: `
-    <div class="space-y-4 max-w-full">
+    <div class="cf-page-container space-y-4 text-xs">
       
+      <!-- Canonical Page Header -->
+      <app-page-header 
+        title="Triage de Candidatos de Discovery" 
+        subtitle="Evaluación inicial de leads, filtrado de relevancia y promoción hacia la pipeline editorial"
+        [badge]="(summary()?.pendingCandidatesCount ?? 0) + ' Pendientes'"
+        [badgeSeverity]="(summary()?.pendingCandidatesCount ?? 0) > 0 ? 'warn' : 'success'">
+        <div actions class="flex items-center gap-2">
+          <button (click)="isQuickSubmitOpen = true" 
+                  class="cf-btn-primary">
+            <i class="pi pi-plus text-xs"></i>
+            <span>Envío Rápido</span>
+          </button>
+        </div>
+      </app-page-header>
+
       <!-- Top Operational Summary Chips Bar -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <!-- Pending Triage Metric -->
-        <div class="p-3 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-xs flex items-center justify-between">
+        <div class="p-3 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-2xs flex items-center justify-between">
           <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">Pendientes Triage</span>
             <span class="text-xl font-extrabold text-[var(--app-text)]">{{ summary()?.pendingCandidatesCount ?? 0 }}</span>
@@ -26,7 +44,7 @@ import { QuickSubmitModalComponent } from './quick-submit-modal.component';
         </div>
 
         <!-- Promoted Metric -->
-        <div class="p-3 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-xs flex items-center justify-between">
+        <div class="p-3 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-2xs flex items-center justify-between">
           <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">Promovidos</span>
             <span class="text-xl font-extrabold text-[var(--app-text)]">{{ summary()?.promotedCandidatesCount ?? 0 }}</span>
@@ -37,7 +55,7 @@ import { QuickSubmitModalComponent } from './quick-submit-modal.component';
         </div>
 
         <!-- Dismissed Metric -->
-        <div class="p-3 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-xs flex items-center justify-between">
+        <div class="p-3 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-2xs flex items-center justify-between">
           <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Descartados</span>
             <span class="text-xl font-extrabold text-[var(--app-text)]">{{ summary()?.dismissedCandidatesCount ?? 0 }}</span>
@@ -48,7 +66,7 @@ import { QuickSubmitModalComponent } from './quick-submit-modal.component';
         </div>
 
         <!-- Active Sources Metric -->
-        <div class="p-3 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-xs flex items-center justify-between">
+        <div class="p-3 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-2xs flex items-center justify-between">
           <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block">Fuentes Activas</span>
             <span class="text-xl font-extrabold text-[var(--app-text)]">{{ summary()?.activeSourcesCount ?? 0 }}</span>
@@ -59,44 +77,43 @@ import { QuickSubmitModalComponent } from './quick-submit-modal.component';
         </div>
       </div>
 
-      <!-- Action & Filter Bar -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-xs">
-        
+      <!-- Canonical Page Toolbar -->
+      <app-page-toolbar>
         <!-- Status Filter Pills -->
-        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+        <div start class="flex items-center gap-2 flex-wrap flex-1">
           <button (click)="setStatusFilter('PendingReview')"
-                  class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
-                  [ngClass]="selectedStatus === 'PendingReview' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 shadow-xs' : 'text-[var(--app-muted)] hover:text-[var(--app-text)]'">
+                  class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                  [ngClass]="selectedStatus === 'PendingReview' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 shadow-2xs' : 'text-[var(--app-muted)] hover:text-[var(--app-text)]'">
             <i class="pi pi-clock text-[10px]"></i>
             <span>Pendientes ({{ summary()?.pendingCandidatesCount ?? 0 }})</span>
           </button>
 
           <button (click)="setStatusFilter('Promoted')"
-                  class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
-                  [ngClass]="selectedStatus === 'Promoted' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 shadow-xs' : 'text-[var(--app-muted)] hover:text-[var(--app-text)]'">
+                  class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                  [ngClass]="selectedStatus === 'Promoted' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 shadow-2xs' : 'text-[var(--app-muted)] hover:text-[var(--app-text)]'">
             <i class="pi pi-check-circle text-[10px]"></i>
             <span>Promovidos</span>
           </button>
 
           <button (click)="setStatusFilter('Dismissed')"
-                  class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
-                  [ngClass]="selectedStatus === 'Dismissed' ? 'bg-slate-500/20 text-slate-400 border border-slate-500/40 shadow-xs' : 'text-[var(--app-muted)] hover:text-[var(--app-text)]'">
+                  class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                  [ngClass]="selectedStatus === 'Dismissed' ? 'bg-slate-500/20 text-slate-400 border border-slate-500/40 shadow-2xs' : 'text-[var(--app-muted)] hover:text-[var(--app-text)]'">
             <i class="pi pi-ban text-[10px]"></i>
             <span>Descartados</span>
           </button>
 
           <button (click)="setStatusFilter('')"
-                  class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
-                  [ngClass]="selectedStatus === '' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/40 shadow-xs' : 'text-[var(--app-muted)] hover:text-[var(--app-text)]'">
+                  class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                  [ngClass]="selectedStatus === '' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/40 shadow-2xs' : 'text-[var(--app-muted)] hover:text-[var(--app-text)]'">
             <span>Todos</span>
           </button>
         </div>
 
-        <!-- Controls: Channel, Search, Quick Submit -->
-        <div class="flex items-center gap-2 flex-wrap">
+        <!-- Controls: Channel, Search -->
+        <div end class="flex items-center gap-2 flex-wrap">
           <!-- Channel selector -->
           <select [(ngModel)]="selectedChannelId" (change)="loadData()" 
-                  class="text-xs px-2.5 py-1.5 rounded-lg border border-[var(--app-card-border)] bg-[var(--app-bg)] text-[var(--app-text)] focus:outline-none focus:border-blue-500">
+                  class="cf-toolbar-control min-w-[150px]">
             <option value="">Todos los Canales</option>
             <option *ngFor="let ch of channels()" [value]="ch.id">{{ ch.name }}</option>
           </select>
@@ -104,18 +121,11 @@ import { QuickSubmitModalComponent } from './quick-submit-modal.component';
           <!-- Search term -->
           <div class="relative">
             <input type="text" [(ngModel)]="searchTerm" (input)="loadCandidates()" placeholder="Buscar leads..." 
-                   class="text-xs pl-7 pr-3 py-1.5 rounded-lg border border-[var(--app-card-border)] bg-[var(--app-bg)] text-[var(--app-text)] focus:outline-none focus:border-blue-500 max-w-[160px]" />
-            <i class="pi pi-search absolute left-2 top-2 text-[var(--app-muted)] text-[10px]"></i>
+                   class="cf-toolbar-control pl-7 max-w-[170px]" />
+            <i class="pi pi-search absolute left-2.5 top-2 text-[var(--app-muted)] text-[10px]"></i>
           </div>
-
-          <!-- Quick Submit Action Button -->
-          <button (click)="isQuickSubmitOpen = true" 
-                  class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
-            <i class="pi pi-plus text-[10px]"></i>
-            <span>Quick Submit</span>
-          </button>
         </div>
-      </div>
+      </app-page-toolbar>
 
       <!-- Triage List / Cards -->
       <div class="space-y-2.5">

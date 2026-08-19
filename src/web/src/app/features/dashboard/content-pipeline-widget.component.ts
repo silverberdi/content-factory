@@ -7,6 +7,7 @@ import { ContentPipelineSummaryDto } from '../../core/api.service';
   selector: 'app-content-pipeline-widget',
   standalone: true,
   imports: [CommonModule, RouterModule],
+  host: { class: 'block w-full' },
   template: `
     <div class="p-4 sm:p-5 rounded-xl bg-[var(--app-card-bg)] border border-[var(--app-card-border)] shadow-xs flex flex-col justify-between h-full space-y-4">
       

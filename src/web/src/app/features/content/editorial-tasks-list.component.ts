@@ -3,63 +3,58 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ApiService, ChannelDto, EditorialTaskDto } from '../../core/api.service';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
+import { PageToolbarComponent } from '../../shared/layout/page-toolbar.component';
 
 @Component({
   selector: 'app-editorial-tasks-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PageHeaderComponent, PageToolbarComponent],
+  host: { class: 'block w-full' },
   template: `
-    <div class="space-y-4 max-w-7xl mx-auto">
+    <div class="cf-page-container space-y-4 text-xs">
       
-      <!-- Header -->
-      <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 class="text-base sm:text-lg font-bold text-[var(--app-text)] flex items-center gap-2">
-            <i class="pi pi-check-square text-indigo-600 dark:text-indigo-400"></i>
-            <span>Editorial Attention & Tasks</span>
-          </h1>
-          <p class="text-xs text-[var(--app-muted)]">Atención contextual y revisiones pendientes en el flujo editorial</p>
-        </div>
+      <!-- Canonical Page Header -->
+      <app-page-header 
+        title="Atención Editorial y Tareas" 
+        subtitle="Atención contextual y revisiones pendientes en el flujo editorial"
+        [badge]="pendingCount + ' Pendientes'"
+        [badgeSeverity]="pendingCount > 0 ? 'warn' : 'success'">
+      </app-page-header>
 
-        <div class="flex items-center gap-2">
-          <span class="px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold font-mono">
-            {{ pendingCount }} Pendientes
-          </span>
-        </div>
-      </div>
-
-      <!-- Filters -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-        <div>
+      <!-- Canonical Page Toolbar -->
+      <app-page-toolbar>
+        <div start class="flex items-center gap-2 flex-wrap flex-1">
+          <!-- Channel Filter -->
           <select [(ngModel)]="selectedChannelId" (ngModelChange)="loadTasks()"
-                  class="w-full px-3 py-2 rounded-lg bg-[var(--app-card-bg)] border border-[var(--app-card-border)] text-[var(--app-text)] focus:border-blue-500 focus:outline-hidden">
+                  class="cf-toolbar-control min-w-[150px]">
             <option value="">Todos los Canales</option>
             <option *ngFor="let ch of channels" [value]="ch.id">{{ ch.name }}</option>
           </select>
-        </div>
-        <div>
+
+          <!-- Priority Filter -->
           <select [(ngModel)]="selectedPriority" (ngModelChange)="loadTasks()"
-                  class="w-full px-3 py-2 rounded-lg bg-[var(--app-card-bg)] border border-[var(--app-card-border)] text-[var(--app-text)] focus:border-blue-500 focus:outline-hidden">
+                  class="cf-toolbar-control min-w-[140px]">
             <option value="">Todas las Prioridades</option>
             <option value="Urgent">Urgente</option>
             <option value="High">Alta</option>
             <option value="Normal">Normal</option>
             <option value="Low">Baja</option>
           </select>
-        </div>
-        <div>
+
+          <!-- Status Filter -->
           <select [(ngModel)]="selectedStatus" (ngModelChange)="loadTasks()"
-                  class="w-full px-3 py-2 rounded-lg bg-[var(--app-card-bg)] border border-[var(--app-card-border)] text-[var(--app-text)] focus:border-blue-500 focus:outline-hidden">
+                  class="cf-toolbar-control min-w-[140px]">
             <option value="">Todos los Estados</option>
             <option value="Pending">Pendiente</option>
             <option value="InProgress">En Progreso</option>
             <option value="Completed">Completada</option>
           </select>
         </div>
-      </div>
+      </app-page-toolbar>
 
       <!-- Tasks List Table -->
-      <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-xl overflow-hidden shadow-xs">
+      <div class="cf-card overflow-hidden">
         <div *ngIf="isLoading" class="p-8 text-center text-xs text-[var(--app-muted)]">
           <i class="pi pi-spin pi-spinner text-lg mb-2 block"></i>
           <span>Cargando tareas editoriales...</span>
@@ -71,19 +66,19 @@ import { ApiService, ChannelDto, EditorialTaskDto } from '../../core/api.service
         </div>
 
         <div *ngIf="!isLoading && tasks.length > 0" class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
+          <table class="cf-table">
             <thead>
-              <tr class="bg-[var(--app-header-bg)] border-b border-[var(--app-card-border)] text-[var(--app-muted)] font-semibold uppercase tracking-wider text-[10px]">
-                <th class="py-2.5 px-4">Pieza / Tarea</th>
-                <th class="py-2.5 px-3">Canal</th>
-                <th class="py-2.5 px-3">Tipo</th>
-                <th class="py-2.5 px-3">Prioridad</th>
-                <th class="py-2.5 px-3">Estado</th>
-                <th class="py-2.5 px-3">Vencimiento</th>
-                <th class="py-2.5 px-4 text-right">Acción</th>
+              <tr>
+                <th>Pieza / Tarea</th>
+                <th>Canal</th>
+                <th>Tipo</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Vencimiento</th>
+                <th class="text-right">Acción</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[var(--app-card-border)]">
+            <tbody>
               <tr *ngFor="let t of tasks" class="hover:bg-[var(--app-surface-hover)] transition-colors">
                 <td class="py-3 px-4 font-bold text-[var(--app-text)]">
                   {{ t.contentTitle || 'Pieza de Contenido' }}
@@ -120,10 +115,15 @@ import { ApiService, ChannelDto, EditorialTaskDto } from '../../core/api.service
                   {{ (t.dueDateUtc | date:'yyyy-MM-dd HH:mm') || 'Sin fecha' }}
                 </td>
                 <td class="py-3 px-4 text-right">
-                  <a [routerLink]="['/content/items', t.contentItemId, 'truth-source']"
-                     class="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] transition-colors shadow-2xs inline-flex items-center gap-1">
-                    <i class="pi pi-check-square text-[10px]"></i>
-                    <span>Revisar en Studio</span>
+                  <a *ngIf="t.taskType === 'ReviewScript'" [routerLink]="['/content/items', t.contentItemId, 'script']"
+                     class="cf-btn-primary">
+                    <i class="pi pi-file-edit text-xs"></i>
+                    <span>Revisar Guión</span>
+                  </a>
+                  <a *ngIf="t.taskType !== 'ReviewScript'" [routerLink]="['/content/items', t.contentItemId, 'truth-source']"
+                     class="cf-btn-secondary">
+                    <i class="pi pi-check-square text-indigo-500 text-xs"></i>
+                    <span>Revisar TruthSource</span>
                   </a>
                 </td>
               </tr>

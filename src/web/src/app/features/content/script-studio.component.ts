@@ -21,6 +21,7 @@ import { GenerateScriptModalComponent } from './generate-script-modal.component'
 import { ScriptReviewPanelComponent } from './script-review-panel.component';
 import { ScriptVersionHistoryDrawerComponent } from './script-version-history-drawer.component';
 import { RejectScriptModalComponent } from './reject-script-modal.component';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
 
 @Component({
   selector: 'app-script-studio',
@@ -33,8 +34,10 @@ import { RejectScriptModalComponent } from './reject-script-modal.component';
     GenerateScriptModalComponent,
     ScriptReviewPanelComponent,
     ScriptVersionHistoryDrawerComponent,
-    RejectScriptModalComponent
+    RejectScriptModalComponent,
+    PageHeaderComponent
   ],
+  host: { class: 'block w-full' },
   template: `
     <!-- Loading State -->
     <div *ngIf="isLoading()" class="p-12 text-center text-xs text-[var(--app-muted)] space-y-2">
@@ -47,89 +50,77 @@ import { RejectScriptModalComponent } from './reject-script-modal.component';
       <i class="pi pi-exclamation-triangle text-2xl text-red-500 block"></i>
       <p class="font-bold text-sm text-[var(--app-text)]">{{ errorMessage() }}</p>
       <div class="flex items-center justify-center gap-2 pt-2">
-        <button (click)="retryLoad()" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs cursor-pointer shadow-xs">
+        <button (click)="retryLoad()" class="cf-btn-primary">
           <i class="pi pi-refresh mr-1 text-[10px]"></i> Reintentar
         </button>
-        <a [routerLink]="['/content/items', contentItemId()]" class="px-3.5 py-1.5 rounded-lg border border-[var(--app-card-border)] text-xs text-[var(--app-muted)] hover:text-[var(--app-text)]">
+        <a [routerLink]="['/content/items', contentItemId()]" class="cf-btn-secondary">
           Volver a Detalle
         </a>
       </div>
     </div>
 
     <!-- Main Script Studio Layout -->
-    <div *ngIf="!isLoading() && contentItem()" class="space-y-4 max-w-7xl mx-auto text-xs pb-16">
+    <div *ngIf="!isLoading() && contentItem()" class="cf-page-container space-y-4 text-xs pb-16">
       
-      <!-- Operational Header -->
-      <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <!-- Canonical Operational Header -->
+      <app-page-header 
+        title="Script Studio"
+        [subtitle]="script()?.title || contentItem()?.title || ''"
+        [backLink]="['/content/items', contentItemId()]"
+        backLabel="Detalle de Pieza">
+        
+        <div meta class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-bold">
+            {{ contentItem()?.channelName || 'Canal' }}
+          </span>
           
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2 flex-wrap text-xs">
-              <a [routerLink]="['/content/items', contentItemId()]" class="text-[var(--app-muted)] hover:text-[var(--app-text)] flex items-center gap-1 font-semibold">
-                <i class="pi pi-arrow-left text-[10px]"></i> Detalle de Pieza
-              </a>
-              <span class="text-[var(--app-muted)]">/</span>
-              <span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-bold">
-                {{ contentItem()?.channelName || 'Canal' }}
-              </span>
-              
-              <!-- Script Status Badge -->
-              <span *ngIf="script()" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-mono border"
-                    [ngClass]="{
-                      'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': script()?.status === 'Approved',
-                      'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30': script()?.status === 'UnderReview',
-                      'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30': script()?.status === 'Draft',
-                      'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30': script()?.status === 'Rejected'
-                    }">
-                {{ script()?.status }}
-              </span>
+          <!-- Script Status Badge -->
+          <span *ngIf="script()" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-mono border"
+                [ngClass]="{
+                  'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': script()?.status === 'Approved',
+                  'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30': script()?.status === 'UnderReview',
+                  'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30': script()?.status === 'Draft',
+                  'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30': script()?.status === 'Rejected'
+                }">
+            {{ script()?.status }}
+          </span>
 
-              <!-- Version Tag -->
-              <span *ngIf="script()" class="px-2 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-[10px] font-mono font-bold">
-                v{{ script()?.version }}
-              </span>
+          <!-- Version Tag -->
+          <span *ngIf="script()" class="px-2 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-[10px] font-mono font-bold">
+            v{{ script()?.version }}
+          </span>
 
-              <!-- Stale Invalidation Pill -->
-              <span *ngIf="script()?.isStale" class="px-2 py-0.5 rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-[10px] font-bold flex items-center gap-1 animate-pulse">
-                <i class="pi pi-exclamation-triangle text-[9px]"></i>
-                <span>Lineage Desactualizado</span>
-              </span>
-            </div>
-
-            <div class="flex items-center gap-2 flex-wrap">
-              <h1 class="text-base sm:text-xl font-bold text-[var(--app-text)] leading-snug">
-                Script Studio: {{ script()?.title || contentItem()?.title }}
-              </h1>
-            </div>
-          </div>
-
-          <!-- Studio Actions Header Buttons -->
-          <div class="flex items-center gap-2 shrink-0 flex-wrap">
-            
-            <button (click)="openAiGenerateModal()" [disabled]="isActionInProgress()"
-                    class="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs">
-              <i class="pi pi-sparkles"></i>
-              <span>{{ script() ? 'Regenerar con IA' : 'Generar Guión con IA' }}</span>
-            </button>
-
-            <button *ngIf="script()" (click)="requestAiReview()" [disabled]="isReviewing() || isActionInProgress()"
-                    class="px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs">
-              <i class="pi" [ngClass]="isReviewing() ? 'pi-spin pi-spinner' : 'pi-verified'"></i>
-              <span>{{ isReviewing() ? 'Auditando...' : 'Auditoría IA (Consultiva)' }}</span>
-            </button>
-
-            <button *ngIf="script()" (click)="isVersionHistoryOpen.set(true)"
-                    class="px-3 py-2 rounded-lg border border-[var(--app-card-border)] bg-[var(--app-bg)] hover:bg-[var(--app-card-bg)] text-[var(--app-text)] font-semibold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs">
-              <i class="pi pi-history"></i>
-              <span>Versiones</span>
-            </button>
-
-          </div>
-
+          <!-- Stale Invalidation Pill -->
+          <span *ngIf="script()?.isStale" class="px-2 py-0.5 rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-[10px] font-bold flex items-center gap-1 animate-pulse">
+            <i class="pi pi-exclamation-triangle text-[9px]"></i>
+            <span>Lineage Desactualizado</span>
+          </span>
         </div>
 
-        <!-- Live Pacing & Duration Dashboard Strip -->
-        <div *ngIf="script()" class="pt-3 border-t border-[var(--app-card-border)] grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div actions class="flex items-center gap-2 flex-wrap">
+          <button (click)="openAiGenerateModal()" [disabled]="isActionInProgress()"
+                  class="cf-btn-primary">
+            <i class="pi pi-sparkles"></i>
+            <span>{{ script() ? 'Regenerar con IA' : 'Generar Guión con IA' }}</span>
+          </button>
+
+          <button *ngIf="script()" (click)="requestAiReview()" [disabled]="isReviewing() || isActionInProgress()"
+                  class="cf-btn-secondary">
+            <i class="pi" [ngClass]="isReviewing() ? 'pi-spin pi-spinner' : 'pi-verified text-indigo-500'"></i>
+            <span>{{ isReviewing() ? 'Auditando...' : 'Auditoría IA (Consultiva)' }}</span>
+          </button>
+
+          <button *ngIf="script()" (click)="isVersionHistoryOpen.set(true)"
+                  class="cf-btn-secondary">
+            <i class="pi pi-history"></i>
+            <span>Versiones</span>
+          </button>
+        </div>
+
+      </app-page-header>
+
+      <!-- Live Pacing & Duration Dashboard Strip -->
+      <div *ngIf="script()" class="cf-card p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           
           <!-- Words Aggregate -->
           <div class="p-2.5 rounded-lg bg-[var(--app-bg)] border border-[var(--app-card-border)] space-y-0.5">
@@ -185,8 +176,6 @@ import { RejectScriptModalComponent } from './reject-script-modal.component';
           </div>
 
         </div>
-
-      </div>
 
       <!-- Upstream Stale Lineage Alert Banner -->
       <div *ngIf="script()?.isStale" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 space-y-2">
@@ -352,8 +341,8 @@ import { RejectScriptModalComponent } from './reject-script-modal.component';
       </div>
 
       <!-- Bottom Fixed Sticky Governance Action Bar -->
-      <div *ngIf="script()" class="fixed bottom-0 inset-x-0 bg-[var(--app-card-bg)]/95 backdrop-blur-md border-t border-[var(--app-card-border)] py-3 px-4 sm:px-8 z-30 shadow-xl">
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap text-xs">
+      <div *ngIf="script()" class="fixed bottom-0 inset-x-0 bg-[var(--app-card-bg)]/95 backdrop-blur-md border-t border-[var(--app-card-border)] py-2.5 px-3 sm:px-4 md:px-5 z-30 shadow-xl">
+        <div class="w-full max-w-full flex items-center justify-between gap-4 flex-wrap text-xs">
           
           <div class="flex items-center gap-3">
             <span class="font-mono text-xs text-[var(--app-muted)]">

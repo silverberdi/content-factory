@@ -3,57 +3,53 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService, ChannelDto, ContentItemDto, CreateContentItemRequest } from '../../core/api.service';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
+import { PageToolbarComponent } from '../../shared/layout/page-toolbar.component';
 
 @Component({
   selector: 'app-content-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PageHeaderComponent, PageToolbarComponent],
+  host: { class: 'block w-full' },
   template: `
-    <div class="space-y-4 max-w-7xl mx-auto">
+    <div class="cf-page-container space-y-4 text-xs">
       
-      <!-- Top Action & Filter Bar -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--app-card-bg)] p-4 rounded-xl border border-[var(--app-card-border)] shadow-xs">
-        <div>
-          <h1 class="text-base sm:text-lg font-bold text-[var(--app-text)] flex items-center gap-2">
-            <i class="pi pi-folder-open text-blue-600 dark:text-blue-400"></i>
-            <span>Content Workspace</span>
-          </h1>
-          <p class="text-xs text-[var(--app-muted)]">Gestión operativa de piezas editoriales, proveniencia de evidencia y TruthSources</p>
-        </div>
-
-        <div class="flex items-center gap-2">
+      <!-- Canonical Page Header -->
+      <app-page-header 
+        title="Workspace de Contenido" 
+        subtitle="Gestión operativa de piezas editoriales, proveniencia de evidencia, ideas y guiones"
+        [badge]="items.length"
+        badgeSeverity="info">
+        <div actions class="flex items-center gap-2">
           <button (click)="openCreateModal()" 
-                  class="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs">
+                  class="cf-btn-primary">
             <i class="pi pi-plus text-xs"></i>
             <span>Nueva Pieza</span>
           </button>
         </div>
-      </div>
+      </app-page-header>
 
-      <!-- Filters Row -->
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
-        
-        <!-- Search Input -->
-        <div class="relative sm:col-span-2">
-          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onFilterChange()"
-                 placeholder="Buscar por título o slug..."
-                 class="w-full pl-8 pr-3 py-2 rounded-lg bg-[var(--app-card-bg)] border border-[var(--app-card-border)] text-[var(--app-text)] focus:border-blue-500 focus:outline-hidden" />
-          <i class="pi pi-search absolute left-2.5 top-2.5 text-[var(--app-muted)] text-xs"></i>
-        </div>
+      <!-- Canonical Page Toolbar -->
+      <app-page-toolbar>
+        <div start class="flex items-center gap-2 flex-wrap flex-1">
+          <!-- Search Input -->
+          <div class="relative min-w-[220px] flex-1 sm:max-w-xs">
+            <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onFilterChange()"
+                   placeholder="Buscar por título o slug..."
+                   class="cf-toolbar-control w-full pl-8" />
+            <i class="pi pi-search absolute left-2.5 top-2.5 text-[var(--app-muted)] text-xs"></i>
+          </div>
 
-        <!-- Channel Filter -->
-        <div>
+          <!-- Channel Filter -->
           <select [(ngModel)]="selectedChannelId" (ngModelChange)="onFilterChange()"
-                  class="w-full px-3 py-2 rounded-lg bg-[var(--app-card-bg)] border border-[var(--app-card-border)] text-[var(--app-text)] focus:border-blue-500 focus:outline-hidden">
+                  class="cf-toolbar-control min-w-[150px]">
             <option value="">Todos los Canales</option>
             <option *ngFor="let ch of channels" [value]="ch.id">{{ ch.name }}</option>
           </select>
-        </div>
 
-        <!-- Stage Filter -->
-        <div>
+          <!-- Stage Filter -->
           <select [(ngModel)]="selectedStage" (ngModelChange)="onFilterChange()"
-                  class="w-full px-3 py-2 rounded-lg bg-[var(--app-card-bg)] border border-[var(--app-card-border)] text-[var(--app-text)] focus:border-blue-500 focus:outline-hidden">
+                  class="cf-toolbar-control min-w-[160px]">
             <option value="">Todas las Fases</option>
             <option value="DraftingEvidence">Drafting Evidence</option>
             <option value="TruthSourceApproved">TruthSource Aprobado</option>
@@ -65,10 +61,10 @@ import { ApiService, ChannelDto, ContentItemDto, CreateContentItemRequest } from
             <option value="Published">Publicado</option>
           </select>
         </div>
-      </div>
+      </app-page-toolbar>
 
       <!-- Content Items Table / List -->
-      <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-xl overflow-hidden shadow-xs">
+      <div class="cf-card overflow-hidden">
         
         <div *ngIf="isLoading" class="p-8 text-center text-xs text-[var(--app-muted)]">
           <i class="pi pi-spin pi-spinner text-lg mb-2 block"></i>
@@ -87,19 +83,19 @@ import { ApiService, ChannelDto, ContentItemDto, CreateContentItemRequest } from
         </div>
 
         <div *ngIf="!isLoading && items.length > 0" class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
+          <table class="cf-table">
             <thead>
-              <tr class="bg-[var(--app-header-bg)] border-b border-[var(--app-card-border)] text-[var(--app-muted)] font-semibold uppercase tracking-wider text-[10px]">
-                <th class="py-2.5 px-4">Pieza de Contenido</th>
-                <th class="py-2.5 px-3">Canal</th>
-                <th class="py-2.5 px-3">Fase Editorial</th>
-                <th class="py-2.5 px-3 text-center">Evidencias</th>
-                <th class="py-2.5 px-3">TruthSource</th>
-                <th class="py-2.5 px-3">Actualización</th>
-                <th class="py-2.5 px-4 text-right">Acciones</th>
+              <tr>
+                <th>Pieza de Contenido</th>
+                <th>Canal</th>
+                <th>Fase Editorial</th>
+                <th class="text-center">Evidencias</th>
+                <th>TruthSource</th>
+                <th>Actualización</th>
+                <th class="text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[var(--app-card-border)]">
+            <tbody>
               <tr *ngFor="let item of items" class="hover:bg-[var(--app-surface-hover)] transition-colors group">
                 
                 <!-- Title & Slug -->

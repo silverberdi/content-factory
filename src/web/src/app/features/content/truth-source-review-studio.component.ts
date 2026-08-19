@@ -13,11 +13,13 @@ import {
   VerifiableClaimDto
 } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
 
 @Component({
   selector: 'app-truth-source-review-studio',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PageHeaderComponent],
+  host: { class: 'block w-full' },
   template: `
     <!-- Loading State -->
     <div *ngIf="isLoading()" class="p-12 text-center text-xs text-[var(--app-muted)] space-y-2">
@@ -30,116 +32,105 @@ import { AuthService } from '../../core/auth.service';
       <i class="pi pi-exclamation-triangle text-2xl text-red-500 block"></i>
       <p class="font-bold text-sm text-[var(--app-text)]">{{ errorMessage() }}</p>
       <div class="flex items-center justify-center gap-2 pt-2">
-        <button (click)="loadData()" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs cursor-pointer shadow-xs">
+        <button (click)="loadData()" class="cf-btn-primary">
           <i class="pi pi-refresh mr-1 text-[10px]"></i> Reintentar
         </button>
-        <a [routerLink]="['/content/items']" class="px-3.5 py-1.5 rounded-lg border border-[var(--app-card-border)] text-xs text-[var(--app-muted)] hover:text-[var(--app-text)]">
+        <a [routerLink]="['/content/items']" class="cf-btn-secondary">
           Volver al Workspace
         </a>
       </div>
     </div>
 
-    <div *ngIf="!isLoading() && contentItem()" class="space-y-3 max-w-7xl mx-auto flex flex-col h-[calc(100vh-5.5rem)]">
+    <div *ngIf="!isLoading() && contentItem()" class="cf-page-container space-y-3 flex flex-col h-[calc(100vh-5.5rem)] text-xs">
       
-      <!-- Studio Header & Action Bar -->
-      <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-xl p-3 sm:p-4 shadow-xs shrink-0">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          
-          <div class="space-y-1">
-            <div class="flex items-center gap-2 flex-wrap text-xs">
-              <a [routerLink]="['/content/items', contentItem()?.id]" class="text-[var(--app-muted)] hover:text-[var(--app-text)] flex items-center gap-1 font-medium">
-                <i class="pi pi-arrow-left text-[10px]"></i> {{ contentItem()?.title }}
-              </a>
-              <span class="text-[var(--app-muted)]">/</span>
-              <span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-bold">
-                {{ contentItem()?.channelName || 'Canal' }}
-              </span>
-              <span *ngIf="truthSource()" 
-                    class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-mono border"
-                    [ngClass]="{
-                      'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': truthSource()?.status === 'Approved',
-                      'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30': truthSource()?.status === 'UnderReview',
-                      'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30': truthSource()?.status === 'Draft',
-                      'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30': truthSource()?.status === 'Rejected'
-                    }">
-                {{ truthSource()?.status }} (v{{ truthSource()?.version }})
-              </span>
-              <span class="text-[10px] font-mono text-[var(--app-muted)]">
-                Última edición: {{ (truthSource()?.updatedAtUtc || contentItem()?.updatedAtUtc) | date:'yyyy-MM-dd HH:mm' }}
-              </span>
-            </div>
-            <h1 class="text-sm sm:text-base font-bold text-[var(--app-text)] flex items-center gap-2">
-              <i class="pi pi-check-circle text-indigo-600 dark:text-indigo-400"></i>
-              <span>TruthSource Review Studio</span>
-            </h1>
-          </div>
-
-          <!-- Studio Actions Bar -->
-          <div class="flex items-center gap-1.5 flex-wrap shrink-0">
-            
-            <!-- History Button -->
-            <button (click)="openHistoryDrawer()" 
-                    class="px-2.5 py-1.5 rounded-lg border border-[var(--app-card-border)] hover:bg-[var(--app-surface-hover)] text-[var(--app-text)] text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-                    title="Ver historial de versiones y auditoría">
-              <i class="pi pi-history text-[11px]"></i>
-              <span class="hidden sm:inline">Historial</span>
-            </button>
-
-            <!-- Generate AI Draft Button -->
-            <button (click)="triggerAiDraft()" [disabled]="isGeneratingAi() || !hasUsableEvidence"
-                    class="px-3 py-1.5 rounded-lg bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all"
-                    title="Sintetizar propuesta de TruthSource usando IA sobre las evidencias">
-              <i class="pi" [ngClass]="isGeneratingAi() ? 'pi-spin pi-spinner' : 'pi-sparkles'"></i>
-              <span>{{ isGeneratingAi() ? 'Sintetizando...' : 'Generar IA' }}</span>
-            </button>
-
-            <!-- Edit / Save Button -->
-            <button *ngIf="!isEditing() && truthSource()" (click)="enableEditMode()"
-                    class="px-3 py-1.5 rounded-lg border border-[var(--app-card-border)] hover:bg-[var(--app-surface-hover)] text-[var(--app-text)] text-xs font-bold flex items-center gap-1 cursor-pointer">
-              <i class="pi pi-pencil text-[11px]"></i>
-              <span>Editar</span>
-            </button>
-
-            <button *ngIf="isEditing()" (click)="saveChanges()" [disabled]="isSaving()"
-                    class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50">
-              <i class="pi" [ngClass]="isSaving() ? 'pi-spin pi-spinner' : 'pi-save'"></i>
-              <span>{{ isSaving() ? 'Guardando...' : 'Guardar (v' + (truthSource()?.version || 1) + ')' }}</span>
-            </button>
-
-            <button *ngIf="isEditing()" (click)="cancelEdit()"
-                    class="px-2.5 py-1.5 rounded-lg border border-[var(--app-card-border)] hover:bg-[var(--app-surface-hover)] text-[var(--app-muted)] text-xs cursor-pointer">
-              Cancelar
-            </button>
-
-            <!-- Submit for Review Button (if Draft or Rejected) -->
-            <button *ngIf="truthSource() && (truthSource()?.status === 'Draft' || truthSource()?.status === 'Rejected') && !isEditing()"
-                    (click)="submitForReview()"
-                    class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1 cursor-pointer shadow-xs">
-              <i class="pi pi-send text-[11px]"></i>
-              <span>Enviar a Revisión</span>
-            </button>
-
-            <!-- Approve Button (if Editorial Role) -->
-            <button *ngIf="truthSource() && truthSource()?.status !== 'Approved' && !isEditing()"
-                    (click)="approveTruthSource()" [disabled]="!isEditorialUser"
-                    class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
-                    title="Aprobar TruthSource como verdad humana autorizada">
-              <i class="pi pi-check"></i>
-              <span>Aprobar</span>
-            </button>
-
-            <!-- Reject Button (if Editorial Role) -->
-            <button *ngIf="truthSource() && truthSource()?.status === 'UnderReview' && !isEditing()"
-                    (click)="openRejectModal()" [disabled]="!isEditorialUser"
-                    class="px-3 py-1.5 rounded-lg bg-red-600/15 hover:bg-red-600/25 text-red-600 dark:text-red-400 border border-red-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer">
-              <i class="pi pi-times"></i>
-              <span>Rechazar</span>
-            </button>
-
-          </div>
-
+      <!-- Canonical Studio Header & Action Bar -->
+      <app-page-header 
+        title="TruthSource Review Studio"
+        [subtitle]="contentItem()?.title || ''"
+        [backLink]="['/content/items', contentItem()?.id]"
+        backLabel="Detalle de Pieza">
+        
+        <div meta class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-bold">
+            {{ contentItem()?.channelName || 'Canal' }}
+          </span>
+          <span *ngIf="truthSource()" 
+                class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-mono border"
+                [ngClass]="{
+                  'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': truthSource()?.status === 'Approved',
+                  'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30': truthSource()?.status === 'UnderReview',
+                  'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30': truthSource()?.status === 'Draft',
+                  'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30': truthSource()?.status === 'Rejected'
+                }">
+            {{ truthSource()?.status }} (v{{ truthSource()?.version }})
+          </span>
+          <span class="text-[10px] font-mono text-[var(--app-muted)]">
+            Última edición: {{ (truthSource()?.updatedAtUtc || contentItem()?.updatedAtUtc) | date:'yyyy-MM-dd HH:mm' }}
+          </span>
         </div>
-      </div>
+
+        <div actions class="flex items-center gap-1.5 flex-wrap shrink-0">
+          <!-- History Button -->
+          <button (click)="openHistoryDrawer()" 
+                  class="cf-btn-secondary !h-8"
+                  title="Ver historial de versiones y auditoría">
+            <i class="pi pi-history text-[11px]"></i>
+            <span class="hidden sm:inline">Historial</span>
+          </button>
+
+          <!-- Generate AI Draft Button -->
+          <button (click)="triggerAiDraft()" [disabled]="isGeneratingAi() || !hasUsableEvidence"
+                  class="px-3 py-1.5 rounded-lg bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all h-8"
+                  title="Sintetizar propuesta de TruthSource usando IA sobre las evidencias">
+            <i class="pi" [ngClass]="isGeneratingAi() ? 'pi-spin pi-spinner' : 'pi-sparkles'"></i>
+            <span>{{ isGeneratingAi() ? 'Sintetizando...' : 'Generar IA' }}</span>
+          </button>
+
+          <!-- Edit / Save Button -->
+          <button *ngIf="!isEditing() && truthSource()" (click)="enableEditMode()"
+                  class="cf-btn-secondary !h-8 font-bold">
+            <i class="pi pi-pencil text-[11px]"></i>
+            <span>Editar</span>
+          </button>
+
+          <button *ngIf="isEditing()" (click)="saveChanges()" [disabled]="isSaving()"
+                  class="cf-btn-primary !h-8 disabled:opacity-50">
+            <i class="pi" [ngClass]="isSaving() ? 'pi-spin pi-spinner' : 'pi-save'"></i>
+            <span>{{ isSaving() ? 'Guardando...' : 'Guardar (v' + (truthSource()?.version || 1) + ')' }}</span>
+          </button>
+
+          <button *ngIf="isEditing()" (click)="cancelEdit()"
+                  class="cf-btn-secondary !h-8">
+            Cancelar
+          </button>
+
+          <!-- Submit for Review Button (if Draft or Rejected) -->
+          <button *ngIf="truthSource() && (truthSource()?.status === 'Draft' || truthSource()?.status === 'Rejected') && !isEditing()"
+                  (click)="submitForReview()"
+                  class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1 cursor-pointer shadow-xs h-8">
+            <i class="pi pi-send text-[11px]"></i>
+            <span>Enviar a Revisión</span>
+          </button>
+
+          <!-- Approve Button (if Editorial Role) -->
+          <button *ngIf="truthSource() && truthSource()?.status !== 'Approved' && !isEditing()"
+                  (click)="approveTruthSource()" [disabled]="!isEditorialUser"
+                  class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed h-8"
+                  title="Aprobar TruthSource como verdad humana autorizada">
+            <i class="pi pi-check"></i>
+            <span>Aprobar</span>
+          </button>
+
+          <!-- Reject Button (if Editorial Role) -->
+          <button *ngIf="truthSource() && truthSource()?.status === 'UnderReview' && !isEditing()"
+                  (click)="openRejectModal()" [disabled]="!isEditorialUser"
+                  class="px-3 py-1.5 rounded-lg bg-red-600/15 hover:bg-red-600/25 text-red-600 dark:text-red-400 border border-red-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer h-8">
+            <i class="pi pi-times"></i>
+            <span>Rechazar</span>
+          </button>
+        </div>
+
+      </app-page-header>
 
       <!-- Main Studio 2-Column Split Workspace -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0">

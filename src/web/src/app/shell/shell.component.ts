@@ -12,7 +12,7 @@ import { ApiService } from '../core/api.service';
   template: `
     <div class="min-h-screen flex flex-col bg-[var(--app-bg)] text-[var(--app-text)] antialiased">
       <!-- Unified Header Control Center Bar -->
-      <header class="h-16 border-b border-[var(--app-card-border)] bg-[var(--app-header-bg)] px-3 sm:px-6 flex items-center justify-between shrink-0 sticky top-0 z-30 shadow-xs">
+      <header class="h-16 border-b border-[var(--app-card-border)] bg-[var(--app-header-bg)] px-3 sm:px-4 md:px-5 flex items-center justify-between shrink-0 sticky top-0 z-30 shadow-xs">
         
         <!-- Left: Product Branding & Context Tag -->
         <div class="flex items-center gap-3">
@@ -118,7 +118,7 @@ import { ApiService } from '../core/api.service';
       </header>
 
       <!-- Main Operational Viewport Container -->
-      <main class="flex-1 w-full p-3 sm:p-5 max-w-full">
+      <main class="flex-1 w-full p-3 sm:p-4 md:p-5 max-w-full min-w-0">
         <router-outlet></router-outlet>
       </main>
     </div>

@@ -7,6 +7,7 @@ import { SceneType, ScriptSceneDto, VerifiableClaimDto } from '../../core/api.se
   selector: 'app-script-scene-card',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  host: { class: 'block w-full' },
   template: `
     <div class="rounded-xl border transition-all duration-200 shadow-xs"
          [ngClass]="{

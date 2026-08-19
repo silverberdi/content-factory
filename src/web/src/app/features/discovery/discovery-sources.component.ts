@@ -4,51 +4,52 @@ import { FormsModule } from '@angular/forms';
 import { ApiService, ChannelDto, DiscoverySourceDto } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { SourceDrawerComponent } from './source-drawer.component';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
+import { PageToolbarComponent } from '../../shared/layout/page-toolbar.component';
 
 @Component({
   selector: 'app-discovery-sources',
   standalone: true,
-  imports: [CommonModule, FormsModule, SourceDrawerComponent],
+  imports: [CommonModule, FormsModule, SourceDrawerComponent, PageHeaderComponent, PageToolbarComponent],
+  host: { class: 'block w-full' },
   template: `
-    <div class="space-y-4 max-w-full">
+    <div class="cf-page-container space-y-4 text-xs">
       
-      <!-- Header Section -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--app-card-border)]">
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-bold tracking-tight text-[var(--app-text)]">Catálogo de Fuentes de Discovery</h1>
-            <span class="px-2 py-0.5 rounded bg-blue-500/15 border border-blue-500/30 text-blue-600 dark:text-blue-400 font-bold text-[10px] font-mono">
-              {{ sources().length }} Fuentes
-            </span>
-          </div>
-          <p class="text-xs text-[var(--app-muted)] mt-0.5">Gestión de feeds RSS, publicaciones web y orígenes automáticos por canal.</p>
+      <!-- Canonical Page Header -->
+      <app-page-header 
+        title="Catálogo de Fuentes de Discovery" 
+        subtitle="Gestión de feeds RSS, publicaciones web y orígenes automáticos por canal"
+        [badge]="sources().length + ' Fuentes'"
+        badgeSeverity="info">
+        <div actions class="flex items-center gap-2">
+          <button (click)="openCreateSource()" 
+                  class="cf-btn-primary">
+            <i class="pi pi-plus text-xs"></i>
+            <span>Nueva Fuente</span>
+          </button>
         </div>
+      </app-page-header>
 
-        <div class="flex items-center gap-2 flex-wrap">
+      <!-- Canonical Page Toolbar -->
+      <app-page-toolbar>
+        <div start class="flex items-center gap-2 flex-wrap flex-1">
           <!-- Channel Filter -->
           <select [(ngModel)]="selectedChannelId" (change)="loadSources()" 
-                  class="text-xs px-2.5 py-1.5 rounded-lg border border-[var(--app-card-border)] bg-[var(--app-card-bg)] text-[var(--app-text)] focus:outline-none focus:border-blue-500">
+                  class="cf-toolbar-control min-w-[150px]">
             <option value="">Todos los Canales</option>
             <option *ngFor="let ch of channels()" [value]="ch.id">{{ ch.name }}</option>
           </select>
 
           <!-- Status Filter -->
           <select [(ngModel)]="selectedStatus" (change)="loadSources()" 
-                  class="text-xs px-2.5 py-1.5 rounded-lg border border-[var(--app-card-border)] bg-[var(--app-card-bg)] text-[var(--app-text)] focus:outline-none focus:border-blue-500">
+                  class="cf-toolbar-control min-w-[150px]">
             <option value="">Todos los Estados</option>
             <option value="Active">Activas</option>
             <option value="Paused">Pausadas</option>
             <option value="Error">Degradadas / Error</option>
           </select>
-
-          <!-- Register Source Button -->
-          <button (click)="openCreateSource()" 
-                  class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer">
-            <i class="pi pi-plus text-[10px]"></i>
-            <span>Nueva Fuente</span>
-          </button>
         </div>
-      </div>
+      </app-page-toolbar>
 
       <!-- Sync Feedback Notification -->
       <div *ngIf="syncNotification" class="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 text-xs flex items-center justify-between">
@@ -57,21 +58,21 @@ import { SourceDrawerComponent } from './source-drawer.component';
       </div>
 
       <!-- Sources Data Table -->
-      <div class="rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] shadow-xs overflow-hidden">
+      <div class="cf-card overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-[var(--app-bg)] text-[var(--app-muted)] uppercase text-[10px] tracking-wider border-b border-[var(--app-card-border)]">
+          <table class="cf-table">
+            <thead>
               <tr>
-                <th class="py-3 px-4 font-bold">Fuente</th>
-                <th class="py-3 px-4 font-bold">Canal</th>
-                <th class="py-3 px-4 font-bold">Tipo</th>
-                <th class="py-3 px-4 font-bold">Estado</th>
-                <th class="py-3 px-4 font-bold">Intervalo</th>
-                <th class="py-3 px-4 font-bold">Última Sincronización</th>
-                <th class="py-3 px-4 font-bold text-right">Acciones</th>
+                <th>Fuente</th>
+                <th>Canal</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Intervalo</th>
+                <th>Última Sincronización</th>
+                <th class="text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[var(--app-card-border)]">
+            <tbody>
               <tr *ngFor="let s of sources()" class="hover:bg-[var(--app-surface-hover)] transition-colors">
                 
                 <!-- Source Info -->

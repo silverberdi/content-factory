@@ -9,6 +9,7 @@ import { DiscoverySummaryWidgetComponent } from './discovery-summary-widget.comp
 import { ContentPipelineSummaryWidgetComponent } from './content-pipeline-widget.component';
 import { ChannelDrawerComponent } from '../channels/channel-drawer.component';
 import { QuickSubmitModalComponent } from '../discovery/quick-submit-modal.component';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,33 +23,35 @@ import { QuickSubmitModalComponent } from '../discovery/quick-submit-modal.compo
     DiscoverySummaryWidgetComponent,
     ContentPipelineSummaryWidgetComponent,
     ChannelDrawerComponent,
-    QuickSubmitModalComponent
+    QuickSubmitModalComponent,
+    PageHeaderComponent
   ],
+  host: { class: 'block w-full' },
   template: `
-    <div class="space-y-4 max-w-full">
-      <!-- Cockpit Header Strip -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--app-card-border)]">
-        <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-tight text-[var(--app-text)]">Operations Dashboard</h1>
-          <p class="text-xs text-[var(--app-muted)]">Real-time status of content factory pipelines, active channel registry, and operational attention queue.</p>
-        </div>
-        
-        <div class="flex items-center gap-2.5">
+    <div class="cf-page-container space-y-4 text-xs">
+      
+      <!-- Canonical Cockpit Header Strip -->
+      <app-page-header 
+        title="Dashboard Control Center" 
+        subtitle="Estado operativo de la fábrica de contenido, registro de canales y cola de atención"
+        badge="Online"
+        badgeSeverity="success">
+        <div actions class="flex items-center gap-2">
           <button (click)="refresh()" 
-                  class="px-3 py-1.5 rounded-lg border border-[var(--app-card-border)] bg-[var(--app-card-bg)] hover:bg-[var(--app-surface-hover)] text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-2xs">
+                  class="cf-btn-secondary">
             <i class="pi pi-refresh" [ngClass]="{ 'animate-spin': isLoading() }"></i> 
-            <span>Refresh</span>
+            <span>Refrescar</span>
           </button>
           <button (click)="isQuickSubmitOpen = true" 
-                  class="px-3.5 py-1.5 rounded-lg bg-[var(--app-card-bg)] border border-[var(--app-card-border)] hover:bg-[var(--app-surface-hover)] text-[var(--app-text)] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs">
-            <i class="pi pi-bolt text-amber-500 text-[10px]"></i> <span>Quick Submit</span>
+                  class="cf-btn-secondary">
+            <i class="pi pi-bolt text-amber-500 text-[10px]"></i> <span>Envío Rápido</span>
           </button>
           <button (click)="openCreateChannel()" 
-                  class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer">
-            <i class="pi pi-plus text-[10px]"></i> <span>New Channel</span>
+                  class="cf-btn-primary">
+            <i class="pi pi-plus text-[10px]"></i> <span>Nuevo Canal</span>
           </button>
         </div>
-      </div>
+      </app-page-header>
 
       <!-- Main Operational Cockpit Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">

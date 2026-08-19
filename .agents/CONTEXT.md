@@ -46,7 +46,9 @@ It is not an email inbox and not a generic CRUD admin panel.
 ## Hard UX
 
 - dashboard from first slice;
-- full useful viewport on desktop;
+- full useful viewport and full available width on desktop (>=1280px);
+- no arbitrary `max-w-7xl` or narrow centered wrappers on operational pages;
+- use shared layout primitives (`PageHeaderComponent`, `PageToolbarComponent`, `.cf-page-container`);
 - page-level desktop scroll only by exception;
 - high information density with clear hierarchy;
 - no giant headings/cards/hero layouts;

@@ -40,11 +40,15 @@ Before adding page scroll, consider:
 
 Long editorial documents may legitimately scroll.
 
-## Width utilization
+## Width utilization & Canonical Layout Contract
 
-Do not impose a narrow global content max-width on operational screens.
-Use available horizontal space intelligently.
-Large screens should gain useful columns/context, not empty margins.
+Operational screens in Content Factory MUST utilize available screen width:
+- For viewport widths >= 1280px (1440×900, 1920×1080 and ultrawides): do NOT apply arbitrary centered max-width wrappers (such as `max-w-7xl`) to operational page content;
+- Page content width MUST effectively be viewport width minus compact shell/page padding (`px-3 sm:px-4 md:px-5`);
+- Data tables, grids, split workspaces, and studio canvases MUST use 100% width;
+- Every operational page follows the canonical composition: `PageContainer` -> `PageHeader` (title, metadata, actions) -> `PageToolbar` (search, filters, contextual controls) -> `PageContent`;
+- Card wrappers must not be stacked redundantly; use panels only when communicating semantic operational grouping;
+- Specialized studios (TruthSource Review, Idea Matrix, Script Studio) retain internal density optimizations while inheriting full width, outer padding, header hierarchy, and responsive behavior.
 
 ## Device intent
 

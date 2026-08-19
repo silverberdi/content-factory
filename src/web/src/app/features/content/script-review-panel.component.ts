@@ -6,6 +6,7 @@ import { ScriptReviewResultDto } from '../../core/api.service';
   selector: 'app-script-review-panel',
   standalone: true,
   imports: [CommonModule],
+  host: { class: 'block w-full' },
   template: `
     <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-xl p-4 sm:p-5 shadow-xs space-y-4 text-xs animate-fade-in">
       

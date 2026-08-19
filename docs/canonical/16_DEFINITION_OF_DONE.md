@@ -47,7 +47,9 @@ When frontend changes:
 - loading/empty/error states;
 - keyboard/accessibility baseline;
 - no unnecessary full-page desktop scroll;
-- dashboard density and hierarchy follow constitution.
+- dashboard density and hierarchy follow constitution;
+- no arbitrary centered `max-w-7xl` container constraints on desktop operational pages;
+- tables, grids, and workspaces span 100% width using `.cf-page-container` and shared layout primitives (`PageHeaderComponent`, `PageToolbarComponent`).
 
 ## Performance/behavior
 

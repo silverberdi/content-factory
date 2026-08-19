@@ -7,6 +7,7 @@ import { AttentionItemDto } from '../../core/api.service';
   selector: 'app-attention-widget',
   standalone: true,
   imports: [CommonModule, RouterLink],
+  host: { class: 'block w-full' },
   template: `
     <div class="rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] p-5 shadow-xs h-full flex flex-col justify-between">
       <div>

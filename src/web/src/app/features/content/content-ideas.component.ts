@@ -6,6 +6,7 @@ import { ApiService, ContentIdeaDto, ContentItemDetailDto, DismissIdeaRequest, R
 import { GenerateIdeasModalComponent } from './generate-ideas-modal.component';
 import { IdeaEditDrawerComponent } from './idea-edit-drawer.component';
 import { IdeaVersionHistoryDrawerComponent } from './idea-version-history-drawer.component';
+import { PageHeaderComponent } from '../../shared/layout/page-header.component';
 
 @Component({
   selector: 'app-content-ideas',
@@ -16,8 +17,10 @@ import { IdeaVersionHistoryDrawerComponent } from './idea-version-history-drawer
     RouterModule,
     GenerateIdeasModalComponent,
     IdeaEditDrawerComponent,
-    IdeaVersionHistoryDrawerComponent
+    IdeaVersionHistoryDrawerComponent,
+    PageHeaderComponent
   ],
+  host: { class: 'block w-full' },
   template: `
     <!-- Loading State -->
     <div *ngIf="isLoading()" class="p-12 text-center text-xs text-[var(--app-muted)] space-y-2">
@@ -30,74 +33,60 @@ import { IdeaVersionHistoryDrawerComponent } from './idea-version-history-drawer
       <i class="pi pi-exclamation-triangle text-2xl text-red-500 block"></i>
       <p class="font-bold text-sm text-[var(--app-text)]">{{ errorMessage() }}</p>
       <div class="flex items-center justify-center gap-2 pt-2">
-        <button (click)="loadAllData()" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs cursor-pointer shadow-xs">
+        <button (click)="loadAllData()" class="cf-btn-primary">
           <i class="pi pi-refresh mr-1 text-[10px]"></i> Reintentar
         </button>
-        <a [routerLink]="['/content/items', contentItemId()]" class="px-3.5 py-1.5 rounded-lg border border-[var(--app-card-border)] text-xs text-[var(--app-muted)] hover:text-[var(--app-text)]">
+        <a [routerLink]="['/content/items', contentItemId()]" class="cf-btn-secondary">
           Volver a la Pieza
         </a>
       </div>
     </div>
 
     <!-- Loaded Workspace View -->
-    <div *ngIf="!isLoading() && contentItem()" class="space-y-5 max-w-7xl mx-auto text-xs">
+    <div *ngIf="!isLoading() && contentItem()" class="cf-page-container space-y-4 text-xs">
       
-      <!-- Operational Header -->
-      <div class="bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-2xl p-4 sm:p-5 shadow-xs">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2 flex-wrap text-xs">
-              <a [routerLink]="['/content/items', contentItemId()]" class="text-[var(--app-muted)] hover:text-[var(--app-text)] flex items-center gap-1">
-                <i class="pi pi-arrow-left text-[10px]"></i> Detalle de Pieza
-              </a>
-              <span class="text-[var(--app-muted)]">/</span>
-              <span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-bold">
-                {{ contentItem()?.channelName || 'Canal' }}
-              </span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border font-mono"
-                    [ngClass]="{
-                      'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': contentItem()?.stage === 'IdeaSelected',
-                      'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30': contentItem()?.stage === 'TruthSourceApproved',
-                      'bg-slate-500/15 text-slate-500 border-slate-500/30': contentItem()?.stage !== 'IdeaSelected' && contentItem()?.stage !== 'TruthSourceApproved'
-                    }">
-                {{ contentItem()?.stage }}
-              </span>
-              <span *ngIf="contentItem()?.truthSource" class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-semibold flex items-center gap-1">
-                <i class="pi pi-verified text-[10px]"></i> TruthSource v{{ contentItem()?.truthSource?.version }} Aprobado
-              </span>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <h1 class="text-base sm:text-xl font-bold text-[var(--app-text)] leading-snug">
-                Matriz de Ideas y Ángulos Creativos
-              </h1>
-            </div>
-            <p class="text-xs text-[var(--app-muted)]">
-              Pieza: <span class="font-bold text-[var(--app-text)]">{{ contentItem()?.title }}</span> • Explora, genera con DeepSeek Reasoning y selecciona exactamente una idea activa para guionización.
-            </p>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex items-center gap-2 shrink-0 flex-wrap">
-            <button (click)="openGenerateModal()"
-                    [disabled]="!isTruthSourceApproved()"
-                    [title]="!isTruthSourceApproved() ? 'Requiere TruthSource Aprobado' : ''"
-                    class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm shadow-purple-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-              <i class="pi pi-sparkles"></i>
-              <span>Generar con IA</span>
-            </button>
-
-            <button (click)="openCreateDrawer()"
-                    [disabled]="!isTruthSourceApproved()"
-                    class="px-3.5 py-2 rounded-xl border border-[var(--app-card-border)] bg-[var(--app-bg)] hover:bg-[var(--app-card-bg)] text-[var(--app-text)] font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-              <i class="pi pi-plus text-blue-600 dark:text-blue-400"></i>
-              <span>Añadir Idea Manual</span>
-            </button>
-          </div>
-
+      <!-- Canonical Operational Header -->
+      <app-page-header 
+        title="Matriz de Ideas y Ángulos Creativos"
+        [subtitle]="'Pieza: ' + contentItem()?.title + ' • Explora y selecciona una idea activa para guionización.'"
+        [backLink]="['/content/items', contentItemId()]"
+        backLabel="Detalle de Pieza">
+        
+        <div meta class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-[10px] font-bold">
+            {{ contentItem()?.channelName || 'Canal' }}
+          </span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border font-mono"
+                [ngClass]="{
+                  'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': contentItem()?.stage === 'IdeaSelected',
+                  'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30': contentItem()?.stage === 'TruthSourceApproved',
+                  'bg-slate-500/15 text-slate-500 border-slate-500/30': contentItem()?.stage !== 'IdeaSelected' && contentItem()?.stage !== 'TruthSourceApproved'
+                }">
+            {{ contentItem()?.stage }}
+          </span>
+          <span *ngIf="contentItem()?.truthSource" class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-semibold flex items-center gap-1">
+            <i class="pi pi-verified text-[10px]"></i> TruthSource v{{ contentItem()?.truthSource?.version }} Aprobado
+          </span>
         </div>
-      </div>
+
+        <div actions class="flex items-center gap-2 flex-wrap">
+          <button (click)="openGenerateModal()"
+                  [disabled]="!isTruthSourceApproved()"
+                  [title]="!isTruthSourceApproved() ? 'Requiere TruthSource Aprobado' : ''"
+                  class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed h-8.5">
+            <i class="pi pi-sparkles"></i>
+            <span>Generar con IA</span>
+          </button>
+
+          <button (click)="openCreateDrawer()"
+                  [disabled]="!isTruthSourceApproved()"
+                  class="cf-btn-secondary !h-8.5 font-bold disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="pi pi-plus text-blue-600 dark:text-blue-400"></i>
+            <span>Añadir Idea Manual</span>
+          </button>
+        </div>
+
+      </app-page-header>
 
       <!-- TruthSource Warning if Not Approved -->
       <div *ngIf="!isTruthSourceApproved()" class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-start gap-3">

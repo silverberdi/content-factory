@@ -6,6 +6,7 @@ import { FactoryHealthDto } from '../../core/api.service';
   selector: 'app-factory-health-widget',
   standalone: true,
   imports: [CommonModule],
+  host: { class: 'block w-full' },
   template: `
     <div class="rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card-bg)] p-5 shadow-xs">
       <!-- Widget Header -->
