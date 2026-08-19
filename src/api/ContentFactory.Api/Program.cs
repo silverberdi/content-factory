@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using ContentFactory.Api.Infrastructure;
+using ContentFactory.Api.Infrastructure.BackgroundWorkers;
+using ContentFactory.Api.Infrastructure.Storage;
 using ContentFactory.Api.Modules.Ai;
 using ContentFactory.Api.Modules.Audit;
 using ContentFactory.Api.Modules.Channels;
@@ -159,6 +161,12 @@ builder.Services.AddScoped<IContentIdeaService, ContentIdeaService>();
 builder.Services.AddScoped<IScriptService, ScriptService>();
 builder.Services.AddScoped<IStoryboardService, StoryboardService>();
 builder.Services.AddScoped<IEditorialTaskService, EditorialTaskService>();
+
+builder.Services.AddSingleton<IStorageService, MinioStorageService>();
+builder.Services.AddSingleton<IVisualGenerationProvider, MockVisualGenerationProvider>();
+builder.Services.AddSingleton<IVisualGenerationProvider, ComfyVisualGenerationProvider>();
+builder.Services.AddScoped<IVisualGenerationService, VisualGenerationService>();
+builder.Services.AddHostedService<VisualGenerationBackgroundWorker>();
 
 // 6. Controllers & OpenAPI
 builder.Services.AddControllers();

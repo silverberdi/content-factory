@@ -25,22 +25,22 @@ Track at minimum when capabilities exist:
 Every Job failure must be categorized:
 
 `retryable-transient`
-Examples: timeout, provider 5xx.
+Examples: timeout, provider 5xx, network socket exception. Job is marked `FailedRetryable` and queued for bounded backoff retry.
 
 `action-required`
-Examples: expired credentials, invalid configuration, account disconnected.
+Examples: invalid workflow payload, endpoint unreachable, auth rejected, missing asset requirement. Job is marked `FailedActionRequired`, halted from retry, and surfaces on dashboard attention center.
 
 `non-retryable-input`
-Examples: unsupported file, validation failure.
+Examples: unsupported media format, unapproved storyboard state.
 
 Do not show an operator "Error 500" as the primary explanation if a meaningful class is known.
 
 ## Retries
 
-- bounded;
-- backoff where appropriate;
-- idempotency required for side effects;
-- retry count visible;
+- bounded (`maxAttempts = 3`);
+- exponential backoff where appropriate;
+- idempotency required for side effects (`idempotencyKey = SHA256(...)`);
+- retry count visible on Job and JobAttempt;
 - no infinite automation loops.
 
 ## Audit timeline

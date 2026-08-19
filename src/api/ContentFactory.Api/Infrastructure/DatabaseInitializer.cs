@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using ContentFactory.Api.Infrastructure.Storage;
 using ContentFactory.Api.Modules.Channels;
 using ContentFactory.Api.Modules.Content;
 using ContentFactory.Api.Modules.Discovery;
@@ -697,7 +698,7 @@ public static class DatabaseInitializer
             script1.Status = ScriptStatus.Approved;
             script1.ApprovedAtUtc = DateTime.UtcNow.AddMinutes(-10);
             script1.ApprovedByEmail = ownerEmail;
-            contentItem1.Stage = ContentItemStage.StoryboardDrafted;
+            contentItem1.Stage = ContentItemStage.StoryboardApproved;
 
             var script1Version = new ScriptVersion
             {
@@ -744,11 +745,13 @@ public static class DatabaseInitializer
                 Title = "Storyboard: 3 Habilidades que la IA NO te Puede Quitar en 2026",
                 TargetDurationSeconds = 45,
                 TotalEstimatedDurationSeconds = 43.7,
-                Status = StoryboardStatus.Draft,
+                Status = StoryboardStatus.Approved,
+                ApprovedAtUtc = DateTime.UtcNow.AddMinutes(-3),
+                ApprovedByEmail = ownerEmail,
                 Version = 1,
                 CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
                 CreatedByEmail = ownerEmail,
-                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-3),
                 UpdatedByEmail = ownerEmail
             };
 
@@ -875,35 +878,118 @@ public static class DatabaseInitializer
                 Id = assetPlan1Id,
                 StoryboardId = storyboard1Id,
                 ContentItemId = contentItem1Id,
-                Status = AssetPlanStatus.Planned,
+                Status = AssetPlanStatus.ReadyForGeneration,
                 Version = 1,
                 CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
-                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-3)
             };
 
-            foreach (var fr in storyboard1.Frames)
+            var req1 = new AssetRequirement
             {
-                assetPlan1.Requirements.Add(new AssetRequirement
-                {
-                    Id = Guid.NewGuid(),
-                    AssetPlanId = assetPlan1Id,
-                    FrameId = fr.Id,
-                    FrameOrderIndex = fr.OrderIndex,
-                    AssetType = AssetType.AiImage,
-                    AspectRatio = "9:16",
-                    VisualPrompt = fr.VisualPrompt,
-                    NegativePrompt = fr.NegativePrompt,
-                    StyleIntent = fr.StyleIntent,
-                    MotionIntent = fr.CameraMotionIntent,
-                    TargetDurationSeconds = fr.EstimatedDurationSeconds,
-                    VoiceIntent = "Locución sobria en español",
-                    MusicMood = "Tech Ambient",
-                    SubtitleProfile = "Captions cinéticos centrados",
-                    OverlaySpecification = fr.OnScreenText,
-                    CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
-                    UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-5)
-                });
-            }
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000601"),
+                AssetPlanId = assetPlan1Id,
+                FrameId = frame1.Id,
+                FrameOrderIndex = frame1.OrderIndex,
+                AssetType = AssetType.AiImage,
+                AspectRatio = "9:16",
+                VisualPrompt = frame1.VisualPrompt,
+                NegativePrompt = frame1.NegativePrompt,
+                StyleIntent = frame1.StyleIntent,
+                MotionIntent = frame1.CameraMotionIntent,
+                TargetDurationSeconds = frame1.EstimatedDurationSeconds,
+                VoiceIntent = "Locución sobria en español",
+                MusicMood = "Tech Ambient",
+                SubtitleProfile = "Captions cinéticos centrados",
+                OverlaySpecification = frame1.OnScreenText,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-3)
+            };
+
+            var req2 = new AssetRequirement
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000602"),
+                AssetPlanId = assetPlan1Id,
+                FrameId = frame2.Id,
+                FrameOrderIndex = frame2.OrderIndex,
+                AssetType = AssetType.AiImage,
+                AspectRatio = "9:16",
+                VisualPrompt = frame2.VisualPrompt,
+                NegativePrompt = frame2.NegativePrompt,
+                StyleIntent = frame2.StyleIntent,
+                MotionIntent = frame2.CameraMotionIntent,
+                TargetDurationSeconds = frame2.EstimatedDurationSeconds,
+                VoiceIntent = "Locución sobria en español",
+                MusicMood = "Tech Ambient",
+                SubtitleProfile = "Captions cinéticos centrados",
+                OverlaySpecification = frame2.OnScreenText,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-3)
+            };
+
+            var req3 = new AssetRequirement
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000603"),
+                AssetPlanId = assetPlan1Id,
+                FrameId = frame3.Id,
+                FrameOrderIndex = frame3.OrderIndex,
+                AssetType = AssetType.AiImage,
+                AspectRatio = "9:16",
+                VisualPrompt = frame3.VisualPrompt,
+                NegativePrompt = frame3.NegativePrompt,
+                StyleIntent = frame3.StyleIntent,
+                MotionIntent = frame3.CameraMotionIntent,
+                TargetDurationSeconds = frame3.EstimatedDurationSeconds,
+                VoiceIntent = "Locución sobria en español",
+                MusicMood = "Tech Ambient",
+                SubtitleProfile = "Captions cinéticos centrados",
+                OverlaySpecification = frame3.OnScreenText,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-3)
+            };
+
+            var req4 = new AssetRequirement
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000604"),
+                AssetPlanId = assetPlan1Id,
+                FrameId = frame4.Id,
+                FrameOrderIndex = frame4.OrderIndex,
+                AssetType = AssetType.AiImage,
+                AspectRatio = "9:16",
+                VisualPrompt = frame4.VisualPrompt,
+                NegativePrompt = frame4.NegativePrompt,
+                StyleIntent = frame4.StyleIntent,
+                MotionIntent = frame4.CameraMotionIntent,
+                TargetDurationSeconds = frame4.EstimatedDurationSeconds,
+                VoiceIntent = "Locución sobria en español",
+                MusicMood = "Tech Ambient",
+                SubtitleProfile = "Captions cinéticos centrados",
+                OverlaySpecification = frame4.OnScreenText,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-3)
+            };
+
+            var req5 = new AssetRequirement
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000605"),
+                AssetPlanId = assetPlan1Id,
+                FrameId = frame5.Id,
+                FrameOrderIndex = frame5.OrderIndex,
+                AssetType = AssetType.AiImage,
+                AspectRatio = "9:16",
+                VisualPrompt = frame5.VisualPrompt,
+                NegativePrompt = frame5.NegativePrompt,
+                StyleIntent = frame5.StyleIntent,
+                MotionIntent = frame5.CameraMotionIntent,
+                TargetDurationSeconds = frame5.EstimatedDurationSeconds,
+                VoiceIntent = "Locución sobria en español",
+                MusicMood = "Tech Ambient",
+                SubtitleProfile = "Captions cinéticos centrados",
+                OverlaySpecification = frame5.OnScreenText,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-3)
+            };
+
+            assetPlan1.Requirements.AddRange([req1, req2, req3, req4, req5]);
 
             assetPlan1.Requirements.Add(new AssetRequirement
             {
@@ -932,9 +1018,10 @@ public static class DatabaseInitializer
 
             storyboard1.AssetPlan = assetPlan1;
 
+            var storyboard1VersionId = Guid.Parse("00000000-0000-0000-0000-000000000551");
             var storyboard1Version = new StoryboardVersion
             {
-                Id = Guid.NewGuid(),
+                Id = storyboard1VersionId,
                 StoryboardId = storyboard1Id,
                 ContentItemId = contentItem1Id,
                 ScriptId = script1Id,
@@ -952,12 +1039,143 @@ public static class DatabaseInitializer
                     Frames = storyboard1.Frames,
                     AssetPlan = storyboard1.AssetPlan
                 }),
-                ChangeSummary = "Planificación inicial de tomas visuales y especificación de activos de producción.",
-                Status = StoryboardStatus.Draft,
+                ChangeSummary = "Planificación inicial de tomas visuales y especificación de activos de producción aprobada.",
+                Status = StoryboardStatus.Approved,
                 TotalEstimatedDurationSeconds = 43.7,
                 TotalFrameCount = 5,
                 CreatedAtUtc = DateTime.UtcNow.AddMinutes(-5),
                 CreatedByEmail = ownerEmail
+            };
+
+            // Seed Representative Production Jobs & Generated Assets
+            var job1Id = Guid.Parse("00000000-0000-0000-0000-000000000701");
+            var job1 = new Job
+            {
+                Id = job1Id,
+                ContentItemId = contentItem1Id,
+                ChannelId = pilotChannel.Id,
+                Capability = JobType.GenerateVisualAsset,
+                SourceAssetRequirementId = req1.Id,
+                StoryboardId = storyboard1Id,
+                StoryboardVersionId = storyboard1VersionId,
+                GenerationRevision = 1,
+                Status = JobStatus.Succeeded,
+                Provider = "Mock",
+                ModelOrWorkflowIdentifier = "flux-image-schnell",
+                AttemptCount = 1,
+                MaxAttempts = 3,
+                AutomaticRetriesRemaining = 2,
+                CandidateCount = 2,
+                StartedAtUtc = DateTime.UtcNow.AddMinutes(-2),
+                CompletedAtUtc = DateTime.UtcNow.AddMinutes(-1),
+                DurationMs = 2150,
+                EstimatedCostUsd = 0.010m,
+                ActualCostUsd = 0.010m,
+                CorrelationId = "seed-job-1",
+                IdempotencyKey = "seed-idempotency-1",
+                CreatedByEmail = ownerEmail,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-2),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-1)
+            };
+
+            var job1Attempt1 = new JobAttempt
+            {
+                Id = Guid.NewGuid(),
+                JobId = job1Id,
+                AttemptNumber = 1,
+                StartedAtUtc = DateTime.UtcNow.AddMinutes(-2),
+                CompletedAtUtc = DateTime.UtcNow.AddMinutes(-1),
+                DurationMs = 2150,
+                Status = JobStatus.Succeeded,
+                EstimatedCostUsd = 0.010m,
+                ActualCostUsd = 0.010m,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-2)
+            };
+            job1.Attempts.Add(job1Attempt1);
+            dbContext.JobAttempts.Add(job1Attempt1);
+
+            var storageService = scope.ServiceProvider.GetService<IStorageService>();
+
+            var asset1Id = Guid.Parse("00000000-0000-0000-0000-000000000801");
+            var key1 = storageService?.GenerateObjectKey("development", pilotChannel.Id, contentItem1Id, storyboard1VersionId, req1.Id, asset1Id, "svg")
+                ?? $"content-factory/development/channels/{pilotChannel.Id}/content/{contentItem1Id}/storyboard/{storyboard1VersionId}/visual/{req1.Id}/{asset1Id}.svg";
+
+            var asset1Svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920"><rect width="100%" height="100%" fill="#0a0f1d"/><text x="540" y="900" fill="#38bdf8" font-size="54" font-family="sans-serif" font-weight="bold" text-anchor="middle">CONTENT FACTORY</text><text x="540" y="980" fill="#e2e8f0" font-size="36" font-family="sans-serif" text-anchor="middle">Primer Plano: Profesional en 2026</text><text x="540" y="1040" fill="#10b981" font-size="28" font-family="sans-serif" font-weight="bold" text-anchor="middle">CANDIDATE #1 (APPROVED)</text></svg>""";
+            var asset1Bytes = Encoding.UTF8.GetBytes(asset1Svg);
+            if (storageService != null)
+            {
+                await storageService.UploadAsync(key1, new MemoryStream(asset1Bytes), "image/svg+xml", cancellationToken);
+            }
+
+            var genAsset1 = new GeneratedAsset
+            {
+                Id = asset1Id,
+                ContentItemId = contentItem1Id,
+                ChannelId = pilotChannel.Id,
+                StoryboardId = storyboard1Id,
+                StoryboardVersionId = storyboard1VersionId,
+                AssetRequirementId = req1.Id,
+                JobId = job1Id,
+                VariantIndex = 1,
+                AssetType = AssetType.AiImage,
+                MediaType = "Image",
+                StorageProvider = "MinIO",
+                StorageKey = key1,
+                ContentType = "image/svg+xml",
+                FileSizeBytes = asset1Bytes.Length,
+                Width = 1080,
+                Height = 1920,
+                DurationSeconds = null,
+                ChecksumSha256 = Convert.ToHexStringLower(SHA256.HashData(asset1Bytes)),
+                Provider = "Mock",
+                ProviderModelOrWorkflow = "flux-image-schnell",
+                GenerationParametersSnapshot = "{\"prompt\":\"Primer plano profesional\",\"seed\":12345,\"variant\":1}",
+                Status = GeneratedAssetStatus.Approved,
+                ReviewedAtUtc = DateTime.UtcNow.AddMinutes(-1),
+                ReviewedByEmail = ownerEmail,
+                IsSelectedForAssembly = true,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-1),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-1)
+            };
+
+            var asset2Id = Guid.Parse("00000000-0000-0000-0000-000000000802");
+            var key2 = storageService?.GenerateObjectKey("development", pilotChannel.Id, contentItem1Id, storyboard1VersionId, req1.Id, asset2Id, "svg")
+                ?? $"content-factory/development/channels/{pilotChannel.Id}/content/{contentItem1Id}/storyboard/{storyboard1VersionId}/visual/{req1.Id}/{asset2Id}.svg";
+
+            var asset2Svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920"><rect width="100%" height="100%" fill="#070b14"/><text x="540" y="900" fill="#38bdf8" font-size="54" font-family="sans-serif" font-weight="bold" text-anchor="middle">CONTENT FACTORY</text><text x="540" y="980" fill="#e2e8f0" font-size="36" font-family="sans-serif" text-anchor="middle">Primer Plano: Variante Alternativa</text><text x="540" y="1040" fill="#f59e0b" font-size="28" font-family="sans-serif" font-weight="bold" text-anchor="middle">CANDIDATE #2 (PENDING QA)</text></svg>""";
+            var asset2Bytes = Encoding.UTF8.GetBytes(asset2Svg);
+            if (storageService != null)
+            {
+                await storageService.UploadAsync(key2, new MemoryStream(asset2Bytes), "image/svg+xml", cancellationToken);
+            }
+
+            var genAsset2 = new GeneratedAsset
+            {
+                Id = asset2Id,
+                ContentItemId = contentItem1Id,
+                ChannelId = pilotChannel.Id,
+                StoryboardId = storyboard1Id,
+                StoryboardVersionId = storyboard1VersionId,
+                AssetRequirementId = req1.Id,
+                JobId = job1Id,
+                VariantIndex = 2,
+                AssetType = AssetType.AiImage,
+                MediaType = "Image",
+                StorageProvider = "MinIO",
+                StorageKey = key2,
+                ContentType = "image/svg+xml",
+                FileSizeBytes = asset2Bytes.Length,
+                Width = 1080,
+                Height = 1920,
+                DurationSeconds = null,
+                ChecksumSha256 = Convert.ToHexStringLower(SHA256.HashData(asset2Bytes)),
+                Provider = "Mock",
+                ProviderModelOrWorkflow = "flux-image-schnell",
+                GenerationParametersSnapshot = "{\"prompt\":\"Primer plano profesional\",\"seed\":67890,\"variant\":2}",
+                Status = GeneratedAssetStatus.PendingReview,
+                IsSelectedForAssembly = false,
+                CreatedAtUtc = DateTime.UtcNow.AddMinutes(-1),
+                UpdatedAtUtc = DateTime.UtcNow.AddMinutes(-1)
             };
 
             var editorialTask2 = new EditorialTask
@@ -985,10 +1203,12 @@ public static class DatabaseInitializer
             dbContext.ScriptVersions.Add(script1Version);
             dbContext.Storyboards.Add(storyboard1);
             dbContext.StoryboardVersions.Add(storyboard1Version);
+            dbContext.Jobs.Add(job1);
+            dbContext.GeneratedAssets.AddRange(genAsset1, genAsset2);
             dbContext.EditorialTasks.AddRange(editorialTask1, editorialTask2);
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Seeded initial representative ContentItems, Evidences, TruthSources, ContentIdeas, Scripts, Storyboards, and EditorialTasks for 'IA Simple ES'.");
+            logger.LogInformation("Seeded initial representative ContentItems, Evidences, TruthSources, ContentIdeas, Scripts, Storyboards, Jobs, and GeneratedAssets for 'IA Simple ES'.");
         }
     }
 }

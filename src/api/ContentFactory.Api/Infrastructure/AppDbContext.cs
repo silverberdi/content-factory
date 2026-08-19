@@ -33,6 +33,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<StoryboardVersion> StoryboardVersions => Set<StoryboardVersion>();
     public DbSet<EditorialTask> EditorialTasks => Set<EditorialTask>();
     public DbSet<AiRecommendation> AiRecommendations => Set<AiRecommendation>();
+    public DbSet<Job> Jobs => Set<Job>();
+    public DbSet<JobAttempt> JobAttempts => Set<JobAttempt>();
+    public DbSet<GeneratedAsset> GeneratedAssets => Set<GeneratedAsset>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -568,6 +571,90 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasIndex(v => v.StoryboardId);
             entity.HasIndex(v => v.ContentItemId);
             entity.HasIndex(v => new { v.StoryboardId, v.VersionNumber }).IsUnique();
+        });
+
+        modelBuilder.Entity<Job>(entity =>
+        {
+            entity.ToTable("jobs");
+            entity.HasKey(j => j.Id);
+            entity.Property(j => j.ContentItemId).IsRequired();
+            entity.Property(j => j.ChannelId).IsRequired();
+            entity.Property(j => j.JobType).IsRequired().HasMaxLength(64);
+            entity.Ignore(j => j.Capability);
+            entity.Property(j => j.Status).IsRequired().HasMaxLength(32);
+            entity.Property(j => j.Provider).IsRequired().HasMaxLength(64);
+            entity.Property(j => j.ModelOrWorkflowIdentifier).HasMaxLength(256);
+            entity.Property(j => j.CorrelationId).IsRequired().HasMaxLength(128);
+            entity.Property(j => j.ErrorCode).HasMaxLength(64);
+            entity.Property(j => j.SanitizedErrorMessage).HasMaxLength(2048);
+            entity.Property(j => j.IdempotencyKey).HasMaxLength(128);
+            entity.Property(j => j.CreatedByEmail).IsRequired().HasMaxLength(256);
+            entity.Property(j => j.CreatedAtUtc).IsRequired();
+            entity.Property(j => j.UpdatedAtUtc).IsRequired();
+
+            entity.HasMany(j => j.Attempts)
+                  .WithOne()
+                  .HasForeignKey(a => a.JobId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(j => j.ContentItemId);
+            entity.HasIndex(j => j.ChannelId);
+            entity.HasIndex(j => j.SourceAssetRequirementId);
+            entity.HasIndex(j => j.StoryboardId);
+            entity.HasIndex(j => j.StoryboardVersionId);
+            entity.HasIndex(j => j.Status);
+            entity.HasIndex(j => j.IdempotencyKey);
+            entity.HasIndex(j => j.CorrelationId);
+        });
+
+        modelBuilder.Entity<JobAttempt>(entity =>
+        {
+            entity.ToTable("job_attempts");
+            entity.HasKey(a => a.Id);
+            entity.Property(a => a.JobId).IsRequired();
+            entity.Property(a => a.Status).IsRequired().HasMaxLength(32);
+            entity.Property(a => a.ErrorCode).HasMaxLength(64);
+            entity.Property(a => a.ErrorMessage).HasMaxLength(2048);
+            entity.Property(a => a.ProviderResponseSummary).HasMaxLength(2048);
+            entity.Property(a => a.StartedAtUtc).IsRequired();
+            entity.Property(a => a.CreatedAtUtc).IsRequired();
+
+            entity.HasIndex(a => a.JobId);
+            entity.HasIndex(a => new { a.JobId, a.AttemptNumber }).IsUnique();
+        });
+
+        modelBuilder.Entity<GeneratedAsset>(entity =>
+        {
+            entity.ToTable("generated_assets");
+            entity.HasKey(ga => ga.Id);
+            entity.Property(ga => ga.ContentItemId).IsRequired();
+            entity.Property(ga => ga.ChannelId).IsRequired();
+            entity.Property(ga => ga.StoryboardId).IsRequired();
+            entity.Property(ga => ga.StoryboardVersionId).IsRequired();
+            entity.Property(ga => ga.AssetRequirementId).IsRequired();
+            entity.Property(ga => ga.JobId).IsRequired();
+            entity.Property(ga => ga.AssetType).IsRequired().HasMaxLength(64);
+            entity.Property(ga => ga.MediaType).IsRequired().HasMaxLength(32);
+            entity.Property(ga => ga.StorageProvider).IsRequired().HasMaxLength(32);
+            entity.Property(ga => ga.StorageKey).IsRequired().HasMaxLength(1024);
+            entity.Property(ga => ga.ContentType).IsRequired().HasMaxLength(128);
+            entity.Property(ga => ga.ChecksumSha256).IsRequired().HasMaxLength(128);
+            entity.Property(ga => ga.Provider).IsRequired().HasMaxLength(64);
+            entity.Property(ga => ga.ProviderModelOrWorkflow).HasMaxLength(256);
+            entity.Property(ga => ga.GenerationParametersSnapshot).IsRequired();
+            entity.Property(ga => ga.Status).IsRequired().HasMaxLength(32);
+            entity.Property(ga => ga.RejectionReason).HasMaxLength(1024);
+            entity.Property(ga => ga.ReviewedByEmail).HasMaxLength(256);
+            entity.Property(ga => ga.CreatedAtUtc).IsRequired();
+            entity.Property(ga => ga.UpdatedAtUtc).IsRequired();
+
+            entity.HasIndex(ga => ga.ContentItemId);
+            entity.HasIndex(ga => ga.StoryboardId);
+            entity.HasIndex(ga => ga.StoryboardVersionId);
+            entity.HasIndex(ga => ga.AssetRequirementId);
+            entity.HasIndex(ga => ga.JobId);
+            entity.HasIndex(ga => ga.Status);
+            entity.HasIndex(ga => new { ga.AssetRequirementId, ga.IsSelectedForAssembly });
         });
     }
 }

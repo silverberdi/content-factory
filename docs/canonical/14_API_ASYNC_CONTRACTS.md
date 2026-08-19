@@ -8,10 +8,14 @@ Use stable resource-oriented endpoints.
 Long work returns a Job, not a blocked HTTP request.
 
 Example:
-
-POST `/content-items/{id}/truth-source-generation`
-→ `202 Accepted`
-→ Job representation.
+ 
+ POST `/api/v1/content-items/{id}/storyboards/{storyboardId}/visual-generation`
+ → `202 Accepted`
+ → Array of `JobDto` records in `Queued` status.
+ 
+ GET `/api/v1/content-items/{id}/storyboards/{storyboardId}/visual-assets`
+ → `200 OK`
+ → `VisualProductionOverviewDto` with requirement production status, active jobs, candidates, and assembly selection.
 
 ## Errors
 

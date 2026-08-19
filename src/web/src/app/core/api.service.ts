@@ -821,6 +821,40 @@ export class ApiService {
   getProductionEligibility(contentItemId: string): Observable<ProductionEligibilityDto> {
     return this.http.get<ProductionEligibilityDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboard/production-eligibility`);
   }
+
+  // --- Visual Asset Generation & Production Methods ---
+
+  dispatchVisualGeneration(contentItemId: string, storyboardId: string, request: DispatchVisualGenerationRequest): Observable<JobDto[]> {
+    return this.http.post<JobDto[]>(`${this.baseUrl}/content-items/${contentItemId}/storyboards/${storyboardId}/visual-generation`, request);
+  }
+
+  getVisualProductionOverview(contentItemId: string, storyboardId: string): Observable<VisualProductionOverviewDto> {
+    return this.http.get<VisualProductionOverviewDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboards/${storyboardId}/visual-assets`);
+  }
+
+  getJob(jobId: string): Observable<JobDto> {
+    return this.http.get<JobDto>(`${this.baseUrl}/jobs/${jobId}`);
+  }
+
+  retryJob(jobId: string): Observable<JobDto> {
+    return this.http.post<JobDto>(`${this.baseUrl}/jobs/${jobId}/retry`, {});
+  }
+
+  reviewCandidate(generatedAssetId: string, request: ReviewGeneratedAssetRequest): Observable<GeneratedAssetDto> {
+    return this.http.post<GeneratedAssetDto>(`${this.baseUrl}/generated-assets/${generatedAssetId}/review`, request);
+  }
+
+  selectCandidateForAssembly(generatedAssetId: string): Observable<GeneratedAssetDto> {
+    return this.http.post<GeneratedAssetDto>(`${this.baseUrl}/generated-assets/${generatedAssetId}/select`, {});
+  }
+
+  getGeneratedAssetStreamUrl(generatedAssetId: string): string {
+    return `${this.baseUrl}/generated-assets/${generatedAssetId}/stream`;
+  }
+
+  getGeneratedAssetThumbnailUrl(generatedAssetId: string): string {
+    return `${this.baseUrl}/generated-assets/${generatedAssetId}/thumbnail`;
+  }
 }
 
 // --- CF-012 / CF-013 Script Domain Interfaces ---
@@ -1229,5 +1263,131 @@ export interface ReconcileStoryboardRequest {
   expectedVersion: number;
   reuseFramePlanning?: boolean;
 }
+
+// --- Visual Asset Generation & Job Production Interfaces ---
+
+export type JobStatus = 'Queued' | 'Running' | 'Succeeded' | 'FailedRetryable' | 'FailedActionRequired' | 'Cancelled';
+export type GeneratedAssetStatus = 'PendingReview' | 'Approved' | 'Rejected';
+
+export interface JobAttemptDto {
+  id: string;
+  jobId: string;
+  attemptNumber: number;
+  startedAtUtc: string;
+  completedAtUtc?: string | null;
+  durationMs: number;
+  status: string;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  estimatedCostUsd?: number | null;
+  actualCostUsd?: number | null;
+}
+
+export interface JobDto {
+  id: string;
+  contentItemId: string;
+  channelId: string;
+  jobType: string;
+  capability: string;
+  sourceAssetRequirementId?: string | null;
+  storyboardId?: string | null;
+  storyboardVersionId?: string | null;
+  generationRevision: number;
+  status: JobStatus | string;
+  provider: string;
+  modelOrWorkflowIdentifier: string;
+  attemptCount: number;
+  maxAttempts: number;
+  automaticRetriesRemaining: number;
+  candidateCount: number;
+  startedAtUtc?: string | null;
+  completedAtUtc?: string | null;
+  durationMs: number;
+  estimatedCostUsd?: number | null;
+  actualCostUsd?: number | null;
+  correlationId: string;
+  errorCode?: string | null;
+  sanitizedErrorMessage?: string | null;
+  isRetryable: boolean;
+  createdByEmail: string;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  attempts: JobAttemptDto[];
+}
+
+export interface GeneratedAssetDto {
+  id: string;
+  contentItemId: string;
+  channelId: string;
+  storyboardId: string;
+  storyboardVersionId: string;
+  assetRequirementId: string;
+  jobId: string;
+  variantIndex: number;
+  assetType: string;
+  mediaType: string;
+  storageProvider: string;
+  storageKey: string;
+  contentType: string;
+  fileSizeBytes: number;
+  width?: number | null;
+  height?: number | null;
+  durationSeconds?: number | null;
+  checksumSha256: string;
+  provider: string;
+  providerModelOrWorkflow: string;
+  generationParametersSnapshot: string;
+  status: GeneratedAssetStatus | string;
+  rejectionReason?: string | null;
+  reviewedAtUtc?: string | null;
+  reviewedByEmail?: string | null;
+  isSelectedForAssembly: boolean;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  isEligibleForAssembly: boolean;
+}
+
+export interface DispatchVisualGenerationRequest {
+  assetRequirementId?: string | null;
+  candidateCount?: number;
+  generationRevision?: number | null;
+}
+
+export interface ReviewGeneratedAssetRequest {
+  status: string;
+  rejectionReason?: string | null;
+  expectedStatus?: string | null;
+}
+
+export interface VisualRequirementProductionDto {
+  requirement: AssetRequirementDto;
+  frameOrderIndex: number;
+  framingIntent: string;
+  scriptSceneName: string;
+  estimatedDurationSeconds: number;
+  activeJob?: JobDto | null;
+  candidates: GeneratedAssetDto[];
+  selectedCandidate?: GeneratedAssetDto | null;
+}
+
+export interface VisualProductionOverviewDto {
+  contentItemId: string;
+  channelId: string;
+  storyboardId: string;
+  storyboardVersionId: string;
+  storyboardVersion: number;
+  isStoryboardCurrent: boolean;
+  isStoryboardApproved: boolean;
+  isStoryboardStale: boolean;
+  totalRequirementsCount: number;
+  generatedCount: number;
+  approvedCount: number;
+  pendingReviewCount: number;
+  activeJobsCount: number;
+  isEligibleForGeneration: boolean;
+  ineligibilityReason?: string | null;
+  requirements: VisualRequirementProductionDto[];
+}
+
 
 

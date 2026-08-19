@@ -122,22 +122,22 @@ Examples:
 
 Fields include assignment, type, priority, status, due/freshness deadline and ContentItem.
 
-### Job
+### Job & JobAttempt
 
-Asynchronous work unit:
-- ingestion;
-- AI generation;
-- visual generation;
-- audio;
-- render;
-- publication;
-- backup/archive.
+Asynchronous work units and execution attempt tracking:
+- capabilities: `generate_visual_asset`, audio generation, video render, publication, backup/archive;
+- canonical states: `Queued`, `Running`, `Succeeded`, `FailedRetryable`, `FailedActionRequired`, `Cancelled`;
+- records: provider, model/workflow, attempt count, duration (ms), estimated & actual cost (USD), correlation id, idempotency key, sanitized error code/message;
+- attempts: individual `JobAttempt` records tracking start/completion timestamps, duration, status, and failure diagnostics.
 
-States:
-queued, running, succeeded, failed-retryable, failed-action-required, cancelled.
+### GeneratedAsset
 
-A Job records:
-provider, model/tool, attempt, duration, cost, correlation id and sanitized error.
+Concrete output candidate produced by a provider executing against an approved `AssetRequirement`:
+- lineage: linked to exact `ContentItemId`, `ChannelId`, `StoryboardId`, `StoryboardVersionId`, `AssetRequirementId`, and `JobId`;
+- storage: deterministic MinIO object storage key (`content-factory/{env}/channels/{channelId}/content/{contentItemId}/storyboard/{versionId}/visual/{reqId}/{assetId}.{ext}`) and SHA-256 integrity hash;
+- human QA lifecycle: `PendingReview` → `Approved` / `Rejected` (rejection requires mandatory non-empty reason);
+- candidate selection: atomic `IsSelectedForAssembly` per `AssetRequirementId` where approving or selecting a variant unselects siblings;
+- dynamic assembly eligibility: `IsEligibleForAssembly` dynamically evaluates upstream Storyboard status, currency (`IsCurrent == true`), and non-staleness (`IsStale == false`). If upstream Storyboard is superseded or stale, historical assets remain preserved for audit but cannot be assembled into final video.
 
 ### Publication
 

@@ -63,8 +63,15 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
 
         <div actions class="flex items-center gap-2 flex-wrap">
           <a [routerLink]="['/content/items', item()?.id, 'storyboard']"
-             class="cf-btn-primary">
-            <i class="pi pi-images"></i>
+             [queryParams]="{ view: 'visuals' }"
+             class="cf-btn-primary bg-cyan-600 hover:bg-cyan-500 border-cyan-600">
+            <i class="pi pi-camera"></i>
+            <span>Visual Studio</span>
+          </a>
+
+          <a [routerLink]="['/content/items', item()?.id, 'storyboard']"
+             class="cf-btn-secondary">
+            <i class="pi pi-images text-blue-500"></i>
             <span>Storyboard Studio</span>
           </a>
 

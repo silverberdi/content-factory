@@ -169,6 +169,59 @@ public class DashboardService(AppDbContext dbContext, IWebHostEnvironment enviro
             ));
         }
 
+        // Visual Generation Attention Items
+        var failedVisualJobs = await dbContext.Jobs
+            .CountAsync(j => j.Status == JobStatus.FailedActionRequired, cancellationToken);
+
+        if (failedVisualJobs > 0)
+        {
+            var firstFailedJob = await dbContext.Jobs
+                .Where(j => j.Status == JobStatus.FailedActionRequired)
+                .OrderByDescending(j => j.UpdatedAtUtc)
+                .Select(j => new { j.Id, j.ContentItemId })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var actionPath = firstFailedJob != null
+                ? $"/content/items/{firstFailedJob.ContentItemId}/storyboard"
+                : "/content/items";
+
+            attentionItems.Add(new AttentionItemDto(
+                Id: Guid.Parse("77777777-7777-7777-7777-777777777777"),
+                Severity: "warning",
+                Title: "Visual Generation Failed (Action Required)",
+                Description: $"{failedVisualJobs} visual generation job{(failedVisualJobs > 1 ? "s" : "")} encountered technical failures requiring review.",
+                ActionPath: actionPath,
+                IsRepresentativeDemo: false,
+                TimestampUtc: DateTime.UtcNow
+            ));
+        }
+
+        var pendingVisualReviews = await dbContext.GeneratedAssets
+            .CountAsync(ga => ga.Status == GeneratedAssetStatus.PendingReview, cancellationToken);
+
+        if (pendingVisualReviews > 0)
+        {
+            var firstPendingAsset = await dbContext.GeneratedAssets
+                .Where(ga => ga.Status == GeneratedAssetStatus.PendingReview)
+                .OrderByDescending(ga => ga.CreatedAtUtc)
+                .Select(ga => new { ga.Id, ga.ContentItemId })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var actionPath = firstPendingAsset != null
+                ? $"/content/items/{firstPendingAsset.ContentItemId}/storyboard"
+                : "/content/items";
+
+            attentionItems.Add(new AttentionItemDto(
+                Id: Guid.Parse("88888888-8888-8888-8888-888888888888"),
+                Severity: "info",
+                Title: "Visual Candidates Awaiting Review",
+                Description: $"{pendingVisualReviews} generated visual candidate{(pendingVisualReviews > 1 ? "s" : "")} ready for editorial review and approval.",
+                ActionPath: actionPath,
+                IsRepresentativeDemo: false,
+                TimestampUtc: DateTime.UtcNow
+            ));
+        }
+
         // In Development, provide representative attention items if needed
         if (environment.IsDevelopment() && channels.Any(c => c.Status == ChannelStatus.Pilot) && attentionItems.Count == 0)
         {

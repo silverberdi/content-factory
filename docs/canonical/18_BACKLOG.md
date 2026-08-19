@@ -34,9 +34,13 @@ CF-023 Relevance, Freshness and Priority
 Scoring, expiration/freshness, duplicate control.
 
 ## W3
-
+ 
 CF-030 Storyboard and Asset Plan
+Approved Script → visual frame planning (9:16) + provider-agnostic asset requirement specification.
+
 CF-031 Visual Production
+Asynchronous generation of approved visual requirements (Comfy/Mock) with MinIO storage lineage, candidate QA review, variant selection, retry diagnostics, and assembly gating.
+
 CF-032 Audio/Subtitles
 CF-033 Render and Technical QA
 CF-034 Video Review and Partial Regeneration

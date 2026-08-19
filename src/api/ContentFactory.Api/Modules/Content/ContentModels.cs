@@ -1280,4 +1280,120 @@ public record GeneratedStoryboardResult(
     List<GeneratedStoryboardFrameItem> Frames
 );
 
+public static class GeneratedAssetStatus
+{
+    public const string PendingReview = "PendingReview";
+    public const string Approved = "Approved";
+    public const string Rejected = "Rejected";
+
+    public static readonly string[] All = [PendingReview, Approved, Rejected];
+}
+
+public class GeneratedAsset
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid ContentItemId { get; set; }
+    public Guid ChannelId { get; set; }
+    public Guid StoryboardId { get; set; }
+    public Guid StoryboardVersionId { get; set; }
+    public Guid AssetRequirementId { get; set; }
+    public Guid JobId { get; set; }
+    public int VariantIndex { get; set; } = 1;
+    public string AssetType { get; set; } = ContentFactory.Api.Modules.Content.AssetType.AiImage;
+    public string MediaType { get; set; } = "Image";
+    public string StorageProvider { get; set; } = "MinIO";
+    public string StorageKey { get; set; } = string.Empty;
+    public string ContentType { get; set; } = "image/png";
+    public long FileSizeBytes { get; set; }
+    public int? Width { get; set; }
+    public int? Height { get; set; }
+    public double? DurationSeconds { get; set; }
+    public string ChecksumSha256 { get; set; } = string.Empty;
+    public string Provider { get; set; } = string.Empty;
+    public string ProviderModelOrWorkflow { get; set; } = string.Empty;
+    public string GenerationParametersSnapshot { get; set; } = "{}";
+    public string Status { get; set; } = GeneratedAssetStatus.PendingReview;
+    public string? RejectionReason { get; set; }
+    public DateTime? ReviewedAtUtc { get; set; }
+    public string? ReviewedByEmail { get; set; }
+    public bool IsSelectedForAssembly { get; set; }
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
+}
+
+public record GeneratedAssetDto(
+    Guid Id,
+    Guid ContentItemId,
+    Guid ChannelId,
+    Guid StoryboardId,
+    Guid StoryboardVersionId,
+    Guid AssetRequirementId,
+    Guid JobId,
+    int VariantIndex,
+    string AssetType,
+    string MediaType,
+    string StorageProvider,
+    string StorageKey,
+    string ContentType,
+    long FileSizeBytes,
+    int? Width,
+    int? Height,
+    double? DurationSeconds,
+    string ChecksumSha256,
+    string Provider,
+    string ProviderModelOrWorkflow,
+    string GenerationParametersSnapshot,
+    string Status,
+    string? RejectionReason,
+    DateTime? ReviewedAtUtc,
+    string? ReviewedByEmail,
+    bool IsSelectedForAssembly,
+    DateTime CreatedAtUtc,
+    DateTime UpdatedAtUtc,
+    bool IsEligibleForAssembly
+);
+
+public record ReviewGeneratedAssetRequest(
+    string Status,
+    string? RejectionReason,
+    string? ExpectedStatus = null
+);
+
+public record DispatchVisualGenerationRequest(
+    Guid? AssetRequirementId = null,
+    int CandidateCount = 1,
+    int? GenerationRevision = null
+);
+
+public record VisualRequirementProductionDto(
+    AssetRequirementDto Requirement,
+    int FrameOrderIndex,
+    string FramingIntent,
+    string ScriptSceneName,
+    double EstimatedDurationSeconds,
+    JobDto? ActiveJob,
+    List<GeneratedAssetDto> Candidates,
+    GeneratedAssetDto? SelectedCandidate
+);
+
+public record VisualProductionOverviewDto(
+    Guid ContentItemId,
+    Guid ChannelId,
+    Guid StoryboardId,
+    Guid StoryboardVersionId,
+    long StoryboardVersion,
+    bool IsStoryboardCurrent,
+    bool IsStoryboardApproved,
+    bool IsStoryboardStale,
+    int TotalRequirementsCount,
+    int GeneratedCount,
+    int ApprovedCount,
+    int PendingReviewCount,
+    int ActiveJobsCount,
+    bool IsEligibleForGeneration,
+    string? IneligibilityReason,
+    List<VisualRequirementProductionDto> Requirements
+);
+
+
 

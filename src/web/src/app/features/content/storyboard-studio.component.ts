@@ -21,6 +21,7 @@ import { GenerateStoryboardModalComponent } from './generate-storyboard-modal.co
 import { StoryboardReviewPanelComponent } from './storyboard-review-panel.component';
 import { StoryboardVersionHistoryDrawerComponent } from './storyboard-version-history-drawer.component';
 import { RejectStoryboardModalComponent } from './reject-storyboard-modal.component';
+import { VisualAssetStudioComponent } from './visual-asset-studio.component';
 import { PageHeaderComponent } from '../../shared/layout/page-header.component';
 
 @Component({
@@ -36,6 +37,7 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
     StoryboardReviewPanelComponent,
     StoryboardVersionHistoryDrawerComponent,
     RejectStoryboardModalComponent,
+    VisualAssetStudioComponent,
     PageHeaderComponent
   ],
   host: { class: 'block w-full' },
@@ -237,6 +239,13 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
           <i class="pi pi-shield text-xs"></i>
           <span>Gate de Producción</span>
         </button>
+
+        <button (click)="activeStudioView.set('visuals')"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5"
+                [ngClass]="activeStudioView() === 'visuals' ? 'bg-cyan-600 text-white shadow-xs font-bold' : 'text-[var(--app-muted)] hover:text-[var(--app-text)] hover:bg-[var(--app-surface-hover)]'">
+          <i class="pi pi-camera text-xs"></i>
+          <span>Visual Studio (Producción)</span>
+        </button>
       </div>
 
       <!-- VIEW 1: Visual Frames Grid / List -->
@@ -400,6 +409,15 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
         </div>
       </div>
 
+      <!-- VIEW 4: Visual Asset Generation Studio -->
+      <div *ngIf="activeStudioView() === 'visuals' && storyboard()">
+        <app-visual-asset-studio
+          [contentItemId]="contentItemId()"
+          [storyboard]="storyboard()!"
+          (onNavigateToStoryboard)="activeStudioView.set('frames')">
+        </app-visual-asset-studio>
+      </div>
+
       <!-- Slide-over Script Reference Drawer -->
       <div *ngIf="showScriptDrawer()" class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[var(--app-card-bg)] border-l border-[var(--app-card-border)] shadow-2xl flex flex-col animate-slide-left">
         <div class="px-5 py-4 border-b border-[var(--app-card-border)] flex items-center justify-between bg-[var(--app-bg)]">
@@ -492,7 +510,7 @@ export class StoryboardStudioComponent implements OnInit {
   isLoadingVersions = signal<boolean>(false);
   hasUnsavedChanges = signal<boolean>(false);
 
-  activeStudioView = signal<'frames' | 'assets' | 'eligibility'>('frames');
+  activeStudioView = signal<'frames' | 'assets' | 'eligibility' | 'visuals'>('frames');
   isAiModalOpen = signal<boolean>(false);
   showReviewPanel = signal<boolean>(false);
   showVersionDrawer = signal<boolean>(false);
@@ -526,6 +544,13 @@ export class StoryboardStudioComponent implements OnInit {
       if (id) {
         this.contentItemId.set(id);
         this.loadData();
+      }
+    });
+
+    this.route.queryParamMap.subscribe(params => {
+      const view = params.get('view');
+      if (view === 'visuals' || view === 'frames' || view === 'assets' || view === 'eligibility') {
+        this.activeStudioView.set(view);
       }
     });
   }
