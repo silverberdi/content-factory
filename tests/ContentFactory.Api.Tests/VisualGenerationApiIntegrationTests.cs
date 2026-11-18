@@ -23,12 +23,13 @@ public class VisualGenerationApiIntegrationTests
         return new AppDbContext(options);
     }
 
-    private static (VisualGenerationService service, MinioStorageService storage, AppDbContext dbContext) CreateTestSetup()
+    private static (VisualGenerationService service, VoiceGenerationService voiceService, MinioStorageService storage, AppDbContext dbContext) CreateTestSetup()
     {
         var dbContext = CreateInMemoryDbContext();
         var config = new ConfigurationBuilder().Build();
         var storage = new MinioStorageService(config, new TestHttpClientFactory(), NullLogger<MinioStorageService>.Instance);
         var mockProvider = new MockVisualGenerationProvider(NullLogger<MockVisualGenerationProvider>.Instance);
+        var mockVoiceProvider = new MockVoiceGenerationProvider(NullLogger<MockVoiceGenerationProvider>.Instance);
         var service = new VisualGenerationService(
             dbContext,
             storage,
@@ -36,7 +37,14 @@ public class VisualGenerationApiIntegrationTests
             config,
             NullLogger<VisualGenerationService>.Instance
         );
-        return (service, storage, dbContext);
+        var voiceService = new VoiceGenerationService(
+            dbContext,
+            storage,
+            [mockVoiceProvider],
+            config,
+            NullLogger<VoiceGenerationService>.Instance
+        );
+        return (service, voiceService, storage, dbContext);
     }
 
     private static void SetUserContext(ControllerBase controller, string email = "editor@silverman.pro", string role = "EDITORIAL")
@@ -151,7 +159,7 @@ public class VisualGenerationApiIntegrationTests
     [Fact]
     public async Task DispatchEndpoint_Returns202Accepted_OnValidApprovedStoryboard()
     {
-        var (service, _, dbContext) = CreateTestSetup();
+        var (service, _, _, dbContext) = CreateTestSetup();
         var (item, storyboard, _, req) = await SeedStoryboardPrerequisitesAsync(dbContext);
 
         var controller = new VisualGenerationDispatchController(service);
@@ -174,7 +182,7 @@ public class VisualGenerationApiIntegrationTests
     [Fact]
     public async Task OverviewEndpoint_Returns200Ok_WithRequirementsAndCandidates()
     {
-        var (service, _, dbContext) = CreateTestSetup();
+        var (service, _, _, dbContext) = CreateTestSetup();
         var (item, storyboard, _, req) = await SeedStoryboardPrerequisitesAsync(dbContext);
 
         // Dispatch & process jobs
@@ -200,7 +208,7 @@ public class VisualGenerationApiIntegrationTests
     [Fact]
     public async Task JobsController_GetAndRetry_WorkCorrectly()
     {
-        var (service, _, dbContext) = CreateTestSetup();
+        var (service, voiceService, _, dbContext) = CreateTestSetup();
         var (item, storyboard, _, req) = await SeedStoryboardPrerequisitesAsync(dbContext);
 
         var dispatch = await service.DispatchGenerationAsync(item.Id, storyboard.Id, new DispatchVisualGenerationRequest(req.Id, 1), "editor@silverman.pro");
@@ -214,7 +222,7 @@ public class VisualGenerationApiIntegrationTests
         jobEntity.SanitizedErrorMessage = "Test technical error.";
         await dbContext.SaveChangesAsync();
 
-        var controller = new JobsController(service);
+        var controller = new JobsController(service, voiceService);
         SetUserContext(controller, "tech@silverman.pro", "TECHNICAL");
 
         var getResult = await controller.GetJob(jobId, CancellationToken.None);
@@ -232,7 +240,7 @@ public class VisualGenerationApiIntegrationTests
     [Fact]
     public async Task GeneratedAssetsController_ReviewSelectAndStream_EndToEnd()
     {
-        var (service, storage, dbContext) = CreateTestSetup();
+        var (service, voiceService, storage, dbContext) = CreateTestSetup();
         var (item, storyboard, _, req) = await SeedStoryboardPrerequisitesAsync(dbContext);
 
         await service.DispatchGenerationAsync(item.Id, storyboard.Id, new DispatchVisualGenerationRequest(req.Id, 2), "editor@silverman.pro");
@@ -241,7 +249,7 @@ public class VisualGenerationApiIntegrationTests
         var candidates = await dbContext.GeneratedAssets.Where(ga => ga.AssetRequirementId == req.Id).ToListAsync();
         Assert.Equal(2, candidates.Count);
 
-        var controller = new GeneratedAssetsController(service, storage, dbContext);
+        var controller = new GeneratedAssetsController(service, voiceService, storage, dbContext);
         SetUserContext(controller, "editor@silverman.pro", "EDITORIAL");
 
         // 1. Approve Candidate 1

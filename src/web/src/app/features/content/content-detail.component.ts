@@ -70,6 +70,13 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
           </a>
 
           <a [routerLink]="['/content/items', item()?.id, 'storyboard']"
+             [queryParams]="{ view: 'voice' }"
+             class="cf-btn-primary bg-violet-600 hover:bg-violet-500 border-violet-600">
+            <i class="pi pi-volume-up"></i>
+            <span>Voice Studio</span>
+          </a>
+
+          <a [routerLink]="['/content/items', item()?.id, 'storyboard']"
              class="cf-btn-secondary">
             <i class="pi pi-images text-blue-500"></i>
             <span>Storyboard Studio</span>

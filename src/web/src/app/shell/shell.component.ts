@@ -20,7 +20,7 @@ import { ApiService } from '../core/api.service';
             <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs shadow-blue-500/30">
               <i class="pi pi-bolt text-sm"></i>
             </div>
-            <div>
+            <div class="hidden sm:block">
               <span class="font-bold text-sm sm:text-base tracking-tight block leading-tight text-[var(--app-text)]">Content Factory</span>
               <span class="text-[10px] text-[var(--app-muted)] font-mono uppercase tracking-wider block">Control Center</span>
             </div>
@@ -28,17 +28,19 @@ import { ApiService } from '../core/api.service';
         </div>
 
         <!-- Center: Primary Navigation Links -->
-        <nav class="flex items-center gap-1 p-1 rounded-xl bg-[var(--app-bg)] border border-[var(--app-card-border)] overflow-x-auto">
+        <nav class="flex items-center gap-1 p-1 rounded-xl bg-[var(--app-bg)] border border-[var(--app-card-border)] overflow-x-auto max-w-full shrink min-w-0 mx-1.5">
           <!-- Overview -->
           <a routerLink="/dashboard" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
-            <i class="pi pi-th-large text-xs"></i> <span class="hidden md:inline">Overview</span>
+             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0"
+             title="Overview">
+            <i class="pi pi-th-large text-xs"></i> <span class="hidden xl:inline">Overview</span>
           </a>
 
           <!-- Discovery Triage with Pending Badge -->
           <a routerLink="/discovery/triage" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
-            <i class="pi pi-filter text-xs"></i> <span>Triage</span>
+             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0"
+             title="Triage">
+            <i class="pi pi-filter text-xs"></i> <span class="hidden xl:inline">Triage</span>
             <span *ngIf="pendingCandidatesCount() > 0" 
                   class="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-900 font-extrabold text-[10px] font-mono leading-none">
               {{ pendingCandidatesCount() }}
@@ -47,20 +49,23 @@ import { ApiService } from '../core/api.service';
 
           <!-- Discovery Sources -->
           <a routerLink="/discovery/sources" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
-            <i class="pi pi-compass text-xs"></i> <span>Sources</span>
+             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0"
+             title="Sources">
+            <i class="pi pi-compass text-xs"></i> <span class="hidden xl:inline">Sources</span>
           </a>
 
           <!-- Content Workspace (CF-003) -->
           <a routerLink="/content/items" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
-            <i class="pi pi-folder-open text-xs"></i> <span>Workspace</span>
+             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0"
+             title="Workspace">
+            <i class="pi pi-folder-open text-xs"></i> <span class="hidden xl:inline">Workspace</span>
           </a>
 
           <!-- Editorial Tasks (CF-003) -->
           <a routerLink="/editorial/tasks" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
-            <i class="pi pi-check-square text-xs"></i> <span>Attention</span>
+             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0"
+             title="Attention">
+            <i class="pi pi-check-square text-xs"></i> <span class="hidden xl:inline">Attention</span>
             <span *ngIf="pendingTasksCount() > 0" 
                   class="px-1.5 py-0.2 rounded-full bg-indigo-500 text-white font-extrabold text-[10px] font-mono leading-none">
               {{ pendingTasksCount() }}
@@ -69,14 +74,16 @@ import { ApiService } from '../core/api.service';
 
           <!-- Channels -->
           <a routerLink="/channels" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
-            <i class="pi pi-video text-xs"></i> <span>Channels</span>
+             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0"
+             title="Channels">
+            <i class="pi pi-video text-xs"></i> <span class="hidden xl:inline">Channels</span>
           </a>
 
           <!-- System -->
           <a routerLink="/system" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
-             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0">
-            <i class="pi pi-shield text-xs"></i> <span>System</span>
+             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0"
+             title="System">
+            <i class="pi pi-shield text-xs"></i> <span class="hidden xl:inline">System</span>
           </a>
         </nav>
 

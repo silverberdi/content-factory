@@ -22,6 +22,7 @@ import { StoryboardReviewPanelComponent } from './storyboard-review-panel.compon
 import { StoryboardVersionHistoryDrawerComponent } from './storyboard-version-history-drawer.component';
 import { RejectStoryboardModalComponent } from './reject-storyboard-modal.component';
 import { VisualAssetStudioComponent } from './visual-asset-studio.component';
+import { VoiceProductionStudioComponent } from './voice-production-studio.component';
 import { PageHeaderComponent } from '../../shared/layout/page-header.component';
 
 @Component({
@@ -38,6 +39,7 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
     StoryboardVersionHistoryDrawerComponent,
     RejectStoryboardModalComponent,
     VisualAssetStudioComponent,
+    VoiceProductionStudioComponent,
     PageHeaderComponent
   ],
   host: { class: 'block w-full' },
@@ -218,7 +220,7 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
       </div>
 
       <!-- Studio Navigation Views (Tomas / Asset Plan / Elegibilidad) -->
-      <div class="flex items-center gap-2 border-b border-[var(--app-card-border)] pb-2 text-xs">
+      <div class="flex items-center gap-2 border-b border-[var(--app-card-border)] pb-2 text-xs overflow-x-auto max-w-full">
         <button (click)="activeStudioView.set('frames')"
                 class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5"
                 [ngClass]="activeStudioView() === 'frames' ? 'bg-blue-500 text-white shadow-xs font-bold' : 'text-[var(--app-muted)] hover:text-[var(--app-text)] hover:bg-[var(--app-surface-hover)]'">
@@ -244,7 +246,14 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
                 class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5"
                 [ngClass]="activeStudioView() === 'visuals' ? 'bg-cyan-600 text-white shadow-xs font-bold' : 'text-[var(--app-muted)] hover:text-[var(--app-text)] hover:bg-[var(--app-surface-hover)]'">
           <i class="pi pi-camera text-xs"></i>
-          <span>Visual Studio (Producción)</span>
+          <span>Visual Studio (Imágenes/Vídeo)</span>
+        </button>
+
+        <button (click)="activeStudioView.set('voice')"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5"
+                [ngClass]="activeStudioView() === 'voice' ? 'bg-violet-600 text-white shadow-xs font-bold' : 'text-[var(--app-muted)] hover:text-[var(--app-text)] hover:bg-[var(--app-surface-hover)]'">
+          <i class="pi pi-volume-up text-xs"></i>
+          <span>Voice Studio (Locución)</span>
         </button>
       </div>
 
@@ -418,6 +427,15 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
         </app-visual-asset-studio>
       </div>
 
+      <!-- VIEW 5: Voice Asset Generation Studio -->
+      <div *ngIf="activeStudioView() === 'voice' && storyboard()">
+        <app-voice-production-studio
+          [contentItemId]="contentItemId()"
+          [storyboardId]="storyboard()!.id"
+          (onNavigateToStoryboard)="activeStudioView.set('frames')">
+        </app-voice-production-studio>
+      </div>
+
       <!-- Slide-over Script Reference Drawer -->
       <div *ngIf="showScriptDrawer()" class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[var(--app-card-bg)] border-l border-[var(--app-card-border)] shadow-2xl flex flex-col animate-slide-left">
         <div class="px-5 py-4 border-b border-[var(--app-card-border)] flex items-center justify-between bg-[var(--app-bg)]">
@@ -510,7 +528,7 @@ export class StoryboardStudioComponent implements OnInit {
   isLoadingVersions = signal<boolean>(false);
   hasUnsavedChanges = signal<boolean>(false);
 
-  activeStudioView = signal<'frames' | 'assets' | 'eligibility' | 'visuals'>('frames');
+  activeStudioView = signal<'frames' | 'assets' | 'eligibility' | 'visuals' | 'voice'>('frames');
   isAiModalOpen = signal<boolean>(false);
   showReviewPanel = signal<boolean>(false);
   showVersionDrawer = signal<boolean>(false);
@@ -549,8 +567,8 @@ export class StoryboardStudioComponent implements OnInit {
 
     this.route.queryParamMap.subscribe(params => {
       const view = params.get('view');
-      if (view === 'visuals' || view === 'frames' || view === 'assets' || view === 'eligibility') {
-        this.activeStudioView.set(view);
+      if (view === 'visuals' || view === 'voice' || view === 'frames' || view === 'assets' || view === 'eligibility') {
+        this.activeStudioView.set(view as any);
       }
     });
   }

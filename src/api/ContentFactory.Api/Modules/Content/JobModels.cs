@@ -15,15 +15,17 @@ public static class JobStatus
 public static class JobType
 {
     public const string GenerateVisualAsset = "generate_visual_asset";
+    public const string GenerateVoiceAsset = "generate_voice_asset";
 
-    public static readonly string[] All = [GenerateVisualAsset];
+    public static readonly string[] All = [GenerateVisualAsset, GenerateVoiceAsset];
 }
 
 public static class JobTypes
 {
     public const string GenerateVisualAsset = "generate_visual_asset";
+    public const string GenerateVoiceAsset = "generate_voice_asset";
 
-    public static readonly string[] All = [GenerateVisualAsset];
+    public static readonly string[] All = [GenerateVisualAsset, GenerateVoiceAsset];
 }
 
 public class Job
@@ -53,6 +55,7 @@ public class Job
     public string? ErrorCode { get; set; }
     public string? SanitizedErrorMessage { get; set; }
     public bool IsRetryable { get; set; }
+    public string? ExecutionParametersSnapshot { get; set; }
     public string IdempotencyKey { get; set; } = string.Empty;
     public string CreatedByEmail { get; set; } = string.Empty;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;

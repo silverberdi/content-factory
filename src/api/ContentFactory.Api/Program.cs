@@ -126,6 +126,12 @@ builder.Services.AddAuthorizationBuilder()
         policy.RequireAssertion(ctx =>
             ctx.User.IsInRole(Roles.Editorial) ||
             ctx.User.HasClaim("capability", Capabilities.EditorialVideoApprove)))
+    .AddPolicy("RequireEditorialOrTechnical", policy =>
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole(Roles.Editorial) ||
+            ctx.User.IsInRole(Roles.Technical) ||
+            ctx.User.HasClaim("capability", Capabilities.EditorialVideoApprove) ||
+            ctx.User.HasClaim("capability", Capabilities.ChannelManage)))
     .AddPolicy("RequireChannelManage", policy =>
         policy.RequireAssertion(ctx =>
             ctx.User.IsInRole(Roles.Technical) ||
@@ -167,6 +173,11 @@ builder.Services.AddSingleton<IVisualGenerationProvider, MockVisualGenerationPro
 builder.Services.AddSingleton<IVisualGenerationProvider, ComfyVisualGenerationProvider>();
 builder.Services.AddScoped<IVisualGenerationService, VisualGenerationService>();
 builder.Services.AddHostedService<VisualGenerationBackgroundWorker>();
+
+builder.Services.AddSingleton<IVoiceGenerationProvider, MockVoiceGenerationProvider>();
+builder.Services.AddSingleton<IVoiceGenerationProvider, GeminiTtsProvider>();
+builder.Services.AddScoped<IVoiceGenerationService, VoiceGenerationService>();
+builder.Services.AddHostedService<VoiceGenerationBackgroundWorker>();
 
 // 6. Controllers & OpenAPI
 builder.Services.AddControllers();

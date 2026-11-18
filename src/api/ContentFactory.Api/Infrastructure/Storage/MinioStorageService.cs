@@ -31,6 +31,22 @@ public class MinioStorageService(
         return $"content-factory/{env}/channels/{channelId}/content/{contentItemId}/storyboard/{storyboardVersionId}/visual/{assetRequirementId}/{generatedAssetId}.{cleanExt}";
     }
 
+    public string GenerateAudioObjectKey(
+        string environment,
+        Guid channelId,
+        Guid contentItemId,
+        Guid storyboardVersionId,
+        Guid assetRequirementId,
+        Guid generatedAssetId,
+        string fileExtension = "wav")
+    {
+        var cleanExt = fileExtension.TrimStart('.').ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(cleanExt)) cleanExt = "wav";
+        var env = string.IsNullOrWhiteSpace(environment) ? "development" : environment.ToLowerInvariant();
+
+        return $"content-factory/{env}/channels/{channelId}/content/{contentItemId}/storyboard/{storyboardVersionId}/audio/voice/{assetRequirementId}/{generatedAssetId}.{cleanExt}";
+    }
+
     public async Task<StorageUploadResult> UploadAsync(
         string objectKey,
         Stream dataStream,

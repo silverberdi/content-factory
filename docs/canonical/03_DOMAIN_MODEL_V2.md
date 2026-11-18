@@ -134,7 +134,8 @@ Asynchronous work units and execution attempt tracking:
 
 Concrete output candidate produced by a provider executing against an approved `AssetRequirement`:
 - lineage: linked to exact `ContentItemId`, `ChannelId`, `StoryboardId`, `StoryboardVersionId`, `AssetRequirementId`, and `JobId`;
-- storage: deterministic MinIO object storage key (`content-factory/{env}/channels/{channelId}/content/{contentItemId}/storyboard/{versionId}/visual/{reqId}/{assetId}.{ext}`) and SHA-256 integrity hash;
+- storage: deterministic MinIO object storage key (`content-factory/{env}/channels/{channelId}/content/{contentItemId}/storyboard/{versionId}/visual/{reqId}/{assetId}.{ext}` for visuals and `.../audio/voice/{reqId}/{assetId}.wav` for voice master) and SHA-256 integrity hash;
+- audio master: canonical voice master stored as uncompressed WAV container, PCM 16-bit, mono, preserving provider-returned sample rate (e.g. 24kHz);
 - human QA lifecycle: `PendingReview` → `Approved` / `Rejected` (rejection requires mandatory non-empty reason);
 - candidate selection: atomic `IsSelectedForAssembly` per `AssetRequirementId` where approving or selecting a variant unselects siblings;
 - dynamic assembly eligibility: `IsEligibleForAssembly` dynamically evaluates upstream Storyboard status, currency (`IsCurrent == true`), and non-staleness (`IsStale == false`). If upstream Storyboard is superseded or stale, historical assets remain preserved for audit but cannot be assembled into final video.

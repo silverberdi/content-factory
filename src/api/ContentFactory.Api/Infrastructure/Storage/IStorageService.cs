@@ -26,6 +26,15 @@ public interface IStorageService
         Guid generatedAssetId,
         string fileExtension);
 
+    string GenerateAudioObjectKey(
+        string environment,
+        Guid channelId,
+        Guid contentItemId,
+        Guid storyboardVersionId,
+        Guid assetRequirementId,
+        Guid generatedAssetId,
+        string fileExtension = "wav");
+
     Task<StorageUploadResult> UploadAsync(
         string objectKey,
         Stream dataStream,

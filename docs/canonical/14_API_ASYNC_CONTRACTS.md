@@ -17,6 +17,17 @@ Example:
  → `200 OK`
  → `VisualProductionOverviewDto` with requirement production status, active jobs, candidates, and assembly selection.
 
+ POST `/api/v1/content-items/{id}/storyboards/{storyboardId}/voice-generation`
+ → `202 Accepted`
+ → Array of `JobDto` records with `JobType: "generate_voice_asset"`.
+
+ GET `/api/v1/content-items/{id}/storyboards/{storyboardId}/voice-assets`
+ → `200 OK`
+ → `VoiceProductionOverviewDto` with voice requirement production status, active jobs, candidate takes, timing deviation analysis, and VoiceProfile.
+
+ GET `/api/v1/generated-assets/{id}/audio-stream`
+ → `200 OK` / `206 Partial Content` (Audio streaming with range header support).
+
 ## Errors
 
 Use structured machine-readable errors with:

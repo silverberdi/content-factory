@@ -63,14 +63,18 @@ public class VisualAssetsOverviewController(IVisualGenerationService visualServi
 [Route("api/v1/jobs")]
 [Route("api/jobs")]
 [Authorize]
-public class JobsController(IVisualGenerationService visualService) : ControllerBase
+public class JobsController(
+    IVisualGenerationService visualService,
+    IVoiceGenerationService voiceService) : ControllerBase
 {
     [HttpGet("{jobId:guid}")]
+    [Authorize(Policy = "RequireTechnical")]
     public async Task<ActionResult<JobDto>> GetJob(
         Guid jobId,
         CancellationToken cancellationToken)
     {
-        var job = await visualService.GetJobAsync(jobId, cancellationToken);
+        var job = await visualService.GetJobAsync(jobId, cancellationToken)
+            ?? await voiceService.GetJobAsync(jobId, cancellationToken);
         if (job == null) return NotFound(new { error = "Job not found." });
         return Ok(job);
     }
@@ -82,7 +86,8 @@ public class JobsController(IVisualGenerationService visualService) : Controller
         CancellationToken cancellationToken)
     {
         var email = GetCurrentUserEmail();
-        var job = await visualService.RetryJobAsync(jobId, email, cancellationToken);
+        var job = await visualService.RetryJobAsync(jobId, email, cancellationToken)
+            ?? await voiceService.RetryJobAsync(jobId, email, cancellationToken);
         if (job == null) return NotFound(new { error = "Job not found." });
         return Ok(job);
     }
@@ -96,6 +101,7 @@ public class JobsController(IVisualGenerationService visualService) : Controller
 [Authorize]
 public class GeneratedAssetsController(
     IVisualGenerationService visualService,
+    IVoiceGenerationService voiceService,
     IStorageService storageService,
     AppDbContext dbContext) : ControllerBase
 {
@@ -109,11 +115,23 @@ public class GeneratedAssetsController(
         var email = GetCurrentUserEmail();
         try
         {
-            var asset = await visualService.ReviewCandidateAsync(generatedAssetId, request, email, cancellationToken);
+            var asset = await dbContext.GeneratedAssets
+                .AsNoTracking()
+                .FirstOrDefaultAsync(candidate => candidate.Id == generatedAssetId, cancellationToken);
             if (asset == null) return NotFound(new { error = "Generated asset not found." });
-            return Ok(asset);
+
+            var reviewed = asset.AssetType == AssetType.TtsVoiceover
+                ? await voiceService.ReviewCandidateAsync(generatedAssetId, request, email, cancellationToken)
+                : await visualService.ReviewCandidateAsync(generatedAssetId, request, email, cancellationToken);
+
+            if (reviewed == null) return NotFound(new { error = "Generated asset not found." });
+            return Ok(reviewed);
         }
         catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
         {
             return BadRequest(new { error = ex.Message });
         }
@@ -126,12 +144,29 @@ public class GeneratedAssetsController(
         CancellationToken cancellationToken)
     {
         var email = GetCurrentUserEmail();
-        var asset = await visualService.SelectCandidateForAssemblyAsync(generatedAssetId, email, cancellationToken);
+        var asset = await dbContext.GeneratedAssets
+            .AsNoTracking()
+            .FirstOrDefaultAsync(candidate => candidate.Id == generatedAssetId, cancellationToken);
         if (asset == null) return NotFound(new { error = "Generated asset not found." });
-        return Ok(asset);
+
+        try
+        {
+            var selected = asset.AssetType == AssetType.TtsVoiceover
+                ? await voiceService.SelectCandidateForAssemblyAsync(generatedAssetId, email, cancellationToken)
+                : await visualService.SelectCandidateForAssemblyAsync(generatedAssetId, email, cancellationToken);
+
+            if (selected == null) return NotFound(new { error = "Generated asset not found." });
+            return Ok(selected);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet("{generatedAssetId:guid}/stream")]
+    [HttpGet("{generatedAssetId:guid}/audio-stream")]
+    [Authorize(Policy = "RequireEditorialOrTechnical")]
     public async Task<IActionResult> StreamGeneratedAsset(
         Guid generatedAssetId,
         CancellationToken cancellationToken)

@@ -1395,5 +1395,73 @@ public record VisualProductionOverviewDto(
     List<VisualRequirementProductionDto> Requirements
 );
 
+public record TimingTolerancePolicy(
+    double NoticeThresholdSeconds = 2.0,
+    double WarningThresholdSeconds = 4.0
+);
+
+public record PronunciationGuidanceDto(
+    string? GuidanceText,
+    Dictionary<string, string>? PhoneticHints = null
+);
+
+public record DispatchVoiceGenerationRequest(
+    Guid? AssetRequirementId = null,
+    int CandidateCount = 1,
+    int? GenerationRevision = null,
+    string? PronunciationGuidance = null,
+    string? VoiceProfileKey = null
+);
+
+public record VoiceScriptSceneSummaryDto(
+    Guid SceneId,
+    int OrderIndex,
+    string SceneType,
+    string NarrationText,
+    int WordCount,
+    double EstimatedDurationSeconds
+);
+
+public record VoiceRequirementProductionDto(
+    AssetRequirementDto Requirement,
+    int? FrameOrderIndex,
+    string? ScriptSceneName,
+    double EstimatedDurationSeconds,
+    JobDto? ActiveJob,
+    List<GeneratedAssetDto> Candidates,
+    GeneratedAssetDto? SelectedCandidate,
+    double? TimingDeviationSeconds,
+    string TimingStatus
+);
+
+public record VoiceProductionOverviewDto(
+    Guid ContentItemId,
+    Guid ChannelId,
+    Guid ScriptId,
+    Guid ScriptVersionId,
+    Guid StoryboardId,
+    Guid StoryboardVersionId,
+    long StoryboardVersion,
+    string NarrationFingerprint,
+    double ScriptEstimatedDurationSeconds,
+    double? MeasuredVoiceDurationSeconds,
+    double? TimingDeviationSeconds,
+    string TimingStatus,
+    Ai.VoiceProfile? EffectiveVoiceProfile,
+    bool IsStoryboardCurrent,
+    bool IsStoryboardApproved,
+    bool IsStoryboardStale,
+    int TotalRequirementsCount,
+    int GeneratedCount,
+    int ApprovedCount,
+    int PendingReviewCount,
+    int ActiveJobsCount,
+    bool IsEligibleForGeneration,
+    string? IneligibilityReason,
+    List<VoiceRequirementProductionDto> Requirements,
+    List<VoiceScriptSceneSummaryDto> ScriptScenes
+);
+
+
 
 

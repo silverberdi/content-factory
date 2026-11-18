@@ -25,6 +25,9 @@ public class VisualGenerationService(
             ?? providers.First();
     }
 
+    private static bool IsVisualAssetType(string assetType) => assetType is
+        AssetType.AiImage or AssetType.AiVideo or AssetType.BRoll or AssetType.GraphicOverlay;
+
     public async Task<DispatchVisualGenerationResult> DispatchGenerationAsync(
         Guid contentItemId,
         Guid storyboardId,
@@ -348,6 +351,7 @@ public class VisualGenerationService(
     {
         var asset = await dbContext.GeneratedAssets.FirstOrDefaultAsync(a => a.Id == generatedAssetId, cancellationToken);
         if (asset == null) return null;
+        if (!IsVisualAssetType(asset.AssetType)) return null;
 
         if (!string.IsNullOrWhiteSpace(request.ExpectedStatus) &&
             !string.Equals(asset.Status, request.ExpectedStatus, StringComparison.OrdinalIgnoreCase))
@@ -412,6 +416,7 @@ public class VisualGenerationService(
     {
         var asset = await dbContext.GeneratedAssets.FirstOrDefaultAsync(a => a.Id == generatedAssetId, cancellationToken);
         if (asset == null) return null;
+        if (!IsVisualAssetType(asset.AssetType)) return null;
 
         if (string.Equals(asset.Status, GeneratedAssetStatus.Rejected, StringComparison.OrdinalIgnoreCase))
         {
@@ -459,7 +464,7 @@ public class VisualGenerationService(
     {
         var job = await dbContext.Jobs
             .Include(j => j.Attempts)
-            .FirstOrDefaultAsync(j => j.Id == jobId, cancellationToken);
+            .FirstOrDefaultAsync(j => j.Id == jobId && j.JobType == JobTypes.GenerateVisualAsset, cancellationToken);
 
         if (job == null) return null;
 

@@ -13,6 +13,8 @@ Code requests:
 - generate_script
 - review_script
 - review_visual
+- generate_visual_asset
+- generate_voice_asset
 - analyze_metrics
 
 Code MUST NOT encode business behavior as `callDeepSeekForX()`.
@@ -31,8 +33,8 @@ DeepSeek:
 - code cross-review.
 
 Gemini:
-- configurable alternate;
-- may take selected capabilities;
+- configurable alternate for reasoning/multimodal;
+- primary real voice generation provider (Gemini TTS API) producing WAV 16-bit mono masters;
 - preferred candidate for multimodal/visual/video analysis where it performs better;
 - load-balancing/quality comparison option.
 

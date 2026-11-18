@@ -852,8 +852,22 @@ export class ApiService {
     return `${this.baseUrl}/generated-assets/${generatedAssetId}/stream`;
   }
 
+  getGeneratedAssetAudioStreamUrl(generatedAssetId: string): string {
+    return `${this.baseUrl}/generated-assets/${generatedAssetId}/audio-stream`;
+  }
+
   getGeneratedAssetThumbnailUrl(generatedAssetId: string): string {
     return `${this.baseUrl}/generated-assets/${generatedAssetId}/thumbnail`;
+  }
+
+  // --- Voice Asset Generation & Production Methods ---
+
+  dispatchVoiceGeneration(contentItemId: string, storyboardId: string, request: DispatchVoiceGenerationRequest): Observable<JobDto[]> {
+    return this.http.post<JobDto[]>(`${this.baseUrl}/content-items/${contentItemId}/storyboards/${storyboardId}/voice-generation`, request);
+  }
+
+  getVoiceProductionOverview(contentItemId: string, storyboardId: string): Observable<VoiceProductionOverviewDto> {
+    return this.http.get<VoiceProductionOverviewDto>(`${this.baseUrl}/content-items/${contentItemId}/storyboards/${storyboardId}/voice-assets`);
   }
 }
 
@@ -1388,6 +1402,77 @@ export interface VisualProductionOverviewDto {
   ineligibilityReason?: string | null;
   requirements: VisualRequirementProductionDto[];
 }
+
+export interface VoiceProfileDto {
+  profileKey: string;
+  profileName: string;
+  language: string;
+  configuredLocale?: string | null;
+  speakingStyle: string;
+  tone: string;
+  warmth: string;
+  energy: string;
+  pace: string;
+  pronunciationHints?: Record<string, string> | null;
+}
+
+export interface DispatchVoiceGenerationRequest {
+  assetRequirementId?: string | null;
+  candidateCount?: number;
+  generationRevision?: number | null;
+  pronunciationGuidance?: string | null;
+  voiceProfileKey?: string | null;
+}
+
+export interface VoiceScriptSceneSummaryDto {
+  sceneId: string;
+  orderIndex: number;
+  sceneType: string;
+  narrationText: string;
+  wordCount: number;
+  estimatedDurationSeconds: number;
+}
+
+export interface VoiceRequirementProductionDto {
+  requirement: AssetRequirementDto;
+  frameOrderIndex?: number | null;
+  scriptSceneName?: string | null;
+  estimatedDurationSeconds: number;
+  activeJob?: JobDto | null;
+  candidates: GeneratedAssetDto[];
+  selectedCandidate?: GeneratedAssetDto | null;
+  timingDeviationSeconds?: number | null;
+  timingStatus: string;
+}
+
+export interface VoiceProductionOverviewDto {
+  contentItemId: string;
+  channelId: string;
+  scriptId: string;
+  scriptVersionId: string;
+  storyboardId: string;
+  storyboardVersionId: string;
+  storyboardVersion: number;
+  narrationFingerprint: string;
+  scriptEstimatedDurationSeconds: number;
+  measuredVoiceDurationSeconds?: number | null;
+  timingDeviationSeconds?: number | null;
+  timingStatus: string;
+  effectiveVoiceProfile?: VoiceProfileDto | null;
+  isStoryboardCurrent: boolean;
+  isStoryboardApproved: boolean;
+  isStoryboardStale: boolean;
+  totalRequirementsCount: number;
+  generatedCount: number;
+  approvedCount: number;
+  pendingReviewCount: number;
+  activeJobsCount: number;
+  isEligibleForGeneration: boolean;
+  ineligibilityReason?: string | null;
+  requirements: VoiceRequirementProductionDto[];
+  scriptScenes: VoiceScriptSceneSummaryDto[];
+}
+
 
 
 
