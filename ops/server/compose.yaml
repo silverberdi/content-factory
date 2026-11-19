@@ -1,0 +1,50 @@
+services:
+  web:
+    image: ghcr.io/silverberdi/content-factory-web:${CONTENT_FACTORY_IMAGE_TAG:?CONTENT_FACTORY_IMAGE_TAG must be set}
+    restart: unless-stopped
+    ports:
+      - "${CONTENT_FACTORY_BIND_ADDRESS:-192.168.0.194}:${CONTENT_FACTORY_PORT:-8098}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - edge
+      - app
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  api:
+    image: ghcr.io/silverberdi/content-factory-api:${CONTENT_FACTORY_IMAGE_TAG:?CONTENT_FACTORY_IMAGE_TAG must be set}
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: "http://+:5000"
+      CONTENT_FACTORY_ENV: "production"
+      AUTH_MODE: "google"
+      POSTGRES_HOST: "${POSTGRES_HOST:-192.168.0.194}"
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
+      POSTGRES_DATABASE: "${POSTGRES_DATABASE:-content_factory_prod}"
+      POSTGRES_USER: "${POSTGRES_USER:-minime_app}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}"
+      FRONTEND_URL: "${FRONTEND_URL:-https://factory.silverman.pro}"
+      BACKEND_URL: "${BACKEND_URL:-https://factory-core.silverman.pro}"
+    networks:
+      - app
+      - database
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:5000/health || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+networks:
+  edge:
+  app:
+    internal: true
+  database:
+    external: true
+    name: local-ai-stack_backend

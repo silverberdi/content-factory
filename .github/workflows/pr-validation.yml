@@ -1,0 +1,126 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-validation:
+    name: Backend validation (.NET & integration tests)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: content_factory_test
+          POSTGRES_USER: content_factory_app
+          POSTGRES_PASSWORD: testpassword123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout pull request commit
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+            10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ContentFactory.sln
+
+      - name: Build solution
+        run: dotnet build ContentFactory.sln --no-restore -c Release
+
+      - name: Run backend tests
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DATABASE: content_factory_test
+          POSTGRES_USER: content_factory_app
+          POSTGRES_PASSWORD: testpassword123
+        run: dotnet test ContentFactory.sln --no-build -c Release
+
+  frontend-validation:
+    name: Frontend validation (Angular unit tests & build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pull request commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/web
+        run: npm ci
+
+      - name: Run unit tests
+        working-directory: src/web
+        run: npm test -- --watch=false
+
+      - name: Compile Angular application
+        working-directory: src/web
+        run: npm run build
+
+  e2e-validation:
+    name: E2E browser validation (Playwright)
+    needs: [backend-validation, frontend-validation]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pull request commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/web
+        run: npm ci
+
+      - name: Install Playwright Chromium with dependencies
+        working-directory: src/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E test suite
+        working-directory: src/web
+        run: npx playwright test
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: src/web/playwright-report/
+          retention-days: 7
