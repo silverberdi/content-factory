@@ -17,7 +17,7 @@ namespace ContentFactory.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.1")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -115,9 +115,6 @@ namespace ContentFactory.Api.Migrations
 
             modelBuilder.Entity("ContentFactory.Api.Modules.Content.AiRecommendation", b =>
                 {
-                    b.Property<bool?>("IsSimulated")
-                        .HasColumnType("boolean");
-
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
@@ -147,6 +144,9 @@ namespace ContentFactory.Api.Migrations
                     b.Property<decimal>("EstimatedCostUsd")
                         .HasPrecision(18, 6)
                         .HasColumnType("numeric(18,6)");
+
+                    b.Property<bool?>("IsSimulated")
+                        .HasColumnType("boolean");
 
                     b.Property<long>("LatencyMs")
                         .HasColumnType("bigint");
@@ -733,9 +733,6 @@ namespace ContentFactory.Api.Migrations
 
             modelBuilder.Entity("ContentFactory.Api.Modules.Content.GeneratedAsset", b =>
                 {
-                    b.Property<bool?>("IsSimulated")
-                        .HasColumnType("boolean");
-
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
@@ -781,6 +778,9 @@ namespace ContentFactory.Api.Migrations
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsSelectedForAssembly")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsSimulated")
                         .HasColumnType("boolean");
 
                     b.Property<Guid>("JobId")
@@ -873,10 +873,11 @@ namespace ContentFactory.Api.Migrations
                     b.Property<int>("AttemptCount")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Capability")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                    b.Property<int>("AutomaticRetriesRemaining")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CandidateCount")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("ChannelId")
                         .HasColumnType("uuid");
@@ -910,6 +911,12 @@ namespace ContentFactory.Api.Migrations
                     b.Property<decimal?>("EstimatedCostUsd")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("ExecutionParametersSnapshot")
+                        .HasColumnType("text");
+
+                    b.Property<int>("GenerationRevision")
+                        .HasColumnType("integer");
+
                     b.Property<string>("IdempotencyKey")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -917,6 +924,11 @@ namespace ContentFactory.Api.Migrations
 
                     b.Property<bool>("IsRetryable")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("JobType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<int>("MaxAttempts")
                         .HasColumnType("integer");
