@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-11-20
+goal: Keep PostgreSQL schema and EF Core migration history aligned with the
+  deployed .NET 10 API
