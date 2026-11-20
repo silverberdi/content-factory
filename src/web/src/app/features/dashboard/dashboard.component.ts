@@ -73,8 +73,8 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
           </app-discovery-summary-widget>
         </div>
 
-        <!-- Channel Summary: 12 cols on Desktop -->
-        <div class="lg:col-span-12">
+        <!-- Channel Summary: share the desktop row with attention to preserve the cockpit viewport -->
+        <div class="lg:col-span-6">
           <app-channel-summary-widget 
             [channels]="summary()?.channels || []"
             (onCreateChannel)="openCreateChannel()"
@@ -83,8 +83,8 @@ import { PageHeaderComponent } from '../../shared/layout/page-header.component';
           </app-channel-summary-widget>
         </div>
 
-        <!-- Attention & Actions: 12 cols on Desktop -->
-        <div class="lg:col-span-12">
+        <!-- Attention & Actions: share the desktop row with channel summary -->
+        <div class="lg:col-span-6">
           <app-attention-widget [items]="summary()?.attentionItems || []"></app-attention-widget>
         </div>
       </div>

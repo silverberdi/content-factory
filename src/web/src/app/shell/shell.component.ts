@@ -20,7 +20,7 @@ import { ApiService } from '../core/api.service';
             <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs shadow-blue-500/30">
               <i class="pi pi-bolt text-sm"></i>
             </div>
-            <div class="hidden sm:block">
+            <div class="block min-w-0">
               <span class="font-bold text-sm sm:text-base tracking-tight block leading-tight text-[var(--app-text)]">Content Factory</span>
               <span class="text-[10px] text-[var(--app-muted)] font-mono uppercase tracking-wider block">Control Center</span>
             </div>

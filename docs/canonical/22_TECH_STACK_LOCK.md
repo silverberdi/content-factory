@@ -3,12 +3,12 @@
 This is normative unless a later canonical decision explicitly changes it.
 
 ## Frontend
-- Angular 21 stable
+- Angular 22 stable
 - TypeScript strict
 - standalone components
 - Angular Signals where appropriate
 - RxJS where stream semantics are appropriate
-- PrimeNG 21 stable
+- PrimeNG 22 stable
 - Tailwind CSS 4
 - PrimeNG/Tailwind integration
 - Angular PWA/service worker
@@ -16,7 +16,7 @@ This is normative unless a later canonical decision explicitly changes it.
 - Playwright for browser/e2e visual-flow verification
 - Angular test tooling selected from current official Angular defaults at scaffold time
 
-Do not use PrimeNG 22 release candidates for the production baseline.
+Use the PrimeNG 22 stable release line for the production baseline.
 
 ## Backend
 - .NET 10 LTS

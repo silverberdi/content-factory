@@ -34,8 +34,8 @@ test.describe('Content Factory - Discovery Triage & Source Registry', () => {
   test('should navigate to Discovery Triage and render operational filters', async ({ page }) => {
     await page.goto('/discovery/triage');
     await expect(page.getByText('Pendientes Triage')).toBeVisible();
-    await expect(page.getByText('Promovidos')).toBeVisible();
-    await expect(page.getByText('Descartados')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Promovidos/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Descartados/ })).toBeVisible();
     await expect(page.getByText('Fuentes Activas')).toBeVisible();
 
     // Verify filter pills
