@@ -11,6 +11,7 @@ using ContentFactory.Api.Modules.Discovery;
 using ContentFactory.Api.Modules.Discovery.Adapters;
 using ContentFactory.Api.Modules.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,63 +29,26 @@ if (builder.Environment.IsProduction() && string.Equals(authMode, "development-b
     throw new InvalidOperationException("FATAL SECURITY VIOLATION: AUTH_MODE 'development-bypass' (GOD mode) is strictly forbidden in Production.");
 }
 
-// 2. Database Persistence Configuration
-var useInMemory = string.Equals(Environment.GetEnvironmentVariable("USE_IN_MEMORY_DB"), "true", StringComparison.OrdinalIgnoreCase)
-    || string.Equals(builder.Configuration["USE_IN_MEMORY_DB"], "true", StringComparison.OrdinalIgnoreCase)
-    || string.Equals(builder.Configuration["DATABASE_PROVIDER"], "in-memory", StringComparison.OrdinalIgnoreCase)
-    || string.Equals(builder.Configuration["DB_PROVIDER"], "in-memory", StringComparison.OrdinalIgnoreCase)
-    || builder.Configuration.GetConnectionString("DefaultConnection")?.StartsWith("Filename=", StringComparison.OrdinalIgnoreCase) == true;
-
-if (useInMemory)
+// 2. Database Persistence Configuration. PostgreSQL is mandatory unless a
+// non-production fixture requests InMemory explicitly.
+var persistence = PersistenceConfiguration.Resolve(builder.Configuration, builder.Environment);
+if (persistence.Provider == PersistenceProvider.InMemory)
 {
-    builder.Services.AddDbContext<AppDbContext>(options =>
-    {
-        options.UseInMemoryDatabase("ContentFactoryDb");
-    });
+    // Keep explicitly requested test fixtures isolated even when multiple hosts
+    // run in parallel and happen to use the same logical database name.
+    var inMemoryRoot = new InMemoryDatabaseRoot();
+    builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(persistence.InMemoryDatabaseName!, inMemoryRoot));
 }
 else
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-        ?? builder.Configuration["DATABASE_URL"];
-
-    if (string.IsNullOrWhiteSpace(connectionString))
+    builder.Services.AddDbContext<AppDbContext>(options =>
     {
-        var host = builder.Configuration["POSTGRES_HOST"] ?? builder.Configuration["DB_HOST"];
-        var port = builder.Configuration["POSTGRES_PORT"] ?? builder.Configuration["DB_PORT"] ?? "5432";
-        var db = builder.Configuration["POSTGRES_DATABASE"] ?? builder.Configuration["POSTGRES_DB"] ?? builder.Configuration["DB_NAME"];
-        var user = builder.Configuration["POSTGRES_USER"] ?? builder.Configuration["DB_USER"];
-        var pass = builder.Configuration["POSTGRES_PASSWORD"] ?? builder.Configuration["DB_PASSWORD"];
-        if (!string.IsNullOrWhiteSpace(host) && !string.IsNullOrWhiteSpace(db) && !string.IsNullOrWhiteSpace(user))
+        options.UseNpgsql(persistence.ConnectionString!, npgsqlOptions =>
         {
-            connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};";
-        }
-    }
-
-    if (!string.IsNullOrWhiteSpace(connectionString))
-    {
-        builder.Services.AddDbContext<AppDbContext>(options =>
-        {
-            try
-            {
-                options.UseNpgsql(connectionString, npgsqlOptions =>
-                {
-                    npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorCodesToAdd: null);
-                });
-                options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-            }
-            catch
-            {
-                options.UseInMemoryDatabase("ContentFactoryDb");
-            }
+            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorCodesToAdd: null);
         });
-    }
-    else
-    {
-        builder.Services.AddDbContext<AppDbContext>(options =>
-        {
-            options.UseInMemoryDatabase("ContentFactoryDb");
-        });
-    }
+        options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    });
 }
 
 // 3. Authentication Configuration
@@ -216,14 +180,7 @@ app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
 // Database initialization
-try
-{
-    await DatabaseInitializer.InitializeAsync(app.Services, app.Environment.IsDevelopment());
-}
-catch (Exception ex)
-{
-    app.Logger.LogWarning(ex, "Initial database seeding deferred or already completed.");
-}
+await DatabaseInitializer.InitializeAsync(app.Services, app.Environment.IsDevelopment());
 
 app.Run();
 
@@ -278,4 +235,3 @@ public partial class Program
         }
     }
 }
-

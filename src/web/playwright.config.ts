@@ -6,13 +6,16 @@ export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
   webServer: {
-    command: 'npm run start',
+    command: 'npm run start -- --prebundle=false',
     port: 4200,
     reuseExistingServer: true,
     timeout: 60000,
   },
   use: {
     baseURL: 'http://localhost:4200',
+    launchOptions: {
+      executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH || '/usr/bin/google-chrome',
+    },
     trace: 'on-first-retry',
   },
   projects: [

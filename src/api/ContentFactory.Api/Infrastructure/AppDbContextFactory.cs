@@ -11,14 +11,22 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        var host = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "192.168.0.194";
-        var port = Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? "5432";
-        var db = Environment.GetEnvironmentVariable("POSTGRES_DATABASE") ?? "content_factory_dev";
-        var user = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "content_factory_app";
-        var pass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "";
+        var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            var host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
+            var port = Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? "5432";
+            var db = Environment.GetEnvironmentVariable("POSTGRES_DATABASE") ?? Environment.GetEnvironmentVariable("POSTGRES_DB");
+            var user = Environment.GetEnvironmentVariable("POSTGRES_USER");
+            var pass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 
-        var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
-            ?? $"Host={host};Port={port};Database={db};Username={user};Password={pass};";
+            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(db) || string.IsNullOrWhiteSpace(user))
+                throw new InvalidOperationException("Design-time PostgreSQL configuration requires DATABASE_URL or POSTGRES_HOST, POSTGRES_DATABASE, and POSTGRES_USER.");
+
+            connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};";
+        }
+
+        PersistenceConfiguration.ValidatePostgreSqlConnectionString(connectionString);
 
         optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>
         {

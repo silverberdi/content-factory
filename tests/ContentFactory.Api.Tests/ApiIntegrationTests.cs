@@ -14,6 +14,8 @@ namespace ContentFactory.Api.Tests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly string _inMemoryDatabaseName = $"ContentFactoryTests-{Guid.NewGuid():N}";
+
     static CustomWebApplicationFactory()
     {
         Environment.SetEnvironmentVariable("USE_IN_MEMORY_DB", "true");
@@ -29,7 +31,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             {
                 ["AUTH_MODE"] = "development-bypass",
                 ["USE_IN_MEMORY_DB"] = "true",
-                ["ConnectionStrings:DefaultConnection"] = "Filename=:memory:",
+                ["IN_MEMORY_DB_NAME"] = _inMemoryDatabaseName,
+                ["ConnectionStrings:DefaultConnection"] = null,
                 ["DATABASE_URL"] = null,
                 ["POSTGRES_HOST"] = null,
                 ["POSTGRES_DATABASE"] = null,
