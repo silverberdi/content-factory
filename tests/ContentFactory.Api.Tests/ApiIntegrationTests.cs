@@ -98,6 +98,17 @@ public class DashboardAndChannelApiIntegrationTests : IClassFixture<CustomWebApp
     }
 
     [Fact]
+    public async Task GetOpenApiDocument_ReturnsTheExistingApiContract()
+    {
+        var response = await _client.GetAsync("/openapi/v1.json");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        var document = await response.Content.ReadAsStringAsync();
+        Assert.Contains("\"openapi\": \"3.1.1\"", document, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task GetAllChannels_ReturnsSeededPilotChannel()
     {
         var response = await _client.GetAsync("/api/channels");
