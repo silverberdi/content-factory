@@ -21,7 +21,9 @@ public class VisualGenerationServiceTests
     private static (VisualGenerationService Service, AppDbContext DbContext) CreateTestSetup()
     {
         var dbContext = CreateInMemoryDbContext();
-        var config = new ConfigurationBuilder().Build();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["VISUAL_PROVIDER"] = "Mock" })
+            .Build();
         var storage = new MinioStorageService(config, new TestHttpClientFactory(), NullLogger<MinioStorageService>.Instance);
         var mockProvider = new MockVisualGenerationProvider(NullLogger<MockVisualGenerationProvider>.Instance);
         var service = new VisualGenerationService(
@@ -231,6 +233,19 @@ public class VisualGenerationServiceTests
 
         Assert.Equal(2, candidates.Count);
         Assert.Equal(GeneratedAssetStatus.PendingReview, candidates[0].Status);
+        Assert.Equal("Mock", candidates[0].Provider);
+        Assert.True(candidates[0].IsSimulated);
+
+        job.Provider = "Comfy";
+        job.Status = JobStatus.Queued;
+        await dbContext.SaveChangesAsync();
+        await service.ProcessQueuedJobsAsync();
+
+        var failedJob = await dbContext.Jobs.Include(j => j.Attempts).FirstAsync(j => j.Id == job.Id);
+        Assert.Equal(JobStatus.FailedActionRequired, failedJob.Status);
+        Assert.Equal("PROVIDER_NOT_CONFIGURED", failedJob.ErrorCode);
+        Assert.Contains("no Mock fallback", failedJob.SanitizedErrorMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(2, failedJob.Attempts.Count);
         Assert.False(candidates[0].IsSelectedForAssembly);
         Assert.StartsWith("content-factory/development/", candidates[0].StorageKey);
     }

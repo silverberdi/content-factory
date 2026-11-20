@@ -123,7 +123,9 @@ public class MockVisualGenerationProvider(ILogger<MockVisualGenerationProvider> 
             IsRetryable: false,
             ExecutionDurationMs: sw.ElapsedMilliseconds,
             EstimatedCostUsd: estimatedCost,
-            ActualCostUsd: estimatedCost
+            ActualCostUsd: estimatedCost,
+            Provider: ProviderName,
+            IsSimulated: true
         );
     }
 

@@ -100,3 +100,51 @@ suite existente conserva la evidencia de los contratos funcionales afectados.
 El feed NuGet emitió warnings de vulnerabilidades transitivas para
 `Microsoft.OpenApi 2.0.0` y `System.Security.Cryptography.Pkcs 9.0.0`; no se
 actualizaron paquetes fuera del alcance autorizado. No se altera la base de datos productiva. Todas las tareas 1.1 a 4.1 están completas y verificadas con 122 pruebas exitosas en .NET 10 LTS.
+
+## CF-04 — Prueba humana de rutas de proveedor y ausencia de fallback silencioso
+
+### Alcance y entorno
+
+- Cambio: `req-5-cf-04-impedir-fallbacks-silenciosos-a-mo`
+- Fecha de ejecución: `2026-11-20` (America/Bogota)
+- Entorno: API local ASP.NET Core en `Development`, `AUTH_MODE=development-bypass`, base `InMemory` explícita y aislada por nombre; no se usaron PostgreSQL productivo, MinIO, n8n ni APIs pagadas.
+- Seed: `IA Simple ES`, ContentItem `00000000-0000-0000-0000-000000000301`, Storyboard aprobado `00000000-0000-0000-0000-000000000501`; los IDs de requisitos se obtuvieron del overview seed en cada ejecución porque el requisito TTS es generado por el inicializador.
+
+### Procedimiento reproducible
+
+Iniciar la API con:
+
+```bash
+USE_IN_MEMORY_DB=true IN_MEMORY_DB_NAME=cf-human-req5 \
+AUTH_MODE=development-bypass AI_DEFAULT_PROVIDER=Mock \
+VISUAL_PROVIDER=Mock VOICE_PROVIDER=Mock ASPNETCORE_ENVIRONMENT=Development \
+dotnet run --project src/api/ContentFactory.Api/ContentFactory.Api.csproj \
+  --no-launch-profile --urls http://127.0.0.1:5027
+```
+
+Con los IDs de `GET /api/content-items/{contentItemId}/storyboards/{storyboardId}/voice-assets`, ejecutar POST de visual y voz en sus rutas de `.../visual-generation` y `.../voice-generation`, seleccionando `candidateCount=1`. Consultar cada Job con `GET /api/jobs/{jobId}` y los overviews de `visual-assets` y `voice-assets`.
+
+### Observaciones reales
+
+1. **Mock explícito:** los dos POST devolvieron `202`; los Jobs terminaron `Succeeded`, conservaron `provider=Mock` y sus assets nuevos se etiquetaron `isSimulated=true`. El recurso visual persistió como `PendingReview`; el audio también quedó como candidato `PendingReview`, sin presentarse como proveedor real.
+2. **Proveedor real visual sin servicio:** reiniciando con `VISUAL_PROVIDER=Comfy` y sin servidor Comfy en `127.0.0.1:8188`, el Job conservó `provider=Comfy`, terminó `FailedActionRequired`, `errorCode=COMFY_CONNECTION_FAILED`, agotó sus tres intentos y no creó un nuevo GeneratedAsset Mock.
+3. **Proveedor real de voz sin configuración:** reiniciando con `VOICE_PROVIDER=Gemini` y sin `GEMINI_API_KEY`, el Job conservó `provider=Gemini`, terminó `FailedActionRequired`, `errorCode=MISSING_API_KEY`, mostró únicamente `Gemini API key is not configured in backend settings.` y el overview informó `generatedCount=0`.
+4. **Proveedor editorial síncrono sin configuración:** con `AI_DEFAULT_PROVIDER=DeepSeek` y sin clave, `POST /api/content-items/00000000-0000-0000-0000-000000000301/script/generate` respondió HTTP `409` con `AI script generation failed: DeepSeek provider is not configured.`; no devolvió contenido Mock.
+
+La evidencia confirma etiquetas de proveedor/naturaleza, errores sanitizados, estados de Job y ausencia de artefacto simulado en las rutas reales fallidas. La ejecución Mock no se considera evidencia de funcionamiento live de DeepSeek, Comfy o Gemini.
+
+### Comprobación automatizada de cierre Apply
+
+```text
+NUGET_PACKAGES=/run/minime-agent/tmp/cf-nuget-cache-req5/packages \
+POSTGRES_DATABASE=content_factory_test POSTGRES_HOST=192.168.0.194 \
+POSTGRES_USER=minime_app \
+dotnet test ContentFactory.sln --no-restore --configuration Release -m:1 \
+  --logger "console;verbosity=minimal"
+Passed: 127, Failed: 0, Skipped: 0, Total: 127
+EXIT=0
+```
+
+La validación estricta disponible en OpenSpec 1.13.1 también pasó:
+`openspec validate --type change --strict --no-interactive --json` → `1/1`, sin issues. El binario instalado no expone `openspec verify`; la revisión independiente queda pendiente del Verify gobernado por el coordinador.
+<!-- verify pass 2 -->

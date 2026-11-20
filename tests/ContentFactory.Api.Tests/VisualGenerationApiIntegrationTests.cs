@@ -26,7 +26,9 @@ public class VisualGenerationApiIntegrationTests
     private static (VisualGenerationService service, VoiceGenerationService voiceService, MinioStorageService storage, AppDbContext dbContext) CreateTestSetup()
     {
         var dbContext = CreateInMemoryDbContext();
-        var config = new ConfigurationBuilder().Build();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["VISUAL_PROVIDER"] = "Mock" })
+            .Build();
         var storage = new MinioStorageService(config, new TestHttpClientFactory(), NullLogger<MinioStorageService>.Instance);
         var mockProvider = new MockVisualGenerationProvider(NullLogger<MockVisualGenerationProvider>.Instance);
         var mockVoiceProvider = new MockVoiceGenerationProvider(NullLogger<MockVoiceGenerationProvider>.Instance);

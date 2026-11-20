@@ -110,7 +110,9 @@ public class GeminiTtsProvider(
             IsRetryable: false,
             ExecutionDurationMs: sw.ElapsedMilliseconds,
             EstimatedCostUsd: estCost,
-            ActualCostUsd: estCost
+            ActualCostUsd: estCost,
+            Provider: ProviderName,
+            IsSimulated: false
         );
     }
 

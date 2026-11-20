@@ -59,6 +59,8 @@ public class VoiceGenerationProviderAndStorageTests
 
         Assert.True(result.Success);
         Assert.Equal(2, result.Outputs.Count);
+        Assert.Equal("Mock", result.Provider);
+        Assert.True(result.IsSimulated);
 
         var out1 = result.Outputs[0];
         Assert.Equal("audio/wav", out1.ContentType);

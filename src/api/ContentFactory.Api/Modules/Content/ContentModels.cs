@@ -202,6 +202,7 @@ public class AiRecommendation
     public Guid? TruthSourceVersionId { get; set; }
     public string Capability { get; set; } = string.Empty;
     public string Provider { get; set; } = string.Empty;
+    public bool? IsSimulated { get; set; }
     public string Model { get; set; } = string.Empty;
     public string PromptPolicyVersion { get; set; } = "1.0";
     public string StructuredOutputJson { get; set; } = string.Empty;
@@ -1310,6 +1311,7 @@ public class GeneratedAsset
     public double? DurationSeconds { get; set; }
     public string ChecksumSha256 { get; set; } = string.Empty;
     public string Provider { get; set; } = string.Empty;
+    public bool? IsSimulated { get; set; }
     public string ProviderModelOrWorkflow { get; set; } = string.Empty;
     public string GenerationParametersSnapshot { get; set; } = "{}";
     public string Status { get; set; } = GeneratedAssetStatus.PendingReview;
@@ -1350,7 +1352,8 @@ public record GeneratedAssetDto(
     bool IsSelectedForAssembly,
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc,
-    bool IsEligibleForAssembly
+    bool IsEligibleForAssembly,
+    bool? IsSimulated = null
 );
 
 public record ReviewGeneratedAssetRequest(
@@ -1461,7 +1464,5 @@ public record VoiceProductionOverviewDto(
     List<VoiceRequirementProductionDto> Requirements,
     List<VoiceScriptSceneSummaryDto> ScriptScenes
 );
-
-
 
 

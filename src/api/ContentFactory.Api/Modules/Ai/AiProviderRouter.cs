@@ -27,10 +27,10 @@ public class AiProviderRouter(
         CancellationToken cancellationToken = default)
     {
         var provider = ResolveProvider(context);
-        var apiKey = configuration["DEEPSEEK_API_KEY"] ?? Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+        var apiKey = configuration["DEEPSEEK_API_KEY"];
 
         // Use mock if configured, or if DeepSeek key is missing in development/test
-        if (provider == AiProviders.Mock || (provider == AiProviders.DeepSeek && string.IsNullOrWhiteSpace(apiKey)))
+        if (provider == AiProviders.Mock)
         {
             logger.LogInformation("Using Mock AI Provider for capability '{Capability}' (Channel: {ChannelId})",
                 AiCapabilities.BuildTruthSource, context.ChannelId);
@@ -39,26 +39,28 @@ public class AiProviderRouter(
 
         if (provider == AiProviders.DeepSeek)
         {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return ProviderFailure<BuildTruthSourceResponse>(provider, "PROVIDER_NOT_CONFIGURED", "DeepSeek provider is not configured.");
             return await ExecuteDeepSeekBuildTruthSourceAsync(request, context, apiKey!, cancellationToken);
         }
 
-        // Default fallback to mock
-        return await ExecuteMockBuildTruthSourceAsync(request, context, cancellationToken);
+        return ProviderFailure<BuildTruthSourceResponse>(provider, "PROVIDER_UNSUPPORTED", "The selected AI provider is not supported.");
     }
 
     private string ResolveProvider(AiRoutingContext context)
     {
         if (!string.IsNullOrWhiteSpace(context.PreferredProvider))
         {
-            return context.PreferredProvider;
+            return NormalizeProvider(context.PreferredProvider);
         }
 
-        var configuredDefault = configuration["AI_DEFAULT_PROVIDER"] 
-            ?? Environment.GetEnvironmentVariable("AI_DEFAULT_PROVIDER") 
-            ?? AiProviders.DeepSeek;
+        var configuredDefault = configuration["AI_DEFAULT_PROVIDER"] ?? AiProviders.DeepSeek;
 
-        return configuredDefault;
+        return NormalizeProvider(configuredDefault);
     }
+
+    private static string NormalizeProvider(string provider) =>
+        AiProviders.All.FirstOrDefault(p => string.Equals(p, provider, StringComparison.OrdinalIgnoreCase)) ?? provider;
 
     private async Task<AiCapabilityResult<BuildTruthSourceResponse>> ExecuteDeepSeekBuildTruthSourceAsync(
         BuildTruthSourceRequest request,
@@ -99,9 +101,9 @@ public class AiProviderRouter(
             if (!response.IsSuccessStatusCode)
             {
                 var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
-                logger.LogWarning("DeepSeek API error {StatusCode}: {ErrorBody}. Falling back to deterministic mock.",
+                logger.LogWarning("DeepSeek API error {StatusCode}: {ErrorBody}.",
                     response.StatusCode, errorBody);
-                return await ExecuteMockBuildTruthSourceAsync(request, context, cancellationToken);
+                return ProviderFailure<BuildTruthSourceResponse>(AiProviders.DeepSeek, "PROVIDER_HTTP_ERROR", "DeepSeek provider rejected the request.");
             }
 
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -125,6 +127,7 @@ public class AiProviderRouter(
                 ContentItemId = context.ContentItemId,
                 Capability = AiCapabilities.BuildTruthSource,
                 Provider = AiProviders.DeepSeek,
+                IsSimulated = false,
                 Model = model,
                 PromptPolicyVersion = promptVersion,
                 StructuredOutputJson = messageContent,
@@ -141,13 +144,13 @@ public class AiProviderRouter(
             dbContext.AiRecommendations.Add(recommendation);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return new AiCapabilityResult<BuildTruthSourceResponse>(true, parsed, recommendation, null);
+            return new AiCapabilityResult<BuildTruthSourceResponse>(true, parsed, recommendation, null, AiProviders.DeepSeek, false);
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            logger.LogWarning(ex, "DeepSeek execution failed. Falling back to deterministic mock.");
-            return await ExecuteMockBuildTruthSourceAsync(request, context, cancellationToken);
+            logger.LogWarning(ex, "DeepSeek execution failed.");
+            return ProviderFailure<BuildTruthSourceResponse>(AiProviders.DeepSeek, "PROVIDER_EXECUTION_ERROR", "DeepSeek provider failed to generate a result.");
         }
     }
 
@@ -222,6 +225,7 @@ public class AiProviderRouter(
             ContentItemId = context.ContentItemId,
             Capability = AiCapabilities.BuildTruthSource,
             Provider = AiProviders.Mock,
+            IsSimulated = true,
             Model = model,
             PromptPolicyVersion = promptVersion,
             StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -238,7 +242,7 @@ public class AiProviderRouter(
         dbContext.AiRecommendations.Add(recommendation);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AiCapabilityResult<BuildTruthSourceResponse>(true, responseData, recommendation, null);
+        return new AiCapabilityResult<BuildTruthSourceResponse>(true, responseData, recommendation, null, AiProviders.Mock, true);
     }
 
     private static string BuildSystemPrompt(BuildTruthSourceRequest request) =>
@@ -275,9 +279,9 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
         CancellationToken cancellationToken = default)
     {
         var provider = ResolveProvider(context);
-        var apiKey = configuration["DEEPSEEK_API_KEY"] ?? Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+        var apiKey = configuration["DEEPSEEK_API_KEY"];
 
-        if (provider == AiProviders.Mock || (provider == AiProviders.DeepSeek && string.IsNullOrWhiteSpace(apiKey)))
+        if (provider == AiProviders.Mock)
         {
             logger.LogInformation("Using Mock AI Provider for capability '{Capability}' (Channel: {ChannelId})",
                 AiCapabilities.GenerateIdeas, context.ChannelId);
@@ -286,10 +290,12 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
 
         if (provider == AiProviders.DeepSeek)
         {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return ProviderFailure<GenerateIdeasResponse>(provider, "PROVIDER_NOT_CONFIGURED", "DeepSeek provider is not configured.");
             return await ExecuteDeepSeekGenerateIdeasAsync(request, context, apiKey!, cancellationToken);
         }
 
-        return await ExecuteMockGenerateIdeasAsync(request, context, cancellationToken);
+        return ProviderFailure<GenerateIdeasResponse>(provider, "PROVIDER_UNSUPPORTED", "The selected AI provider is not supported.");
     }
 
     private async Task<AiCapabilityResult<GenerateIdeasResponse>> ExecuteDeepSeekGenerateIdeasAsync(
@@ -332,7 +338,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
             {
                 var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
                 logger.LogError("DeepSeek API error for generate_ideas: {StatusCode} - {Error}", response.StatusCode, errorBody);
-                return await ExecuteMockGenerateIdeasAsync(request, context, cancellationToken);
+                return ProviderFailure<GenerateIdeasResponse>(AiProviders.DeepSeek, "PROVIDER_HTTP_ERROR", "DeepSeek provider rejected the request.");
             }
 
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -342,7 +348,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
 
             if (string.IsNullOrWhiteSpace(rawContent))
             {
-                return await ExecuteMockGenerateIdeasAsync(request, context, cancellationToken);
+                return ProviderFailure<GenerateIdeasResponse>(AiProviders.DeepSeek, "PROVIDER_INVALID_RESPONSE", "DeepSeek provider returned an invalid response.");
             }
 
             var tokensIn = parsedRoot?["usage"]?["prompt_tokens"]?.GetValue<int>() ?? 500;
@@ -360,6 +366,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
                 TruthSourceVersionId = request.TruthSourceVersionId,
                 Capability = AiCapabilities.GenerateIdeas,
                 Provider = AiProviders.DeepSeek,
+                IsSimulated = false,
                 Model = model,
                 PromptPolicyVersion = promptVersion,
                 StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -376,12 +383,12 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
             dbContext.AiRecommendations.Add(recommendation);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return new AiCapabilityResult<GenerateIdeasResponse>(true, responseData, recommendation, null);
+            return new AiCapabilityResult<GenerateIdeasResponse>(true, responseData, recommendation, null, AiProviders.DeepSeek, false);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Error calling DeepSeek API for generate_ideas, falling back to mock provider");
-            return await ExecuteMockGenerateIdeasAsync(request, context, cancellationToken);
+            logger.LogWarning(ex, "Error calling DeepSeek API for generate_ideas");
+            return ProviderFailure<GenerateIdeasResponse>(AiProviders.DeepSeek, "PROVIDER_EXECUTION_ERROR", "DeepSeek provider failed to generate ideas.");
         }
     }
 
@@ -467,6 +474,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
             TruthSourceVersionId = request.TruthSourceVersionId,
             Capability = AiCapabilities.GenerateIdeas,
             Provider = AiProviders.Mock,
+            IsSimulated = true,
             Model = model,
             PromptPolicyVersion = promptVersion,
             StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -483,7 +491,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
         dbContext.AiRecommendations.Add(recommendation);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AiCapabilityResult<GenerateIdeasResponse>(true, responseData, recommendation, null);
+        return new AiCapabilityResult<GenerateIdeasResponse>(true, responseData, recommendation, null, AiProviders.Mock, true);
     }
 
     private static string Truncate(string value, int maxLen) =>
@@ -566,9 +574,9 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
         CancellationToken cancellationToken = default)
     {
         var provider = ResolveProvider(context);
-        var apiKey = configuration["DEEPSEEK_API_KEY"] ?? Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+        var apiKey = configuration["DEEPSEEK_API_KEY"];
 
-        if (provider == AiProviders.Mock || (provider == AiProviders.DeepSeek && string.IsNullOrWhiteSpace(apiKey)))
+        if (provider == AiProviders.Mock)
         {
             logger.LogInformation("Using Mock AI Provider for capability '{Capability}' (Channel: {ChannelId})",
                 AiCapabilities.GenerateScript, context.ChannelId);
@@ -577,10 +585,12 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
 
         if (provider == AiProviders.DeepSeek)
         {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return ProviderFailure<GenerateScriptResponse>(provider, "PROVIDER_NOT_CONFIGURED", "DeepSeek provider is not configured.");
             return await ExecuteDeepSeekGenerateScriptAsync(request, context, apiKey!, cancellationToken);
         }
 
-        return await ExecuteMockGenerateScriptAsync(request, context, cancellationToken);
+        return ProviderFailure<GenerateScriptResponse>(provider, "PROVIDER_UNSUPPORTED", "The selected AI provider is not supported.");
     }
 
     private async Task<AiCapabilityResult<GenerateScriptResponse>> ExecuteDeepSeekGenerateScriptAsync(
@@ -623,7 +633,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
             {
                 var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
                 logger.LogError("DeepSeek API error for generate_script: {StatusCode} - {Error}", response.StatusCode, errorBody);
-                return await ExecuteMockGenerateScriptAsync(request, context, cancellationToken);
+                return ProviderFailure<GenerateScriptResponse>(AiProviders.DeepSeek, "PROVIDER_HTTP_ERROR", "DeepSeek provider rejected the request.");
             }
 
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -632,7 +642,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
 
             if (string.IsNullOrWhiteSpace(rawContent))
             {
-                return await ExecuteMockGenerateScriptAsync(request, context, cancellationToken);
+                return ProviderFailure<GenerateScriptResponse>(AiProviders.DeepSeek, "PROVIDER_INVALID_RESPONSE", "DeepSeek provider returned an invalid response.");
             }
 
             var tokensIn = parsedRoot?["usage"]?["prompt_tokens"]?.GetValue<int>() ?? 650;
@@ -650,6 +660,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
                 TruthSourceVersionId = request.TruthSourceVersionId,
                 Capability = AiCapabilities.GenerateScript,
                 Provider = AiProviders.DeepSeek,
+                IsSimulated = false,
                 Model = model,
                 PromptPolicyVersion = promptVersion,
                 StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -666,12 +677,12 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
             dbContext.AiRecommendations.Add(recommendation);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return new AiCapabilityResult<GenerateScriptResponse>(true, responseData, recommendation, null);
+            return new AiCapabilityResult<GenerateScriptResponse>(true, responseData, recommendation, null, AiProviders.DeepSeek, false);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Error calling DeepSeek API for generate_script, falling back to mock provider");
-            return await ExecuteMockGenerateScriptAsync(request, context, cancellationToken);
+            logger.LogWarning(ex, "Error calling DeepSeek API for generate_script");
+            return ProviderFailure<GenerateScriptResponse>(AiProviders.DeepSeek, "PROVIDER_EXECUTION_ERROR", "DeepSeek provider failed to generate a script.");
         }
     }
 
@@ -754,6 +765,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
             TruthSourceVersionId = request.TruthSourceVersionId,
             Capability = AiCapabilities.GenerateScript,
             Provider = AiProviders.Mock,
+            IsSimulated = true,
             Model = model,
             PromptPolicyVersion = promptVersion,
             StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -770,7 +782,7 @@ NUNCA incluyas razonamiento privado ni bloques de pensamiento fuera del JSON.";
         dbContext.AiRecommendations.Add(recommendation);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AiCapabilityResult<GenerateScriptResponse>(true, responseData, recommendation, null);
+        return new AiCapabilityResult<GenerateScriptResponse>(true, responseData, recommendation, null, AiProviders.Mock, true);
     }
 
     private static string BuildGenerateScriptSystemPrompt(GenerateScriptRequest request) =>
@@ -845,9 +857,9 @@ Reglas estrictas:
         CancellationToken cancellationToken = default)
     {
         var provider = ResolveProvider(context);
-        var apiKey = configuration["DEEPSEEK_API_KEY"] ?? Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+        var apiKey = configuration["DEEPSEEK_API_KEY"];
 
-        if (provider == AiProviders.Mock || (provider == AiProviders.DeepSeek && string.IsNullOrWhiteSpace(apiKey)))
+        if (provider == AiProviders.Mock)
         {
             logger.LogInformation("Using Mock AI Provider for capability '{Capability}' (Channel: {ChannelId})",
                 AiCapabilities.ReviewScript, context.ChannelId);
@@ -856,10 +868,12 @@ Reglas estrictas:
 
         if (provider == AiProviders.DeepSeek)
         {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return ProviderFailure<ReviewScriptResponse>(provider, "PROVIDER_NOT_CONFIGURED", "DeepSeek provider is not configured.");
             return await ExecuteDeepSeekReviewScriptAsync(request, context, apiKey!, cancellationToken);
         }
 
-        return await ExecuteMockReviewScriptAsync(request, context, cancellationToken);
+        return ProviderFailure<ReviewScriptResponse>(provider, "PROVIDER_UNSUPPORTED", "The selected AI provider is not supported.");
     }
 
     private async Task<AiCapabilityResult<ReviewScriptResponse>> ExecuteDeepSeekReviewScriptAsync(
@@ -902,7 +916,7 @@ Reglas estrictas:
             {
                 var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
                 logger.LogError("DeepSeek API error for review_script: {StatusCode} - {Error}", response.StatusCode, errorBody);
-                return await ExecuteMockReviewScriptAsync(request, context, cancellationToken);
+                return ProviderFailure<ReviewScriptResponse>(AiProviders.DeepSeek, "PROVIDER_HTTP_ERROR", "DeepSeek provider rejected the request.");
             }
 
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -911,7 +925,7 @@ Reglas estrictas:
 
             if (string.IsNullOrWhiteSpace(rawContent))
             {
-                return await ExecuteMockReviewScriptAsync(request, context, cancellationToken);
+                return ProviderFailure<ReviewScriptResponse>(AiProviders.DeepSeek, "PROVIDER_INVALID_RESPONSE", "DeepSeek provider returned an invalid response.");
             }
 
             var tokensIn = parsedRoot?["usage"]?["prompt_tokens"]?.GetValue<int>() ?? 700;
@@ -929,6 +943,7 @@ Reglas estrictas:
                 TruthSourceVersionId = request.TruthSourceVersionId,
                 Capability = AiCapabilities.ReviewScript,
                 Provider = AiProviders.DeepSeek,
+                IsSimulated = false,
                 Model = model,
                 PromptPolicyVersion = promptVersion,
                 StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -945,12 +960,12 @@ Reglas estrictas:
             dbContext.AiRecommendations.Add(recommendation);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return new AiCapabilityResult<ReviewScriptResponse>(true, responseData, recommendation, null);
+            return new AiCapabilityResult<ReviewScriptResponse>(true, responseData, recommendation, null, AiProviders.DeepSeek, false);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Error calling DeepSeek API for review_script, falling back to mock provider");
-            return await ExecuteMockReviewScriptAsync(request, context, cancellationToken);
+            logger.LogWarning(ex, "Error calling DeepSeek API for review_script");
+            return ProviderFailure<ReviewScriptResponse>(AiProviders.DeepSeek, "PROVIDER_EXECUTION_ERROR", "DeepSeek provider failed to review the script.");
         }
     }
 
@@ -1017,6 +1032,7 @@ Reglas estrictas:
             TruthSourceVersionId = request.TruthSourceVersionId,
             Capability = AiCapabilities.ReviewScript,
             Provider = AiProviders.Mock,
+            IsSimulated = true,
             Model = model,
             PromptPolicyVersion = promptVersion,
             StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -1033,7 +1049,7 @@ Reglas estrictas:
         dbContext.AiRecommendations.Add(recommendation);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AiCapabilityResult<ReviewScriptResponse>(true, responseData, recommendation, null);
+        return new AiCapabilityResult<ReviewScriptResponse>(true, responseData, recommendation, null, AiProviders.Mock, true);
     }
 
     private static string BuildReviewScriptSystemPrompt(ReviewScriptRequest request) =>
@@ -1108,9 +1124,9 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
         CancellationToken cancellationToken = default)
     {
         var provider = ResolveProvider(context);
-        var apiKey = configuration["DEEPSEEK_API_KEY"] ?? Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+        var apiKey = configuration["DEEPSEEK_API_KEY"];
 
-        if (provider == AiProviders.Mock || (provider == AiProviders.DeepSeek && string.IsNullOrWhiteSpace(apiKey)))
+        if (provider == AiProviders.Mock)
         {
             logger.LogInformation("Using Mock AI Provider for capability '{Capability}' (Channel: {ChannelId})",
                 AiCapabilities.PlanStoryboard, context.ChannelId);
@@ -1119,10 +1135,12 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
 
         if (provider == AiProviders.DeepSeek)
         {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return ProviderFailure<PlanStoryboardResponse>(provider, "PROVIDER_NOT_CONFIGURED", "DeepSeek provider is not configured.");
             return await ExecuteDeepSeekPlanStoryboardAsync(request, context, apiKey!, cancellationToken);
         }
 
-        return await ExecuteMockPlanStoryboardAsync(request, context, cancellationToken);
+        return ProviderFailure<PlanStoryboardResponse>(provider, "PROVIDER_UNSUPPORTED", "The selected AI provider is not supported.");
     }
 
     private async Task<AiCapabilityResult<PlanStoryboardResponse>> ExecuteDeepSeekPlanStoryboardAsync(
@@ -1165,7 +1183,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
             {
                 var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
                 logger.LogError("DeepSeek API error for plan_storyboard: {StatusCode} - {Error}", response.StatusCode, errorBody);
-                return await ExecuteMockPlanStoryboardAsync(request, context, cancellationToken);
+                return ProviderFailure<PlanStoryboardResponse>(AiProviders.DeepSeek, "PROVIDER_HTTP_ERROR", "DeepSeek provider rejected the request.");
             }
 
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -1174,7 +1192,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
 
             if (string.IsNullOrWhiteSpace(rawContent))
             {
-                return await ExecuteMockPlanStoryboardAsync(request, context, cancellationToken);
+                return ProviderFailure<PlanStoryboardResponse>(AiProviders.DeepSeek, "PROVIDER_INVALID_RESPONSE", "DeepSeek provider returned an invalid response.");
             }
 
             var tokensIn = parsedRoot?["usage"]?["prompt_tokens"]?.GetValue<int>() ?? 800;
@@ -1192,6 +1210,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
                 TruthSourceVersionId = request.TruthSourceVersionId,
                 Capability = AiCapabilities.PlanStoryboard,
                 Provider = AiProviders.DeepSeek,
+                IsSimulated = false,
                 Model = model,
                 PromptPolicyVersion = promptVersion,
                 StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -1208,12 +1227,12 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
             dbContext.AiRecommendations.Add(recommendation);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return new AiCapabilityResult<PlanStoryboardResponse>(true, responseData, recommendation, null);
+            return new AiCapabilityResult<PlanStoryboardResponse>(true, responseData, recommendation, null, AiProviders.DeepSeek, false);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Error calling DeepSeek API for plan_storyboard, falling back to mock provider");
-            return await ExecuteMockPlanStoryboardAsync(request, context, cancellationToken);
+            logger.LogWarning(ex, "Error calling DeepSeek API for plan_storyboard");
+            return ProviderFailure<PlanStoryboardResponse>(AiProviders.DeepSeek, "PROVIDER_EXECUTION_ERROR", "DeepSeek provider failed to plan the storyboard.");
         }
     }
 
@@ -1394,6 +1413,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
             TruthSourceVersionId = request.TruthSourceVersionId,
             Capability = AiCapabilities.PlanStoryboard,
             Provider = AiProviders.Mock,
+            IsSimulated = true,
             Model = model,
             PromptPolicyVersion = promptVersion,
             StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -1410,7 +1430,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
         dbContext.AiRecommendations.Add(recommendation);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AiCapabilityResult<PlanStoryboardResponse>(true, responseData, recommendation, null);
+        return new AiCapabilityResult<PlanStoryboardResponse>(true, responseData, recommendation, null, AiProviders.Mock, true);
     }
 
     public async Task<AiCapabilityResult<ReviewStoryboardResponse>> ReviewStoryboardAsync(
@@ -1419,9 +1439,9 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
         CancellationToken cancellationToken = default)
     {
         var provider = ResolveProvider(context);
-        var apiKey = configuration["DEEPSEEK_API_KEY"] ?? Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+        var apiKey = configuration["DEEPSEEK_API_KEY"];
 
-        if (provider == AiProviders.Mock || (provider == AiProviders.DeepSeek && string.IsNullOrWhiteSpace(apiKey)))
+        if (provider == AiProviders.Mock)
         {
             logger.LogInformation("Using Mock AI Provider for capability '{Capability}' (Channel: {ChannelId})",
                 AiCapabilities.ReviewStoryboard, context.ChannelId);
@@ -1430,10 +1450,12 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
 
         if (provider == AiProviders.DeepSeek)
         {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return ProviderFailure<ReviewStoryboardResponse>(provider, "PROVIDER_NOT_CONFIGURED", "DeepSeek provider is not configured.");
             return await ExecuteDeepSeekReviewStoryboardAsync(request, context, apiKey!, cancellationToken);
         }
 
-        return await ExecuteMockReviewStoryboardAsync(request, context, cancellationToken);
+        return ProviderFailure<ReviewStoryboardResponse>(provider, "PROVIDER_UNSUPPORTED", "The selected AI provider is not supported.");
     }
 
     private async Task<AiCapabilityResult<ReviewStoryboardResponse>> ExecuteDeepSeekReviewStoryboardAsync(
@@ -1476,7 +1498,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
             {
                 var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
                 logger.LogError("DeepSeek API error for review_storyboard: {StatusCode} - {Error}", response.StatusCode, errorBody);
-                return await ExecuteMockReviewStoryboardAsync(request, context, cancellationToken);
+                return ProviderFailure<ReviewStoryboardResponse>(AiProviders.DeepSeek, "PROVIDER_HTTP_ERROR", "DeepSeek provider rejected the request.");
             }
 
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -1485,7 +1507,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
 
             if (string.IsNullOrWhiteSpace(rawContent))
             {
-                return await ExecuteMockReviewStoryboardAsync(request, context, cancellationToken);
+                return ProviderFailure<ReviewStoryboardResponse>(AiProviders.DeepSeek, "PROVIDER_INVALID_RESPONSE", "DeepSeek provider returned an invalid response.");
             }
 
             var tokensIn = parsedRoot?["usage"]?["prompt_tokens"]?.GetValue<int>() ?? 750;
@@ -1503,6 +1525,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
                 TruthSourceVersionId = null,
                 Capability = AiCapabilities.ReviewStoryboard,
                 Provider = AiProviders.DeepSeek,
+                IsSimulated = false,
                 Model = model,
                 PromptPolicyVersion = promptVersion,
                 StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -1519,12 +1542,12 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
             dbContext.AiRecommendations.Add(recommendation);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return new AiCapabilityResult<ReviewStoryboardResponse>(true, responseData, recommendation, null);
+            return new AiCapabilityResult<ReviewStoryboardResponse>(true, responseData, recommendation, null, AiProviders.DeepSeek, false);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Error calling DeepSeek API for review_storyboard, falling back to mock provider");
-            return await ExecuteMockReviewStoryboardAsync(request, context, cancellationToken);
+            logger.LogWarning(ex, "Error calling DeepSeek API for review_storyboard");
+            return ProviderFailure<ReviewStoryboardResponse>(AiProviders.DeepSeek, "PROVIDER_EXECUTION_ERROR", "DeepSeek provider failed to review the storyboard.");
         }
     }
 
@@ -1596,6 +1619,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
             TruthSourceVersionId = null,
             Capability = AiCapabilities.ReviewStoryboard,
             Provider = AiProviders.Mock,
+            IsSimulated = true,
             Model = model,
             PromptPolicyVersion = promptVersion,
             StructuredOutputJson = JsonSerializer.Serialize(responseData, JsonOptions),
@@ -1612,7 +1636,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
         dbContext.AiRecommendations.Add(recommendation);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AiCapabilityResult<ReviewStoryboardResponse>(true, responseData, recommendation, null);
+        return new AiCapabilityResult<ReviewStoryboardResponse>(true, responseData, recommendation, null, AiProviders.Mock, true);
     }
 
     private static string BuildPlanStoryboardSystemPrompt(PlanStoryboardRequest request) =>
@@ -1739,4 +1763,19 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con la estructura:
         sb.AppendLine("\nRealiza la auditoría visual consultiva en formato JSON.");
         return sb.ToString();
     }
+
+    private static AiCapabilityResult<T> ProviderFailure<T>(
+        string provider,
+        string errorCode,
+        string message,
+        string? correlationId = null) =>
+        new(
+            Success: false,
+            Data: default,
+            Recommendation: null,
+            ErrorMessage: message,
+            Provider: provider,
+            IsSimulated: false,
+            ErrorCode: errorCode,
+            CorrelationId: correlationId);
 }

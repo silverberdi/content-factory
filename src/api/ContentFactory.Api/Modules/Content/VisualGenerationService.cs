@@ -14,15 +14,17 @@ public class VisualGenerationService(
     IConfiguration configuration,
     ILogger<VisualGenerationService> logger) : IVisualGenerationService
 {
-    private readonly string _configuredProviderName = configuration["VISUAL_PROVIDER"] ?? configuration["VisualGeneration:Provider"] ?? "Mock";
+    private readonly string? _configuredProviderName = configuration["VISUAL_PROVIDER"] ?? configuration["VisualGeneration:Provider"];
     private readonly string _environment = configuration["ENVIRONMENT"] ?? "development";
 
     private IVisualGenerationProvider ResolveProvider(string? preferredProvider = null)
     {
         var targetName = preferredProvider ?? _configuredProviderName;
+        if (string.IsNullOrWhiteSpace(targetName))
+            throw new InvalidOperationException("No visual provider was explicitly configured.");
+
         return providers.FirstOrDefault(p => string.Equals(p.ProviderName, targetName, StringComparison.OrdinalIgnoreCase))
-            ?? providers.FirstOrDefault(p => string.Equals(p.ProviderName, "Mock", StringComparison.OrdinalIgnoreCase))
-            ?? providers.First();
+            ?? throw new InvalidOperationException($"Configured visual provider '{targetName}' is unavailable.");
     }
 
     private static bool IsVisualAssetType(string assetType) => assetType is
@@ -86,7 +88,15 @@ public class VisualGenerationService(
         var storyboardVersionId = activeStoryboardVersion?.Id ?? Guid.NewGuid();
 
         // Identify target requirements
-        var activeProvider = ResolveProvider();
+        IVisualGenerationProvider activeProvider;
+        try
+        {
+            activeProvider = ResolveProvider();
+        }
+        catch (InvalidOperationException)
+        {
+            return new DispatchVisualGenerationResult(false, [], "Configured visual provider is unavailable; no Mock fallback was selected.");
+        }
         var candidateRequirements = new List<AssetRequirement>();
 
         if (request.AssetRequirementId.HasValue)
@@ -566,7 +576,37 @@ public class VisualGenerationService(
             return;
         }
 
-        var provider = ResolveProvider(job.Provider);
+        var attempt = new JobAttempt
+        {
+            Id = Guid.NewGuid(),
+            JobId = job.Id,
+            AttemptNumber = attemptNumber,
+            StartedAtUtc = DateTime.UtcNow,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        IVisualGenerationProvider provider;
+        try
+        {
+            provider = ResolveProvider(job.Provider);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Visual provider resolution failed for Job {JobId}", job.Id);
+            attempt.CompletedAtUtc = DateTime.UtcNow;
+            attempt.Status = JobStatus.FailedActionRequired;
+            attempt.ErrorCode = "PROVIDER_NOT_CONFIGURED";
+            attempt.ErrorMessage = "The selected visual provider is unavailable.";
+            job.Status = JobStatus.FailedActionRequired;
+            job.ErrorCode = attempt.ErrorCode;
+            job.SanitizedErrorMessage = "Configured visual provider is unavailable; no Mock fallback was selected.";
+            job.CompletedAtUtc = DateTime.UtcNow;
+            job.UpdatedAtUtc = DateTime.UtcNow;
+            dbContext.JobAttempts.Add(attempt);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
         var request = new VisualGenerationRequest(
             JobId: job.Id,
             CorrelationId: job.CorrelationId,
@@ -586,15 +626,6 @@ public class VisualGenerationService(
             MotionIntent: requirement.MotionIntent,
             CandidateCount: job.CandidateCount > 0 ? job.CandidateCount : 1
         );
-
-        var attempt = new JobAttempt
-        {
-            Id = Guid.NewGuid(),
-            JobId = job.Id,
-            AttemptNumber = attemptNumber,
-            StartedAtUtc = DateTime.UtcNow,
-            CreatedAtUtc = DateTime.UtcNow
-        };
 
         try
         {
@@ -644,7 +675,8 @@ public class VisualGenerationService(
                         Height = output.Height,
                         DurationSeconds = output.DurationSeconds,
                         ChecksumSha256 = upload.ChecksumSha256,
-                        Provider = provider.ProviderName,
+                        Provider = result.Provider ?? provider.ProviderName,
+                        IsSimulated = result.IsSimulated,
                         ProviderModelOrWorkflow = output.ProviderModelOrWorkflow,
                         GenerationParametersSnapshot = output.GenerationParametersSnapshot,
                         Status = GeneratedAssetStatus.PendingReview,
@@ -801,6 +833,7 @@ public class VisualGenerationService(
             DurationSeconds: asset.DurationSeconds,
             ChecksumSha256: asset.ChecksumSha256,
             Provider: asset.Provider,
+            IsSimulated: asset.IsSimulated,
             ProviderModelOrWorkflow: asset.ProviderModelOrWorkflow,
             GenerationParametersSnapshot: asset.GenerationParametersSnapshot,
             Status: asset.Status,
