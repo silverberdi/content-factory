@@ -21,6 +21,8 @@ Code MUST NOT encode business behavior as `callDeepSeekForX()`.
 
 ## Provider posture
 
+When a real provider is selected, missing configuration, an invalid response, or an execution failure MUST remain an identifiable provider error. The system MUST NOT invoke Mock implicitly as recovery. Mock is valid only when selected explicitly by request or environment configuration, and its result must be identifiable as simulated.
+
 The application is fully provider-agnostic. All AI operations are requested by capability through `IAiProviderRouter`:
 
 Configurable Reasoning Providers (OpenAI-compatible APIs):

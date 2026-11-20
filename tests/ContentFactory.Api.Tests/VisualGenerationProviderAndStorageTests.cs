@@ -77,6 +77,8 @@ public class VisualGenerationProviderAndStorageTests
         Assert.Equal(2, result.Outputs.Count);
         Assert.False(result.IsRetryable);
         Assert.Null(result.ErrorCode);
+        Assert.Equal("Mock", result.Provider);
+        Assert.True(result.IsSimulated);
 
         var cand1 = result.Outputs[0];
         Assert.Equal(1, cand1.VariantIndex);

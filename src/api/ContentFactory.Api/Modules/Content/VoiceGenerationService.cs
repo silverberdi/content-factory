@@ -16,7 +16,7 @@ public class VoiceGenerationService(
     IConfiguration configuration,
     ILogger<VoiceGenerationService> logger) : IVoiceGenerationService
 {
-    private readonly string _configuredProviderName = configuration["VOICE_PROVIDER"] ?? configuration["VoiceGeneration:Provider"] ?? "Mock";
+    private readonly string? _configuredProviderName = configuration["VOICE_PROVIDER"] ?? configuration["VoiceGeneration:Provider"];
     private readonly string _environment = configuration["ENVIRONMENT"] ?? "development";
 
     private readonly TimingTolerancePolicy _timingPolicy = new(
@@ -27,9 +27,11 @@ public class VoiceGenerationService(
     private IVoiceGenerationProvider ResolveProvider(string? preferredProvider = null)
     {
         var targetName = preferredProvider ?? _configuredProviderName;
+        if (string.IsNullOrWhiteSpace(targetName))
+            throw new InvalidOperationException("No voice provider was explicitly configured.");
+
         return providers.FirstOrDefault(p => string.Equals(p.ProviderName, targetName, StringComparison.OrdinalIgnoreCase))
-            ?? providers.FirstOrDefault(p => string.Equals(p.ProviderName, "Mock", StringComparison.OrdinalIgnoreCase))
-            ?? providers.First();
+            ?? throw new InvalidOperationException($"Configured voice provider '{targetName}' is unavailable.");
     }
 
     public async Task<DispatchVoiceGenerationResult> DispatchGenerationAsync(
@@ -93,7 +95,15 @@ public class VoiceGenerationService(
         var storyboardVersionId = activeStoryboardVersion?.Id ?? Guid.NewGuid();
 
         // Identify TtsVoiceover requirements
-        var activeProvider = ResolveProvider();
+        IVoiceGenerationProvider activeProvider;
+        try
+        {
+            activeProvider = ResolveProvider();
+        }
+        catch (InvalidOperationException)
+        {
+            return new DispatchVoiceGenerationResult(false, [], "Configured voice provider is unavailable; no Mock fallback was selected.");
+        }
         var candidateRequirements = new List<AssetRequirement>();
 
         if (request.AssetRequirementId.HasValue)
@@ -680,7 +690,36 @@ public class VoiceGenerationService(
             voiceProfile = VoiceProfiles.GetProfileForChannel(channel?.Slug);
         }
 
-        var provider = ResolveProvider(job.Provider);
+        var attempt = new JobAttempt
+        {
+            Id = Guid.NewGuid(),
+            JobId = job.Id,
+            AttemptNumber = attemptNumber,
+            StartedAtUtc = DateTime.UtcNow,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        IVoiceGenerationProvider provider;
+        try
+        {
+            provider = ResolveProvider(job.Provider);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Voice provider resolution failed for Job {JobId}", job.Id);
+            attempt.CompletedAtUtc = DateTime.UtcNow;
+            attempt.Status = JobStatus.FailedActionRequired;
+            attempt.ErrorCode = "PROVIDER_NOT_CONFIGURED";
+            attempt.ErrorMessage = "The selected voice provider is unavailable.";
+            job.Status = JobStatus.FailedActionRequired;
+            job.ErrorCode = attempt.ErrorCode;
+            job.SanitizedErrorMessage = "Configured voice provider is unavailable; no Mock fallback was selected.";
+            job.CompletedAtUtc = DateTime.UtcNow;
+            job.UpdatedAtUtc = DateTime.UtcNow;
+            dbContext.JobAttempts.Add(attempt);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
 
         var request = new VoiceGenerationRequest(
             JobId: job.Id,
@@ -701,15 +740,6 @@ public class VoiceGenerationService(
             TargetAudioFormat: "audio/wav",
             ChannelSlug: null
         );
-
-        var attempt = new JobAttempt
-        {
-            Id = Guid.NewGuid(),
-            JobId = job.Id,
-            AttemptNumber = attemptNumber,
-            StartedAtUtc = DateTime.UtcNow,
-            CreatedAtUtc = DateTime.UtcNow
-        };
 
         try
         {
@@ -777,7 +807,8 @@ public class VoiceGenerationService(
                         FileSizeBytes = upload.FileSizeBytes,
                         DurationSeconds = output.DurationSeconds,
                         ChecksumSha256 = upload.ChecksumSha256,
-                        Provider = provider.ProviderName,
+                        Provider = result.Provider ?? provider.ProviderName,
+                        IsSimulated = result.IsSimulated,
                         ProviderModelOrWorkflow = output.ProviderModel,
                         GenerationParametersSnapshot = completeSnapshot,
                         Status = GeneratedAssetStatus.PendingReview,
@@ -1004,6 +1035,7 @@ public class VoiceGenerationService(
             DurationSeconds: asset.DurationSeconds,
             ChecksumSha256: asset.ChecksumSha256,
             Provider: asset.Provider,
+            IsSimulated: asset.IsSimulated,
             ProviderModelOrWorkflow: asset.ProviderModelOrWorkflow,
             GenerationParametersSnapshot: asset.GenerationParametersSnapshot,
             Status: asset.Status,

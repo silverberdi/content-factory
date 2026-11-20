@@ -46,7 +46,11 @@ public record AiCapabilityResult<TResponse>(
     bool Success,
     TResponse? Data,
     AiRecommendation? Recommendation,
-    string? ErrorMessage
+    string? ErrorMessage,
+    string? Provider = null,
+    bool IsSimulated = false,
+    string? ErrorCode = null,
+    string? CorrelationId = null
 );
 
 public record BuildTruthSourceRequest(

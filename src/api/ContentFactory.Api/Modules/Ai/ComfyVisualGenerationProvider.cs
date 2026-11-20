@@ -61,14 +61,13 @@ public class ComfyVisualGenerationProvider(
 
                 if (!promptResponse.IsSuccessStatusCode)
                 {
-                    var errorBody = await promptResponse.Content.ReadAsStringAsync(cancellationToken);
                     sw.Stop();
                     var is5xx = (int)promptResponse.StatusCode >= 500;
                     return new VisualGenerationResult(
                         Success: false,
                         Outputs: [],
                         ErrorCode: is5xx ? "COMFY_SERVER_ERROR" : "COMFY_BAD_REQUEST",
-                        ErrorMessage: $"Comfy returned HTTP {(int)promptResponse.StatusCode}: {errorBody}",
+                        ErrorMessage: $"Comfy rejected the generation request with HTTP {(int)promptResponse.StatusCode}.",
                         IsRetryable: is5xx,
                         ExecutionDurationMs: sw.ElapsedMilliseconds,
                         EstimatedCostUsd: 0.005m,
@@ -133,7 +132,9 @@ public class ComfyVisualGenerationProvider(
                 IsRetryable: false,
                 ExecutionDurationMs: sw.ElapsedMilliseconds,
                 EstimatedCostUsd: cost,
-                ActualCostUsd: cost
+                ActualCostUsd: cost,
+                Provider: ProviderName,
+                IsSimulated: false
             );
         }
         catch (HttpRequestException ex)
@@ -144,7 +145,7 @@ public class ComfyVisualGenerationProvider(
                 Success: false,
                 Outputs: [],
                 ErrorCode: "COMFY_CONNECTION_FAILED",
-                ErrorMessage: $"Cannot connect to Comfy execution server at {_endpoint}: {ex.Message}",
+                ErrorMessage: "Cannot connect to the configured visual generation provider.",
                 IsRetryable: true,
                 ExecutionDurationMs: sw.ElapsedMilliseconds,
                 EstimatedCostUsd: null,
@@ -174,7 +175,7 @@ public class ComfyVisualGenerationProvider(
                 Success: false,
                 Outputs: [],
                 ErrorCode: "COMFY_UNEXPECTED_ERROR",
-                ErrorMessage: $"Unexpected error in Comfy provider: {ex.Message}",
+                ErrorMessage: "The visual generation provider returned an unexpected error.",
                 IsRetryable: false,
                 ExecutionDurationMs: sw.ElapsedMilliseconds,
                 EstimatedCostUsd: null,

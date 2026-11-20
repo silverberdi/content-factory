@@ -36,7 +36,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["DATABASE_URL"] = null,
                 ["POSTGRES_HOST"] = null,
                 ["POSTGRES_DATABASE"] = null,
-                ["POSTGRES_USER"] = null
+                ["POSTGRES_USER"] = null,
+                // Mock is a deliberate test selection; production/default provider behavior is tested separately.
+                ["AI_DEFAULT_PROVIDER"] = "Mock"
             });
         });
     }

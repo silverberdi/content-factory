@@ -23,7 +23,9 @@ public class VoiceGenerationServiceTests
     private static (VoiceGenerationService Service, AppDbContext DbContext) CreateTestSetup()
     {
         var dbContext = CreateInMemoryDbContext();
-        var config = new ConfigurationBuilder().Build();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["VOICE_PROVIDER"] = "Mock" })
+            .Build();
         var storage = new MinioStorageService(config, new TestHttpClientFactory(), NullLogger<MinioStorageService>.Instance);
         var mockProvider = new MockVoiceGenerationProvider(NullLogger<MockVoiceGenerationProvider>.Instance);
         var service = new VoiceGenerationService(
@@ -277,6 +279,19 @@ public class VoiceGenerationServiceTests
         Assert.True(generatedAssets[0].DurationSeconds > 0);
         Assert.Equal(GeneratedAssetStatus.PendingReview, generatedAssets[0].Status);
         Assert.False(generatedAssets[0].IsSelectedForAssembly);
+        Assert.Equal("Mock", generatedAssets[0].Provider);
+        Assert.True(generatedAssets[0].IsSimulated);
+
+        job.Provider = "Gemini";
+        job.Status = JobStatus.Queued;
+        await dbContext.SaveChangesAsync();
+        await service.ProcessQueuedJobsAsync();
+
+        var failedJob = await dbContext.Jobs.Include(j => j.Attempts).FirstAsync(j => j.Id == job.Id);
+        Assert.Equal(JobStatus.FailedActionRequired, failedJob.Status);
+        Assert.Equal("PROVIDER_NOT_CONFIGURED", failedJob.ErrorCode);
+        Assert.Contains("no Mock fallback", failedJob.SanitizedErrorMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(2, failedJob.Attempts.Count);
     }
 
     [Fact]

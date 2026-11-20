@@ -28,7 +28,9 @@ public class VoiceGenerationApiIntegrationTests
     private static (VoiceGenerationService voiceService, VisualGenerationService visualService, MinioStorageService storage, AppDbContext dbContext) CreateTestSetup()
     {
         var dbContext = CreateInMemoryDbContext();
-        var config = new ConfigurationBuilder().Build();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["VOICE_PROVIDER"] = "Mock" })
+            .Build();
         var storage = new MinioStorageService(config, new TestHttpClientFactory(), NullLogger<MinioStorageService>.Instance);
         var mockVoiceProvider = new MockVoiceGenerationProvider(NullLogger<MockVoiceGenerationProvider>.Instance);
         var mockVisualProvider = new MockVisualGenerationProvider(NullLogger<MockVisualGenerationProvider>.Instance);

@@ -138,7 +138,9 @@ public class MockVoiceGenerationProvider(ILogger<MockVoiceGenerationProvider> lo
             IsRetryable: false,
             ExecutionDurationMs: sw.ElapsedMilliseconds,
             EstimatedCostUsd: 0.0015m * candidateCount,
-            ActualCostUsd: 0.0015m * candidateCount
+            ActualCostUsd: 0.0015m * candidateCount,
+            Provider: ProviderName,
+            IsSimulated: true
         );
     }
 

@@ -41,7 +41,9 @@ public record VisualGenerationResult(
     bool IsRetryable,
     long ExecutionDurationMs,
     decimal? EstimatedCostUsd,
-    decimal? ActualCostUsd
+    decimal? ActualCostUsd,
+    string? Provider = null,
+    bool IsSimulated = false
 );
 
 public interface IVisualGenerationProvider

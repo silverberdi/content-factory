@@ -83,6 +83,35 @@ public class AiProviderRouterTests
         Assert.Equal(AiProviders.Mock, recommendationInDb.Provider);
         Assert.False(string.IsNullOrWhiteSpace(recommendationInDb.StructuredOutputJson));
         Assert.False(string.IsNullOrWhiteSpace(recommendationInDb.Rationale));
+        Assert.Equal(AiProviders.Mock, result.Provider);
+        Assert.True(result.IsSimulated);
+        Assert.True(recommendationInDb.IsSimulated);
+    }
+
+    [Fact]
+    public async Task BuildTruthSource_WithExplicitDeepSeekButMissingConfiguration_FailsWithoutMockFallback()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var router = new AiProviderRouter(
+            dbContext,
+            new TestHttpClientFactory(),
+            new ConfigurationBuilder().Build(),
+            NullLogger<AiProviderRouter>.Instance);
+
+        var result = await router.BuildTruthSourceAsync(
+            new BuildTruthSourceRequest(
+                "IA Simple ES",
+                "es",
+                "AI",
+                [new EvidenceSnippetDto(Guid.NewGuid(), "Evidence", null, EvidenceRole.PrimaryLead, "Deterministic evidence.")]),
+            new AiRoutingContext(Guid.NewGuid(), Guid.NewGuid(), PreferredProvider: "deepseek"));
+
+        Assert.False(result.Success);
+        Assert.Equal(AiProviders.DeepSeek, result.Provider);
+        Assert.False(result.IsSimulated);
+        Assert.Equal("PROVIDER_NOT_CONFIGURED", result.ErrorCode);
+        Assert.DoesNotContain("Mock", result.ErrorMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(await dbContext.AiRecommendations.ToListAsync());
     }
 
     [Fact]

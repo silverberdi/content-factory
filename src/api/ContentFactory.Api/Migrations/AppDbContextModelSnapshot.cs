@@ -115,6 +115,9 @@ namespace ContentFactory.Api.Migrations
 
             modelBuilder.Entity("ContentFactory.Api.Modules.Content.AiRecommendation", b =>
                 {
+                    b.Property<bool?>("IsSimulated")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
@@ -730,6 +733,9 @@ namespace ContentFactory.Api.Migrations
 
             modelBuilder.Entity("ContentFactory.Api.Modules.Content.GeneratedAsset", b =>
                 {
+                    b.Property<bool?>("IsSimulated")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
