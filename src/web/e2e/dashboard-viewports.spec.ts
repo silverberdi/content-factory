@@ -78,10 +78,10 @@ test.describe('Content Factory Cockpit - Viewports and Design System', () => {
     await page.goto('/dashboard');
     await page.locator('nav a[href*="channels"]').click();
     await expect(page).toHaveURL(/.*channels/);
-    await expect(page.getByText('Editorial Channel Registry')).toBeVisible();
+    await expect(page.getByText('Registro de Canales Editoriales')).toBeVisible();
 
     await page.locator('nav a[href*="system"]').click();
     await expect(page).toHaveURL(/.*system/);
-    await expect(page.getByText('System & Security Governance')).toBeVisible();
+    await expect(page.getByText('Gobernanza y Seguridad del Sistema')).toBeVisible();
   });
 });

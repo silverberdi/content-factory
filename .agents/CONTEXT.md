@@ -21,7 +21,7 @@ It is not an email inbox and not a generic CRUD admin panel.
 
 ## Hard architecture
 
-- Angular 21 + PrimeNG 21 stable + Tailwind 4 PWA.
+- Angular 22 + PrimeNG 22 stable + Tailwind 4 PWA.
 - .NET 10 LTS backend.
 - PostgreSQL on existing Ubuntu instance (`192.168.0.194`).
 - Mac development (direct LAN connection to `content_factory_dev`); Ubuntu production (`content_factory_prod`).
