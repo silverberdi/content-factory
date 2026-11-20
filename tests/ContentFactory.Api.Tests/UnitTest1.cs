@@ -1,10 +1,18 @@
-﻿namespace ContentFactory.Api.Tests;
+﻿using System.Runtime.Versioning;
 
-public class UnitTest1
+namespace ContentFactory.Api.Tests;
+
+public class RuntimeCompatibilityTests
 {
     [Fact]
-    public void Test1()
+    public void TestAssemblyTargetsNet10()
     {
+        var targetFramework = typeof(RuntimeCompatibilityTests).Assembly
+            .GetCustomAttributes(typeof(TargetFrameworkAttribute), inherit: false)
+            .Cast<TargetFrameworkAttribute>()
+            .Single()
+            .FrameworkName;
 
+        Assert.Equal(".NETCoreApp,Version=v10.0", targetFramework);
     }
 }
