@@ -26,7 +26,7 @@ The operator must be able to answer "where is this piece?" from ContentItem.
 Unified representation regardless of origin:
 - manually submitted URL;
 - RSS/feed;
-- DeepSeek suggestion;
+- AI reasoning suggestion;
 - Gemini suggestion;
 - future provider.
 

@@ -71,10 +71,9 @@ These are configuration, but they are the current canonical defaults.
 
 ## AI
 
-Provider abstraction by capability.
-DeepSeek is default reasoning provider initially.
-Gemini is first alternate/multimodal provider.
-Local models may later handle cheap preprocessing.
+Provider abstraction by capability via `IAiProviderRouter`.
+Reasoning and generation providers are configurable (OpenAI-compatible APIs, multimodal providers like Gemini, or local models).
+The system remains completely provider-agnostic.
 
 ## Core interaction
 

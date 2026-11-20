@@ -47,7 +47,7 @@ The system SHALL support invoking the capability `generate_script` through `IAiP
 
 #### Scenario: AI generates structured script with claim traceability
 - **WHEN** an operator triggers "Generate Script" on a ContentItem with an approved TruthSource and active Selected Idea
-- **THEN** `IAiProviderRouter` routes the request to the configured reasoning provider (DeepSeek default or development mock)
+- **THEN** `IAiProviderRouter` routes the request to the configured reasoning provider (configured reasoning provider or development mock)
 - **AND** the AI generates a multi-scene script with timing tailored to the configured WPM, visual directions, and explicit claim references linking narration to TruthSource claims
 - **AND** the script is persisted in "Draft" status with `Version: 1` and effective `PacingWpm`
 - **AND** an `AIRecommendation` record is logged.

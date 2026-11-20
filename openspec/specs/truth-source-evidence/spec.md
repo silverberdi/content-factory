@@ -21,7 +21,7 @@ The system SHALL support invoking the capability `build_truth_source` through `I
 
 #### Scenario: AI synthesis produces draft proposal only
 - **WHEN** an operator triggers "Generate TruthSource" on a ContentItem with active captured evidence
-- **THEN** `IAiProviderRouter` routes the request to the configured provider (defaulting to DeepSeek or development mock adapter)
+- **THEN** `IAiProviderRouter` routes the request to the configured provider (defaulting to configured provider or development mock adapter)
 - **AND** the AI response is parsed into a structured TruthSource draft with status "Draft" and version 1
 - **AND** the TruthSource is NOT approved automatically
 - **AND** an `AIRecommendation` record is persisted with structured telemetry and rationale without private chain-of-thought.

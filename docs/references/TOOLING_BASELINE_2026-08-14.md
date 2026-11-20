@@ -13,7 +13,7 @@ Verified baseline at package creation:
 - Angular/PrimeNG stable pairing selected: Angular 21 + PrimeNG 21.
 - PrimeNG 22 was still presented as release-candidate content during verification, so it is not the baseline.
 - Tailwind CSS 4 is the selected baseline.
-- DeepSeek API is OpenAI-compatible; provider/model remains configuration.
+- Reasoning APIs are OpenAI-compatible; provider/model remains configuration.
 
 Before dependency installation, Antigravity should confirm exact current stable patch versions from official package metadata and lock them.
 It MUST NOT silently jump to an RC/preview major version.

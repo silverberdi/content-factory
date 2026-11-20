@@ -28,7 +28,7 @@ It is not an email inbox and not a generic CRUD admin panel.
 - one production n8n workflow set only.
 - MinIO runtime assets.
 - Google Drive automated off-site backup/archive (PostgreSQL dump semantics).
-- DeepSeek default reasoning provider; Gemini alternate.
+- Configured reasoning provider via IAiProviderRouter; Gemini alternate.
 - Cloudflare Tunnel for public frontend/backend.
 - modular monolith.
 

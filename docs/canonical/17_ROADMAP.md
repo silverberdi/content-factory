@@ -45,7 +45,7 @@ Capabilities:
 - dashboard attention/pipeline widgets.
 
 AI:
-DeepSeek default, provider routing configuration seeded.
+Configurable provider default, provider routing configuration seeded.
 
 ## Wave 2 — Discovery Intelligence
 
@@ -55,7 +55,7 @@ system proposes what is worth producing.
 Capabilities:
 - source catalog;
 - RSS/feed discovery;
-- DeepSeek topic/source suggestion;
+- AI topic/source suggestion;
 - Gemini alternate routing;
 - deduplication;
 - freshness;

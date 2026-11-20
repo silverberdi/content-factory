@@ -62,6 +62,6 @@ Must:
 ## @reviewer
 
 Purpose:
-Prepare independent cross-review package for DeepSeek and evaluate its findings against canonical context.
+Perform independent review when required by orchestrator policy and evaluate findings against canonical context.
 
 Must not rubber-stamp.

@@ -33,11 +33,10 @@ Use the PrimeNG 22 stable release line for the production baseline.
 - Google Drive off-site backup/archive
 
 ## AI
-- DeepSeek default reasoning provider
+- Configurable reasoning provider (OpenAI-compatible / IAiProviderRouter)
 - Gemini configurable alternate/multimodal provider
 - provider abstraction from first AI capability
 
 ## Development
 - Antigravity
 - OpenSpec
-- DeepSeek cross-review

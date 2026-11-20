@@ -26,7 +26,7 @@ The system SHALL support invoking the capability `generate_ideas` through `IAiPr
 
 #### Scenario: AI generates multiple distinct idea proposals from approved TruthSource
 - **WHEN** an operator triggers "Generate Ideas" on a ContentItem with an approved TruthSource
-- **THEN** `IAiProviderRouter` routes the prompt to the configured provider (defaulting to DeepSeek reasoning or development mock adapter)
+- **THEN** `IAiProviderRouter` routes the prompt to the configured provider (defaulting to configured reasoning provider or development mock adapter)
 - **AND** the AI synthesizes at least 3 distinct idea proposals with varied angles, hook styles, and audience hooks
 - **AND** the ideas are persisted in "Proposed" status linked to the ContentItem and `TruthSourceVersionId`
 - **AND** an `AIRecommendation` telemetry record is stored linking to the input `TruthSourceVersionId`.

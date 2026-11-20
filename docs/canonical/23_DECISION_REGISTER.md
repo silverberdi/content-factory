@@ -17,7 +17,7 @@
 - n8n has only production workflows; no dev/prod workflow split.
 - MinIO is runtime object storage.
 - Google Drive backup/archive is an automated feature using PostgreSQL backup semantics.
-- DeepSeek is default reasoning brain; Gemini configurable alternate.
+- Configurable reasoning provider via IAiProviderRouter; Gemini configurable alternate.
 - AI routing supports defaults and overrides.
 - Dashboard exists from the first slice and grows incrementally.
 - Desktop full-page scroll only when necessary.
@@ -26,7 +26,6 @@
 - Tablet near-desktop operation; mobile supports urgent/frequent actions.
 - OpenSpec may group multiple specs into a value-oriented change.
 - Every change includes its own human-test data.
-- DeepSeek cross-review is mandatory for change closure.
 - Published lineage is immutable/versioned.
 - Multiple sources per ContentItem supported.
 - Human direct editing is allowed and versioned.

@@ -19,20 +19,20 @@ Code requests:
 
 Code MUST NOT encode business behavior as `callDeepSeekForX()`.
 
-## Initial provider posture
+## Provider posture
 
-DeepSeek:
-- default reasoning provider;
-- initially occupies many capabilities;
+The application is fully provider-agnostic. All AI operations are requested by capability through `IAiProviderRouter`:
+
+Configurable Reasoning Providers (OpenAI-compatible APIs):
+- configurable reasoning provider for text and reasoning capabilities;
 - topic/source suggestions;
 - scoring;
 - idea generation;
 - script drafts;
 - analysis;
-- operational reasoning;
-- code cross-review.
+- operational reasoning.
 
-Gemini:
+Multimodal Providers (e.g. Gemini):
 - configurable alternate for reasoning/multimodal;
 - primary real voice generation provider (Gemini TTS API) producing WAV 16-bit mono masters;
 - preferred candidate for multimodal/visual/video analysis where it performs better;

@@ -46,7 +46,7 @@ Do not show an operator "Error 500" as the primary explanation if a meaningful c
 ## Audit timeline
 
 Important objects expose a human-readable timeline such as:
-- source suggested by DeepSeek;
+- source suggested by AI reasoning provider;
 - TruthSource generated;
 - operator edited;
 - Gemini reviewed;

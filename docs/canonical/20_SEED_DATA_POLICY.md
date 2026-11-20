@@ -13,7 +13,7 @@ Initial seed includes where applicable:
 - owner assignments;
 - pilot channel `IA Simple ES`;
 - provider registry;
-- DeepSeek global default;
+- Configured AI provider global default;
 - Gemini alternate entry;
 - representative dashboard health/status data;
 - representative notifications/attention examples when the feature exists;

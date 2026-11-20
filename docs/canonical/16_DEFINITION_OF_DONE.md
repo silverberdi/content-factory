@@ -22,7 +22,6 @@ A change closes only when all applicable gates pass.
 - build PASS;
 - automated tests PASS;
 - static/lint checks PASS;
-- DeepSeek cross-review READY_TO_MERGE;
 - no unauthorized scope changes.
 
 ## Security

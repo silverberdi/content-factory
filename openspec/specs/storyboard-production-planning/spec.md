@@ -152,7 +152,7 @@ AI execution SHALL record an `AIRecommendation` telemetry record (tokens, latenc
 
 #### Scenario: AI generates structured storyboard from approved script
 - **WHEN** an operator triggers "Generate Storyboard" on a ContentItem with an approved Script
-- **THEN** `IAiProviderRouter` routes the request to the configured reasoning provider (DeepSeek default or development mock)
+- **THEN** `IAiProviderRouter` routes the request to the configured reasoning provider (configured reasoning provider or development mock)
 - **AND** the AI generates a multi-frame storyboard with 9:16 vertical visual prompts, framing intents, audio cues, on-screen text, and frame durations aligned with script timing
 - **AND** the Storyboard and AssetPlan are persisted in "Draft" status with `Version: 1`
 - **AND** an `AIRecommendation` record is logged.

@@ -37,7 +37,7 @@ context: |
 
   AI:
   - Capability is domain; provider is configuration.
-  - DeepSeek is initial global default reasoning provider.
+  - Reasoning and generation providers are configurable via IAiProviderRouter.
   - Gemini is configurable alternate/multimodal provider.
   - Routing precedence: channel override > capability override > global default.
   - Store structured rationale/evidence, never private chain-of-thought.
@@ -66,7 +66,6 @@ context: |
   - OpenSpec must not become a bottleneck.
   - A change may contain several specs if together they produce one coherent human-testable increment.
   - Every change includes seed/test data required for human validation.
-  - DeepSeek cross-review is mandatory before merge.
   - Global Definition of Done is docs/canonical/16_DEFINITION_OF_DONE.md.
 
 rules:
@@ -87,7 +86,7 @@ rules:
     - Integrate tests with implementation; do not defer all tests to the end.
     - Include seed data and a human verification script.
     - Include canonical documentation synchronization.
-    - Include DeepSeek cross-review and OpenSpec verify before completion.
+    - Include OpenSpec verify and orchestrator-governed review before completion.
 
 operations:
   apply:
@@ -97,5 +96,5 @@ operations:
       - Execute automated checks after each coherent task group.
   archive:
     guidance:
-      - Do not archive until OpenSpec verify, global Definition of Done, human test and DeepSeek cross-review are complete.
+      - Do not archive until OpenSpec verify, global Definition of Done and human test are complete.
       - Confirm canonical documentation is synchronized.

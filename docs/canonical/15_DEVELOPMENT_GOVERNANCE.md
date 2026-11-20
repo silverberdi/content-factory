@@ -19,9 +19,9 @@ Antigravity:
 - must obey OpenSpec + canonical context;
 - does not redesign product architecture while implementing.
 
-DeepSeek:
-- alternate reasoning provider for the product;
-- independent code/spec reviewer when development changes are reviewed.
+Review & Governance:
+- Independent code and specification review is governed by orchestrator policy;
+- Implementer and reviewer roles remain distinct without encoding specific external review providers as in-repo build prerequisites.
 
 ## Plan gate
 

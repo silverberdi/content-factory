@@ -11,7 +11,6 @@ Confirm:
 - build/lint PASS;
 - security gate PASS where applicable;
 - UI gate PASS where applicable;
-- DeepSeek verdict READY_TO_MERGE or all objections reconciled;
 - docs synchronized;
 - human test script exists;
 - no secret committed;

@@ -22,13 +22,13 @@ EditorialTask model + dashboard attention actions.
 ## W2
 
 CF-020 AI Provider Registry and Routing
-Global defaults, capability overrides, optional channel override; DeepSeek seeded default.
+Global defaults, capability overrides, optional channel override; Configurable AI provider default.
 
 CF-021 Discovery Sources
 Source catalog + manual/RSS normalized discovery.
 
 CF-022 AI Discovery Advisor
-DeepSeek proposes topics/sources; Gemini configurable alternate.
+AI provider proposes topics/sources; Gemini configurable alternate.
 
 CF-023 Relevance, Freshness and Priority
 Scoring, expiration/freshness, duplicate control.
