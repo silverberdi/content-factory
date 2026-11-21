@@ -220,7 +220,65 @@ public class AiRecommendation
 public record VerifiableClaimDto(
     string Claim,
     string? SourceCitation,
-    Guid? EvidenceId
+    Guid? EvidenceId,
+    string ContentType = "Paraphrase",
+    string? OriginalText = null,
+    string? SpanishTranslation = null,
+    string? Locator = null,
+    string? Speaker = null,
+    string? Timestamp = null,
+    string ReviewStatus = "Verified"
+);
+
+public static class EditorialUrlAnalysisStatus
+{
+    public const string Completed = "Completed";
+    public const string Failed = "Failed";
+    public const string NotAnalyzable = "NotAnalyzable";
+}
+
+public record EditorialUrlAnalysisRequest(
+    Guid ChannelId,
+    string Url,
+    string? Angle = null,
+    string? ManualText = null,
+    string? Title = null
+);
+
+public record EditorialFindingDto(
+    Guid Id,
+    string Title,
+    string EditorialValue,
+    Guid EvidenceId,
+    string? Locator,
+    string ContentType,
+    string? OriginalText,
+    string? SpanishTranslation,
+    string? Speaker,
+    string? Timestamp,
+    string ReviewStatus
+);
+
+public record EditorialUrlAnalysisDto(
+    Guid AnalysisId,
+    Guid ContentItemId,
+    Guid ChannelId,
+    string Status,
+    string? ErrorCode,
+    string? ErrorMessage,
+    string NormalizedUrl,
+    string? Angle,
+    Guid? EvidenceId,
+    string? Title,
+    string? Language,
+    string? Author,
+    string? TextOrigin,
+    string? Locator,
+    TruthSourceDto? Draft,
+    List<EditorialFindingDto> Findings,
+    string? Provider,
+    bool IsSimulated,
+    DateTime UpdatedAtUtc
 );
 
 public record ContentItemDto(
@@ -1464,5 +1522,4 @@ public record VoiceProductionOverviewDto(
     List<VoiceRequirementProductionDto> Requirements,
     List<VoiceScriptSceneSummaryDto> ScriptScenes
 );
-
 
