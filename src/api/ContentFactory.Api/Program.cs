@@ -117,6 +117,8 @@ builder.Services.AddAuthorizationBuilder()
 
 // 5. Domain & Infrastructure Services
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("evidence-capture")
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IChannelService, ChannelService>();
@@ -126,6 +128,7 @@ builder.Services.AddScoped<IDiscoveryService, DiscoveryService>();
 builder.Services.AddHostedService<DiscoveryBackgroundSyncService>();
 builder.Services.AddScoped<IAiProviderRouter, AiProviderRouter>();
 builder.Services.AddScoped<IEvidenceCaptureService, EvidenceCaptureService>();
+builder.Services.AddScoped<IEditorialUrlAnalysisService, EditorialUrlAnalysisService>();
 builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<ITruthSourceService, TruthSourceService>();
 builder.Services.AddScoped<IContentIdeaService, ContentIdeaService>();

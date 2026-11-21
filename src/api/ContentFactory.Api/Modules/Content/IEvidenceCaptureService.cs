@@ -1,5 +1,8 @@
 using System.Security.Cryptography;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using ContentFactory.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -114,39 +117,107 @@ public partial class EvidenceCaptureService(
     {
         try
         {
-            var client = httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(10);
-            client.DefaultRequestHeaders.Add("User-Agent", "ContentFactoryEvidenceCollector/1.0 (+https://silverman.pro)");
-
-            var response = await client.GetAsync(evidence.OriginUrl!, cancellationToken);
-            if (response.IsSuccessStatusCode)
+            var currentUrl = evidence.OriginUrl!;
+            for (var redirect = 0; redirect <= 5; redirect++)
             {
-                var html = await response.Content.ReadAsStringAsync(cancellationToken);
-                var extracted = ExtractReadableText(html);
+                if (!await IsSafePublicUrlAsync(currentUrl, cancellationToken))
+                {
+                    MarkCaptureFailure(evidence, "URL_DESTINATION_NOT_ALLOWED", fallbackText);
+                    return;
+                }
 
+                var client = httpClientFactory.CreateClient("evidence-capture");
+                client.Timeout = TimeSpan.FromSeconds(10);
+                client.DefaultRequestHeaders.Remove("User-Agent");
+                client.DefaultRequestHeaders.Add("User-Agent", "ContentFactoryEvidenceCollector/1.0 (+https://silverman.pro)");
+                using var response = await client.GetAsync(currentUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                if ((int)response.StatusCode is >= 300 and < 400 && response.Headers.Location != null)
+                {
+                    if (redirect == 5)
+                    {
+                        MarkCaptureFailure(evidence, "REDIRECT_LIMIT_EXCEEDED", fallbackText);
+                        return;
+                    }
+                    currentUrl = new Uri(new Uri(currentUrl), response.Headers.Location).ToString();
+                    continue;
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    MarkCaptureFailure(evidence, $"HTTP_{(int)response.StatusCode}", fallbackText);
+                    return;
+                }
+
+                if (response.Content.Headers.ContentLength is > 2_000_000)
+                {
+                    MarkCaptureFailure(evidence, "RESPONSE_TOO_LARGE", fallbackText);
+                    return;
+                }
+
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                using var reader = new StreamReader(stream);
+                var html = await reader.ReadToEndAsync(cancellationToken);
+                if (html.Length > 2_000_000)
+                {
+                    MarkCaptureFailure(evidence, "RESPONSE_TOO_LARGE", fallbackText);
+                    return;
+                }
+                var extracted = ExtractReadableText(html);
+                var metadata = ExtractMetadata(html);
                 evidence.RawContent = html.Length > 20000 ? html[..20000] : html;
                 evidence.ExtractedText = string.IsNullOrWhiteSpace(extracted) ? fallbackText : extracted;
+                if (!string.IsNullOrWhiteSpace(metadata.Title) && evidence.Title == evidence.OriginUrl)
+                    evidence.Title = metadata.Title[..Math.Min(metadata.Title.Length, 512)];
+                evidence.Author = metadata.Author;
+                evidence.Notes = JsonSerializer.Serialize(new
+                {
+                    language = metadata.Language,
+                    locator = metadata.Locator,
+                    textOrigin = "captured"
+                });
                 evidence.ContentHash = ComputeSha256Hash(evidence.ExtractedText ?? evidence.RawContent ?? evidence.Title);
                 evidence.Status = EvidenceStatus.Captured;
                 evidence.ErrorMessage = null;
-            }
-            else
-            {
-                // Truthful HTTP failure recording
-                evidence.Status = EvidenceStatus.CaptureFailed;
-                evidence.ErrorMessage = $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}";
-                evidence.ExtractedText = fallbackText;
-                evidence.ContentHash = ComputeSha256Hash(fallbackText ?? evidence.Title);
+                return;
             }
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Failed to capture remote URL evidence from {Url}", evidence.OriginUrl);
-            evidence.Status = EvidenceStatus.CaptureFailed;
-            evidence.ErrorMessage = $"Capture exception: {ex.Message}";
-            evidence.ExtractedText = fallbackText;
-            evidence.ContentHash = ComputeSha256Hash(fallbackText ?? evidence.Title);
+            MarkCaptureFailure(evidence, "CAPTURE_EXCEPTION", fallbackText);
         }
+    }
+
+    private static void MarkCaptureFailure(ContentItemEvidence evidence, string code, string? fallbackText)
+    {
+        evidence.Status = EvidenceStatus.CaptureFailed;
+        evidence.ErrorMessage = code;
+        evidence.ExtractedText = fallbackText;
+        evidence.ContentHash = ComputeSha256Hash(fallbackText ?? evidence.Title);
+    }
+
+    private static async Task<bool> IsSafePublicUrlAsync(string value, CancellationToken cancellationToken)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https") || uri.IsLoopback)
+            return false;
+        if (string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase)) return false;
+        if (IPAddress.TryParse(uri.Host, out var parsed)) return IsPublic(parsed);
+        IPAddress[] addresses;
+        try { addresses = await Dns.GetHostAddressesAsync(uri.Host, cancellationToken); }
+        catch { return false; }
+        return addresses.Length > 0 && addresses.All(IsPublic);
+    }
+
+    private static bool IsPublic(IPAddress ip)
+    {
+        if (IPAddress.IsLoopback(ip) || ip.Equals(IPAddress.Any) || ip.Equals(IPAddress.IPv6Any)) return false;
+        if (ip.AddressFamily == AddressFamily.InterNetwork)
+        {
+            var b = ip.GetAddressBytes();
+            return !(b[0] == 10 || b[0] == 127 || (b[0] == 169 && b[1] == 254) ||
+                     (b[0] == 172 && b[1] is >= 16 and <= 31) || (b[0] == 192 && b[1] == 168));
+        }
+        return !ip.IsIPv6LinkLocal && !ip.IsIPv6SiteLocal && !ip.IsIPv6Multicast;
     }
 
     private static void ProcessTextCapture(ContentItemEvidence evidence, string? text)
@@ -180,6 +251,16 @@ public partial class EvidenceCaptureService(
         var normalized = WhitespaceRegex().Replace(plainText, " ").Trim();
         return normalized;
     }
+
+    private static CaptureMetadata ExtractMetadata(string html)
+    {
+        var title = Regex.Match(html, @"<title[^>]*>(?<value>[\s\S]*?)</title>", RegexOptions.IgnoreCase).Groups["value"].Value.Trim();
+        var language = Regex.Match(html, "<html[^>]+lang=[\\\"'](?<value>[^\\\"']+)", RegexOptions.IgnoreCase).Groups["value"].Value.Trim();
+        var author = Regex.Match(html, "<meta[^>]+(?:name|property)=[\\\"'](?:author|article:author)[\\\"'][^>]+content=[\\\"'](?<value>[^\\\"']+)", RegexOptions.IgnoreCase).Groups["value"].Value.Trim();
+        return new CaptureMetadata(title, language, author, string.IsNullOrWhiteSpace(title) ? null : "html:title");
+    }
+
+    private sealed record CaptureMetadata(string? Title, string? Language, string? Author, string? Locator);
 
     [GeneratedRegex(@"<script[^>]*>[\s\S]*?</script>", RegexOptions.IgnoreCase)]
     private static partial Regex ScriptRegex();
