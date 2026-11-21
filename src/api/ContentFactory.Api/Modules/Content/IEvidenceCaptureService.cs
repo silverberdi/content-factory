@@ -210,6 +210,8 @@ public partial class EvidenceCaptureService(
 
     private static bool IsPublic(IPAddress ip)
     {
+        if (ip.IsIPv4MappedToIPv6)
+            return IsPublic(ip.MapToIPv4());
         if (IPAddress.IsLoopback(ip) || ip.Equals(IPAddress.Any) || ip.Equals(IPAddress.IPv6Any)) return false;
         if (ip.AddressFamily == AddressFamily.InterNetwork)
         {
@@ -217,7 +219,10 @@ public partial class EvidenceCaptureService(
             return !(b[0] == 10 || b[0] == 127 || (b[0] == 169 && b[1] == 254) ||
                      (b[0] == 172 && b[1] is >= 16 and <= 31) || (b[0] == 192 && b[1] == 168));
         }
-        return !ip.IsIPv6LinkLocal && !ip.IsIPv6SiteLocal && !ip.IsIPv6Multicast;
+        var bytes = ip.GetAddressBytes();
+        var isUniqueLocal = (bytes[0] & 0xFE) == 0xFC; // fc00::/7
+        var isDocumentation = bytes[0] == 0x20 && bytes[1] == 0x01 && bytes[2] == 0x0D && bytes[3] == 0xB8; // 2001:db8::/32
+        return !ip.IsIPv6LinkLocal && !ip.IsIPv6SiteLocal && !ip.IsIPv6Multicast && !isUniqueLocal && !isDocumentation;
     }
 
     private static void ProcessTextCapture(ContentItemEvidence evidence, string? text)

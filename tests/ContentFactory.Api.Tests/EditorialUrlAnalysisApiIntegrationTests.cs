@@ -68,6 +68,9 @@ public sealed class EditorialUrlAnalysisApiIntegrationTests : IClassFixture<Cust
     [InlineData("file:///etc/passwd")]
     [InlineData("http://127.0.0.1/private")]
     [InlineData("http://localhost/private")]
+    [InlineData("http://[fc00::1]/private")]
+    [InlineData("http://[fd12:3456:789a::1]/private")]
+    [InlineData("http://[::ffff:192.168.1.10]/private")]
     public async Task UnsafeUrl_IsRejectedBeforeCreatingContent(string url)
     {
         var response = await client.PostAsJsonAsync("/api/editorial-url-analyses", new EditorialUrlAnalysisRequest(
@@ -88,5 +91,23 @@ public sealed class EditorialUrlAnalysisApiIntegrationTests : IClassFixture<Cust
         Assert.NotNull(result);
         Assert.Contains(result.Status, new[] { EditorialUrlAnalysisStatus.Failed, EditorialUrlAnalysisStatus.NotAnalyzable });
         Assert.Empty(result.Findings);
+    }
+
+    [Fact]
+    public async Task ManualTextAnalysis_DoesNotCaptureUrl_AndPreservesItAsProvenance()
+    {
+        var url = $"https://unresolvable.invalid/multimedia/{Guid.NewGuid():N}";
+        var response = await client.PostAsJsonAsync("/api/editorial-url-analyses", new EditorialUrlAnalysisRequest(
+            Guid.Parse("00000000-0000-0000-0000-000000000010"),
+            url,
+            ManualText: "El texto manual permite analizar una fuente multimedia sin transcripción accesible."));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<EditorialUrlAnalysisDto>();
+        Assert.NotNull(result);
+        Assert.Equal(EditorialUrlAnalysisStatus.Completed, result.Status);
+        Assert.Equal(url, result.NormalizedUrl);
+        Assert.Equal("manual", result.TextOrigin);
+        Assert.NotNull(result.EvidenceId);
     }
 }

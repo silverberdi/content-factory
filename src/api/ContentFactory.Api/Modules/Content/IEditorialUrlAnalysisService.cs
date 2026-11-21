@@ -237,11 +237,17 @@ public sealed class EditorialUrlAnalysisService(
 
     private static bool IsPublic(System.Net.IPAddress ip)
     {
+        if (ip.IsIPv4MappedToIPv6)
+            return IsPublic(ip.MapToIPv4());
         if (System.Net.IPAddress.IsLoopback(ip)) return false;
         var bytes = ip.GetAddressBytes();
-        return ip.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork ||
-            !(bytes[0] == 10 || (bytes[0] == 172 && bytes[1] is >= 16 and <= 31) ||
-              (bytes[0] == 192 && bytes[1] == 168) || (bytes[0] == 169 && bytes[1] == 254));
+        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            return !(bytes[0] == 10 || bytes[0] == 127 || (bytes[0] == 172 && bytes[1] is >= 16 and <= 31) ||
+                (bytes[0] == 192 && bytes[1] == 168) || (bytes[0] == 169 && bytes[1] == 254));
+        var isUniqueLocal = (bytes[0] & 0xFE) == 0xFC; // fc00::/7
+        var isDocumentation = bytes[0] == 0x20 && bytes[1] == 0x01 && bytes[2] == 0x0D && bytes[3] == 0xB8; // 2001:db8::/32
+        return !ip.Equals(System.Net.IPAddress.IPv6Any) && !ip.IsIPv6LinkLocal && !ip.IsIPv6SiteLocal &&
+            !ip.IsIPv6Multicast && !isUniqueLocal && !isDocumentation;
     }
 
     private static string BuildSlug(string title) => new string(title.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray()).Trim('-');
@@ -249,7 +255,14 @@ public sealed class EditorialUrlAnalysisService(
     private static string SanitizeError(string? error) => string.IsNullOrWhiteSpace(error) ? "Capture failed." : error.Length > 256 ? error[..256] : error;
     private static AnalysisNotes ParseNotes(string? notes)
     {
-        try { return JsonSerializer.Deserialize<AnalysisNotes>(notes ?? "{}") ?? new(); } catch { return new(); }
+        try
+        {
+            return JsonSerializer.Deserialize<AnalysisNotes>(notes ?? "{}", new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? new();
+        }
+        catch { return new(); }
     }
     private sealed record AnalysisNotes(string? Angle = null, string? TextOrigin = null, string? Locator = null, string? Language = null, string? Provider = null, bool Simulated = false, string? ErrorCode = null);
 }
