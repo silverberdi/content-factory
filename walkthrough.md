@@ -148,3 +148,28 @@ EXIT=0
 La validación estricta disponible en OpenSpec 1.13.1 también pasó:
 `openspec validate --type change --strict --no-interactive --json` → `1/1`, sin issues. El binario instalado no expone `openspec verify`; la revisión independiente queda pendiente del Verify gobernado por el coordinador.
 <!-- verify pass 2 -->
+
+## CF-06 — Editorial Studio independiente
+
+### Alcance y contratos
+
+La pantalla se agregó en `/editorial/studio` y `/editorial/studio/:contentItemId`, usando exclusivamente los contratos existentes de `editorial-url-analyses`, `ContentItem`, `TruthSource`, `ContentIdea` y `Script`. La selección de propuestas conserva cada propuesta generada como una entidad de idea independiente sin sobrescribir las demás propuestas ni el TruthSource origen. La generación y reapertura del guion usa el endpoint existente de Script; la edición y guardado continúan en Script Studio.
+
+El workspace usa `PageHeaderComponent`, `PageToolbarComponent`, `.cf-page-container`, señales Angular, tokens semánticos y la clase `.dark`. Los estados de proveedor muestran `Mock` cuando `isSimulated=true`. La producción es conceptual 9:16: no hay acciones habilitadas para renderizar, descargar o publicar MP4 inexistente. Storyboard/Visual/Voice se reutilizan desde el Storyboard Studio existente.
+
+### Datos de validación
+
+`src/web/e2e/editorial-studio.spec.ts` contiene fixtures deterministas explícitos `Mock`: canal `IA Simple ES`, una fuente soportada, un TruthSource `Draft`, un hallazgo de tipo `Paraphrase` y un proveedor simulado. No contiene secretos ni afirma inferencia live.
+
+### Comprobaciones automatizadas
+
+```text
+npm ci
+npm run build                         # exit 0; warning existente de budget de estilos del componente
+npm test -- --watch=false             # 56 passed, 0 failed
+npx playwright test e2e/editorial-studio.spec.ts  # 28 passed, 0 failed
+DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER=1 POSTGRES_DATABASE=content_factory_test POSTGRES_HOST=192.168.0.194 POSTGRES_USER=minime_app POSTGRES_PASSWORD=[REDACTED] dotnet test ContentFactory.sln -m:1 -p:UseSharedCompilation=false -nodeReuse:false
+# 137 passed, 0 failed, exit 0
+```
+
+Playwright ejecutó los checks en 1440×900, 1920×1080, 768×1024 y 390×844 (28 passed, 0 failed): navegación, análisis, etiqueta Mock, separación de paráfrasis/verbatim, gate de aprobación, ausencia de overflow horizontal, selección de propuestas independientes sin sobrescritura, generación de guion, recuperación tras reload del mismo ContentItem/idea/guion, estados de URL no soportada y manejo de permisos 401/403. Todas las verificaciones requeridas se reportan como PASS.

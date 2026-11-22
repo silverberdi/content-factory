@@ -12,6 +12,7 @@ import { ContentIdeasComponent } from './features/content/content-ideas.componen
 import { ScriptStudioComponent } from './features/content/script-studio.component';
 import { StoryboardStudioComponent } from './features/content/storyboard-studio.component';
 import { EditorialTasksListComponent } from './features/content/editorial-tasks-list.component';
+import { EditorialStudioComponent } from './features/editorial/editorial-studio.component';
 
 export const routes: Routes = [
   {
@@ -31,6 +32,8 @@ export const routes: Routes = [
       { path: 'content/items/:id/script', component: ScriptStudioComponent },
       { path: 'content/items/:id/storyboard', component: StoryboardStudioComponent },
       { path: 'editorial/tasks', component: EditorialTasksListComponent },
+      { path: 'editorial/studio', component: EditorialStudioComponent },
+      { path: 'editorial/studio/:contentItemId', component: EditorialStudioComponent },
       { path: 'channels', component: ChannelsComponent },
       { path: 'system', component: SystemComponent }
     ]
