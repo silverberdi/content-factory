@@ -71,6 +71,7 @@ app-content-ideas,
 app-script-studio,
 app-storyboard-studio,
 app-editorial-tasks-list,
+app-editorial-studio,
 app-page-header,
 app-page-toolbar,
 main > * {
@@ -202,5 +203,4 @@ main > * {
 .cf-table tbody tr:hover {
   background-color: var(--app-surface-hover);
 }
-
 

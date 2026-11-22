@@ -463,6 +463,50 @@ export interface AttachCandidateToContentRequest {
   notes?: string | null;
 }
 
+export interface EditorialFindingDto {
+  id: string;
+  title: string;
+  editorialValue: string;
+  evidenceId: string;
+  locator?: string | null;
+  contentType: string;
+  originalText?: string | null;
+  spanishTranslation?: string | null;
+  speaker?: string | null;
+  timestamp?: string | null;
+  reviewStatus: string;
+}
+
+export interface EditorialUrlAnalysisDto {
+  analysisId: string;
+  contentItemId: string;
+  channelId: string;
+  status: 'Completed' | 'Failed' | 'NotAnalyzable' | string;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  normalizedUrl: string;
+  angle?: string | null;
+  evidenceId?: string | null;
+  title?: string | null;
+  language?: string | null;
+  author?: string | null;
+  textOrigin?: string | null;
+  locator?: string | null;
+  draft?: TruthSourceDto | null;
+  findings: EditorialFindingDto[];
+  provider?: string | null;
+  isSimulated: boolean;
+  updatedAtUtc: string;
+}
+
+export interface EditorialUrlAnalysisRequest {
+  channelId: string;
+  url: string;
+  angle?: string | null;
+  manualText?: string | null;
+  title?: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -606,6 +650,14 @@ export class ApiService {
 
   getContentItemDetail(id: string): Observable<ContentItemDetailDto> {
     return this.http.get<ContentItemDetailDto>(`${this.baseUrl}/content-items/${id}`);
+  }
+
+  analyzeEditorialUrl(request: EditorialUrlAnalysisRequest): Observable<EditorialUrlAnalysisDto> {
+    return this.http.post<EditorialUrlAnalysisDto>(`${this.baseUrl}/editorial-url-analyses`, request);
+  }
+
+  getEditorialUrlAnalysis(id: string): Observable<EditorialUrlAnalysisDto> {
+    return this.http.get<EditorialUrlAnalysisDto>(`${this.baseUrl}/editorial-url-analyses/${id}`);
   }
 
   createContentItem(request: CreateContentItemRequest): Observable<ContentItemDto> {
@@ -1472,7 +1524,6 @@ export interface VoiceProductionOverviewDto {
   requirements: VoiceRequirementProductionDto[];
   scriptScenes: VoiceScriptSceneSummaryDto[];
 }
-
 
 
 

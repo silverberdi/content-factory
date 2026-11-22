@@ -72,6 +72,13 @@ import { ApiService } from '../core/api.service';
             </span>
           </a>
 
+          <!-- Independent Editorial Studio -->
+          <a routerLink="/editorial/studio" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs"
+             class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0"
+             title="Editorial Studio">
+            <i class="pi pi-sparkles text-xs"></i> <span class="hidden xl:inline">Editorial Studio</span>
+          </a>
+
           <!-- Channels -->
           <a routerLink="/channels" routerLinkActive="bg-[var(--app-card-bg)] text-blue-600 dark:text-blue-400 font-semibold shadow-xs" 
              class="px-2.5 py-1.5 rounded-lg text-xs transition-all hover:text-blue-500 text-[var(--app-muted)] flex items-center gap-1.5 shrink-0"
